@@ -23,7 +23,7 @@ Ulord platform guarantee:
 
 ## Ulord platform architecture
 Ulord platform combine ulord blockchain and open-source technology to implement content storage, distribution and search.
-![architecture](images/Ulord-Arch.jpg)
+![architecture](images/Ulord-Arch_en.jpg)
 
 User get content from Ulord platform
 ![Get content from ulord platform](images/App-Business-Flow-Get.jpg)
