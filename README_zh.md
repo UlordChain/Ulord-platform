@@ -1,4 +1,9 @@
 # Ulord Platform - The Most Powerfull Infrastructure for Content Distribution Applications
+[英文](./README.md)
+
+欢迎，这里是Ulurd平台原代码仓库！Ulord平台软件可以让开发者有能力创建和部署高性能，可水平扩展，基于区块链的内容分发应用。
+目前代码仍在Alpah版本状态，并在快速开发中，欢迎加入！
+
 Ulord是一个去中心化的内容分发平台，平台提供内容存储，内容检索和分发功能。平台可以承载不同的企业应用，提供给企业用户内容分发服务。
 平台提供如下功能：
 - 内容去中心化存储服务
@@ -8,6 +13,11 @@ Ulord是一个去中心化的内容分发平台，平台提供内容存储，内
 - 内容归企业所有，只有具有企业私钥才可以访问企业内容
 - 内容版权确认和内容审查由企业负责，平台提供技术实现
 - 内容分发服务由平台提供
+
+## Resources
+1. [Ulord官网](http://ulord.one)
+2. [文档](https://github.com/UlordChain/documentation)
+3. [词汇表](./vocabulary.md)
 
 ## 平台架构
 平台主要依托于Ulord区块链和先进开源技术融合实现内容存储，检索和分发功能。
@@ -22,7 +32,9 @@ Ulord是一个去中心化的内容分发平台，平台提供内容存储，内
 ### Ulord blockchain
 Ulord区块链提供所有内容的交易记账服务，实现知识和币的记账，促进优质内容的传播。
 
-### Ulord Platform
+### Ulord平台-功能最强大的内容分发应用基础设施
+[英文](./README.md)
+
 Ulord platform基于Ulord blockchain的记账功能，提供去中心化的内容存储，内容记账和内容检索服务。
 
 ### Ulord application
