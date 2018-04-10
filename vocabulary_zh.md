@@ -1,7 +1,7 @@
 # 词汇表
 [English](./vocabulary.md)
 #### UDFS
-星际互联文件系统
+Ulord分布式文件系统，基于IPFS（星际互联文件系统）。
 
 #### TxID
 交易ID，在Ulord区块链上执行交易时产生的唯一编码，通过该TxID可以获取交易的信息
