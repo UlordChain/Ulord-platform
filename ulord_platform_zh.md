@@ -1,5 +1,5 @@
 # Ulord Platform
-Ulord platform 主要由Ulord platform application, IPFS, Index Cache和Ulord blockchain client构成。
+Ulord platform 主要由Ulord platform application, UDFS, Index Cache和Ulord blockchain client构成。
 
 ## Ulord platform application
 Ulord platform applcation主要提供Ulord platform的应用层功能，主要依托于其他底层技术实现企业应用的管理服务。
@@ -30,11 +30,11 @@ Ulord platform主要分三个模块：Platform service, blockchain binding servi
 #### Ulord wallet proxy service
 该服务提供钱包代理功能，通过代理企业用户的钱包功能，企业用户的客户端就不需要提醒用户备份私钥等繁琐功能，还可以借用平台优势，实现多企业用户共享同一Ulord币价值，实现内容支付。
 
-## IPFS
-基于IPFS应用的一个内容存储服务，由Ulord提供运营，实现内容的分布式存储。
+## UDFS
+基于UDFS应用的一个内容存储服务，由Ulord提供运营，实现内容的分布式存储。
 
 ## Index cache
-基于IPFS和Ulord blockchain提供的元数据构建的内容索引服务。如果内容必须依据由企业加密，企业必须提供内容摘要以提供检索服务。
+基于UDFS和Ulord blockchain提供的元数据构建的内容索引服务。如果内容必须依据由企业加密，企业必须提供内容摘要以提供检索服务。
 
 ## Ulord blockchain client
 基于Ulord blockchain提供的记账功能和内容元数据记账功能，实现内容数据的分发记账。
