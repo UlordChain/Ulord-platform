@@ -1,0 +1,12 @@
+*.pyc
+*.swp
+build/
+dist/
+.devlocaltmp/
+.tox/
+.coverage
+.idea
+.cache
+_trial_temp/
+test.py
+__pycache__
