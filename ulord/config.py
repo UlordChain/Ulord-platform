@@ -10,8 +10,8 @@ class Config(object):
     FLASKY_MAIL_SUBJECT_PREFIX = '[Flasky]'
     FLASKY_MAIL_SENDER = 'shuxudong@ulord.net'
     FLASKY_ADMIN = 'ulord'
-    WALLET_JSONRPC_HOST = '192.168.14.244'  # wallet调用ip
-    WALLET_JSONRPC_PORT = '8000'  # wallet端口
+    WALLET_JSONRPC_HOST = '192.168.14.244'  # wallet调用ip1
+    WALLET_JSONRPC_PORT = '8000'  # wallet端口1
 
     @staticmethod
     def init_app(app):
