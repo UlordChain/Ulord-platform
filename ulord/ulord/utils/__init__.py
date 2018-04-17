@@ -71,4 +71,9 @@ def return_result(errcode=0,reason=None,result=None):
             res.update({'result':result})
         return res
     else:
-        return _errcodes[errcode]
+        rs= _errcodes[errcode]
+        if reason:
+            rs.update(dict(reason=reason))
+        if result:
+            rs.update(dict(result=result))
+        return rs

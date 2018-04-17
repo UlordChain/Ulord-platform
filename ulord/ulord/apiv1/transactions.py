@@ -29,8 +29,8 @@ def create_address():
         app_user = AppUser(appkey=appkey, app_username=username)
         db.session.add(app_user)
     except Exception as e:
-        print (e)
-        return return_result(20204)
+        print (type(e),e)
+        return return_result(20204,result=dict(wallet_reason=str(e)))
 
     return return_result()
 
@@ -57,7 +57,7 @@ def pay_to_user():
             return return_result(20206)
     except Exception as e:
         print(e)
-        return return_result(20206)
+        return return_result(20206,result=dict(wallet_reason=str(e)))
     return return_result()
 
 
@@ -93,12 +93,12 @@ def publish():
             return return_result(20201)
     except Exception as e:
         print(e)
-        return return_result(20201)
+        return return_result(20201,result=dict(wallet_reason=str(e)))
 
     claim_id = result.get('claim_id')
     txid = result.get('txid')
-    tags = save_tag(tags)
     status = 1
+    tags = save_tag(tags)
     history = save_content_history(txid=txid, claim_id=claim_id, author=author, appkey=appkey, title=title,
                                    ipfs_hash=ipfs_hash, price=price, content_type=content_type, currency=currency,
                                    des=description, status=status)
@@ -150,7 +150,7 @@ def consume():
                     return return_result(20202)
             except Exception as e:
                 print(e)
-                return return_result(20202)
+                return return_result(20202,result=dict(wallet_reason=str(e)))
 
             txid = result.get('txid')
             consume = Consume(txid=txid, claim_id=claim_id, customer=customer, appkey=appkey)
@@ -174,7 +174,7 @@ def balance():
             return return_result(20203)
     except Exception as e:
         print (e)
-        return return_result(20203)
+        return return_result(20203,result=dict(wallet_reason=str(e)))
 
     confirmed = result.get('confirmed', '0')
     unconfirmed = result.get('unconfirmed', '0')
