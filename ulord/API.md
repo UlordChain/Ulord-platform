@@ -409,8 +409,15 @@
 # 请求参数:
 
 {
-        'username':消费者用户名,
-        'claim_id':'45cdb43d78bd12ee3acfa9be7c56ae02d6c88d3e'
+        "username":"user2",
+        "claim_ids":[
+        	"ec3c93680884d8b1aee25242f64f79f8bd847c57",
+        	"a5b899fe01d633b6f0b809c4af2312524c081576",
+        	"25e48b12694b4704aeff32ba0a568c21ad8dd5d6",
+        	"e1b98bcc018950ac4684c663d0ea4fa9fc19543d",
+        	"e1b98bcc018950ac4684c663d0ea4fa9fc19543f",
+        	"2d4bbaf369464feeb90ac957af72a641f9a1bc9c"
+    	]
 }
 
 # 返回值:
@@ -419,17 +426,13 @@
 {
     "errcode": 0,
     "reason": "success",
-    "result":{
-        "ipfs_hash":ipfs_hash,
-    }
-}
-
-失败
-{
-    "errcode": 0,
-    "reason": "success",
-    "result":{
-        "ipfs_hash":None,
+    "result": {
+        "25e48b12694b4704aeff32ba0a568c21ad8dd5d6": "QmUH2NbKrURA6hAmJnhfP4VTDtkjUs3fVCN2L7DoE3JLmm",
+        "2d4bbaf369464feeb90ac957af72a641f9a1bc9c": false,  # 未付费
+        "a5b899fe01d633b6f0b809c4af2312524c081576": "QmUH2NbKrURA6hAmJnhfP4VTDtkjUs3fVCN2L7DoE3JLmm",
+        "e1b98bcc018950ac4684c663d0ea4fa9fc19543d": null,  # 没有此记录
+        "e1b98bcc018950ac4684c663d0ea4fa9fc19543f": false,
+        "ec3c93680884d8b1aee25242f64f79f8bd847c57": "QmUH2NbKrURA6hAmJnhfP4VTDtkjUs3fVCN2L7DoE3JLmm"
     }
 }
 ```

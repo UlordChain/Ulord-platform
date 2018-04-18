@@ -29,8 +29,8 @@ def create_address():
         app_user = AppUser(appkey=appkey, app_username=username)
         db.session.add(app_user)
     except Exception as e:
-        print (type(e),e)
-        return return_result(20204,result=dict(wallet_reason=str(e)))
+        print(type(e), e)
+        return return_result(20204, result=dict(wallet_reason=str(e)))
 
     return return_result()
 
@@ -46,7 +46,7 @@ def pay_to_user():
     is_developer = request.json.get('is_developer')
     if is_developer is True:
         send_user_wallet = g.user.username
-        pay_password=g.user.password_hash
+        pay_password = g.user.password_hash
     else:
         send_user_wallet = get_wallet_name(request.json.get('send_user'))
         pay_password = request.json.get('pay_password')
@@ -61,7 +61,7 @@ def pay_to_user():
             return return_result(20206)
     except Exception as e:
         print(e)
-        return return_result(20206,result=dict(wallet_reason=str(e)))
+        return return_result(20206, result=dict(wallet_reason=str(e)))
     return return_result()
 
 
@@ -91,13 +91,13 @@ def publish():
     server = get_jsonrpc_server()
     try:
         result = server.publish(username_wallet, sourcename, bid, metadata, content_type, ipfs_hash, currency, price,
-                                 pay_password)
+                                pay_password)
         if result.get('success') is not True:
             print(result)
             return return_result(20201)
     except Exception as e:
         print(e)
-        return return_result(20201,result=dict(wallet_reason=str(e)))
+        return return_result(20201, result=dict(wallet_reason=str(e)))
 
     claim_id = result.get('claim_id')
     txid = result.get('txid')
@@ -116,19 +116,33 @@ def publish():
 @bpv1.route('/transactions/check/', methods=['POST'])
 @appkey_check
 def check():
+    """检查用户是否付费
+
+    Args:
+        username: 消费者
+        claim_ids: 资源claim_id列表
+    Returns:
+        返回值三种状态:
+        None: 没有此条资源记录
+        False: 未付费
+        ipfs_hash: 已付费
+    """
     appkey = g.appkey
     customer = request.json.get('username')
     claim_ids = request.json.get('claim_ids')
 
+    result = dict(zip(claim_ids, [None for claim_id in claim_ids]))
     # appkey作为条件,是为了避免查询别的应用的资源
-    content = Content.query.filter_by(claim_id=claim_id, appkey=appkey).first()
-    if not content:
-        return return_result(20007)
-    if content.author != customer:  # 消费者与发布者不是同一人
-        consume = Consume.query.filter_by(claim_id=claim_id, customer=customer, appkey=appkey).first()
-        if not consume:
-            return return_result(result=dict(ipfs_hash=None))
-    return return_result(result=dict(ipfs_hash=content.ipfs_hash))
+    contents = Content.query.filter(Content.claim_id.in_(claim_ids), appkey == appkey).all()
+    for content in contents:
+        result.update({content.claim_id: False})
+        if content.author == customer:  # # 消费者与发布者是同一人
+            result.update({content.claim_id: content.ipfs_hash})
+        else:
+            consume = Consume.query.filter_by(claim_id=content.claim_id, customer=customer, appkey=appkey).first()
+            if consume:
+                result.update({content.claim_id: content.ipfs_hash})
+    return return_result(result=result)
 
 
 @bpv1.route('/transactions/consume/', methods=['POST'])
@@ -154,7 +168,7 @@ def consume():
                     return return_result(20202)
             except Exception as e:
                 print(e)
-                return return_result(20202,result=dict(wallet_reason=str(e)))
+                return return_result(20202, result=dict(wallet_reason=str(e)))
 
             txid = result.get('txid')
             consume = Consume(txid=txid, claim_id=claim_id, customer=customer, appkey=appkey)
@@ -166,7 +180,6 @@ def consume():
 @bpv1.route('/transactions/balance/', methods=['POST'])
 @appkey_check
 def balance():
-
     username_wallet = get_wallet_name(request.json.get('username', ''))
     pay_password = request.json.get('pay_password')
 
@@ -177,8 +190,8 @@ def balance():
             print(result)
             return return_result(20203)
     except Exception as e:
-        print (e)
-        return return_result(20203,result=dict(wallet_reason=str(e)))
+        print(e)
+        return return_result(20203, result=dict(wallet_reason=str(e)))
 
     confirmed = result.get('confirmed', '0')
     unconfirmed = result.get('unconfirmed', '0')
