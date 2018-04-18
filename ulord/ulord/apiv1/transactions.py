@@ -17,7 +17,7 @@ from ulord.utils.generate import generate_appkey
 @appkey_check
 def create_address():
     """生成钱包地址,应该调用钱包jsonrpc"""
-    appkey = request.headers.get('appkey')
+    appkey = g.appkey
     username = request.json.get('username', '')
     username_wallet = get_wallet_name(username)
     pay_password = request.json.get('pay_password')
@@ -38,7 +38,11 @@ def create_address():
 @bpv1.route('/transactions/paytouser/', methods=['POST'])
 @appkey_check
 def pay_to_user():
-    """开发者转给用户"""
+    """转账
+
+    Args:
+        is_developer:是否从开发者账户转给其用户
+    """
     is_developer = request.json.get('is_developer')
     if is_developer is True:
         send_user_wallet = g.user.username
@@ -64,7 +68,7 @@ def pay_to_user():
 @bpv1.route('/transactions/publish/', methods=['POST'])
 @appkey_check
 def publish():
-    appkey = request.headers.get('appkey')
+    appkey = g.appkey
     author = request.json.get('author', '')
     username_wallet = get_wallet_name(author)
     pay_password = request.json.get('pay_password')
@@ -112,9 +116,9 @@ def publish():
 @bpv1.route('/transactions/check/', methods=['POST'])
 @appkey_check
 def check():
-    appkey = request.headers.get('appkey')
+    appkey = g.appkey
     customer = request.json.get('username')
-    claim_id = request.json.get('claim_id')
+    claim_ids = request.json.get('claim_ids')
 
     # appkey作为条件,是为了避免查询别的应用的资源
     content = Content.query.filter_by(claim_id=claim_id, appkey=appkey).first()
@@ -123,14 +127,14 @@ def check():
     if content.author != customer:  # 消费者与发布者不是同一人
         consume = Consume.query.filter_by(claim_id=claim_id, customer=customer, appkey=appkey).first()
         if not consume:
-            return return_result(20008)
+            return return_result(result=dict(ipfs_hash=None))
     return return_result(result=dict(ipfs_hash=content.ipfs_hash))
 
 
 @bpv1.route('/transactions/consume/', methods=['POST'])
 @appkey_check
 def consume():
-    appkey = request.headers.get('appkey')
+    appkey = g.appkey
     customer = request.json.get('username')
     wallet_username = get_wallet_name(customer)
     claim_id = request.json.get('claim_id')
@@ -210,5 +214,5 @@ def save_tag(tag_names):
 
 
 def get_wallet_name(username):
-    appkey = request.headers.get('appkey')
+    appkey = g.appkey
     return '{}_{}'.format(appkey, username)

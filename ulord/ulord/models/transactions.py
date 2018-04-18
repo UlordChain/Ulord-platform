@@ -24,7 +24,7 @@ class Consume(db.Model):
     __table_args__ = (db.UniqueConstraint('claim_id', 'customer', 'appkey'),)  # 消费者对某资源只需一次付费
 
     txid = db.Column(db.String(64), primary_key=True, comment=u'消费资源,交易id')
-    claim_id = db.Column(db.String(64), db.ForeignKey('content.txid'), nullable=False, comment=u'外键,资源交易id')
+    claim_id = db.Column(db.String(64), db.ForeignKey('content.claim_id'), nullable=False, comment=u'外键,资源交易id')
     customer = db.Column(db.String(64), nullable=False, index=True, comment=u'消费者(某个应用的用户名)')
     appkey = db.Column(db.String(32), db.ForeignKey('apps.appkey'), index=True, nullable=False)
     create_timed = db.Column(db.DateTime, server_default=db.func.now(), comment=u'资源消费时间, 默认为当前时间')

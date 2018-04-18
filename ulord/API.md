@@ -426,8 +426,10 @@
 
 失败
 {
-    "errcode": 20007,
-    "reason": "资源不存在",
+    "errcode": 0,
+    "reason": "success",
+    "result":{
+        "ipfs_hash":None,
     }
 }
 ```
@@ -486,7 +488,7 @@
 
 失败
 {
-    "errcode": 20008,
+    "errcode": 20203,
     "reason": "查询余额失败",
     }
 }
@@ -506,32 +508,31 @@
 {
     "errcode": 0,
     "reason": "success",
-    "result": [
-        {
-            "author": "justin",
-            "claim_id": "45cdb43d78bd12ee3acfa9be7c56ae02d6c88d3e",
-            "content_type": ".txt",
-            "create_timed": "2018-04-12T15:47:34.446858+00:00",
-            "currency": "ULD",
-            "des": "这是使用IPFS和区块链生成的第2篇博客的描述信息",
-            "id": 5,
-            "price": 1.3,
-            "status": 1,
-            "tags": [
-                "C++",
-                "java",
-                "javascript",
-                "ruby",
-                "C",
-                "python",
-                "GO",
-                "lua",
-                "C#"
-            ],
-            "title": "第2篇技术博客",
-            "update_timed": null
-        },
-    ]
+    "result": {
+        total:总条数,
+        pages:总页数,
+        data:
+        [
+            {
+                "author": "justin",
+                "claim_id": "45cdb43d78bd12ee3acfa9be7c56ae02d6c88d3e",
+                "content_type": ".txt",
+                "create_timed": "2018-04-12T15:47:34.446858+00:00",
+                "currency": "ULD",
+                "des": "这是使用IPFS和区块链生成的第2篇博客的描述信息",
+                "id": 5,
+                "price": 1.3,
+                "status": 1,
+                "tags": [
+                    "C++",
+                    "java",
+                    "javascript",
+                ],
+                "title": "第2篇技术博客",
+                "update_timed": null
+            }
+        ]
+    }
 }
 ```
 
@@ -574,6 +575,85 @@
 {
     "errcode": 0,
     "reason": "success",
+}
+```
+
+##### 7. 已购买列表  `POST`    `/v1/content/bought/<page>/<num>/`
+```
+# 请求参数:
+{
+    'customer':消费者
+}
+
+# 返回值:
+
+成功
+{
+    "errcode": 0,
+    "reason": "success",
+    "result": {
+        "data": [
+            {
+                "author": "shu",
+                "claim_id": "b7fb27065dd919968c9d4188a4bdbff1e3d1a668",
+                "content_type": ".txt",
+                "create_timed": "2018-04-17T09:25:27.427384+00:00",
+                "currency": "ULD",
+                "des": "shu的第一篇博客",
+                "id": 23,
+                "price": 1,
+                "status": 1,
+                "tags": [
+                    "go",
+                    "python",
+                    "ruby"
+                ],
+                "title": "shu的第一篇博客",
+                "update_timed": null
+            }
+        ],
+        "pages": 2,
+        "total": 2
+    }
+}
+```
+
+##### 8. 已发布列表  `POST`    `/v1/content/published/<page>/<num>/`
+```
+# 请求参数:
+{
+    'author':消费者
+}
+
+# 返回值:
+
+成功
+{
+    "errcode": 0,
+    "reason": "success",
+    "result": {
+        "data": [
+            {
+                "author": "user2",
+                "claim_id": "c51fe46a429aa4d76b800cd17e771392d1af90b8",
+                "content_type": ".txt",
+                "create_timed": "2018-04-16T09:06:56.477060+00:00",
+                "currency": "ULD",
+                "des": "blog description",
+                "id": 13,
+                "price": 0.5,
+                "status": 1,
+                "tags": [
+                    "Ruby",
+                    "Python"
+                ],
+                "title": "first blog12",
+                "update_timed": null
+            }
+        ],
+        "pages": 6,
+        "total": 6
+    }
 }
 ```
 

@@ -15,11 +15,11 @@ _errcodes={
     0:{'errcode':0,'reason':'success'},  # 可以重写reason与result内容
 
     # HTTP协议错误码
-    400:{'errcode':400,'reason':'错误的请求.'},
-    403:{'errcode':403,'reason':'您没有权限进行此操作.'},
-    404:{'errcode':404,'reason':'Api不存在.'},
-    405:{'errcode':405,'reason':'http请求方法不允许.'},
-    500:{'errcode':500,'reason':'Api出错了, 请检查url以及参数.'},
+    400:{'errcode':400,'reason':'Bad Request.'},
+    403:{'errcode':403,'reason':'Forbidden.'},
+    404:{'errcode':404,'reason':'Not found.'},
+    405:{'errcode':405,'reason':'Method Not Allowed.'},
+    500:{'errcode':500,'reason':'Internal Server Error.'},
 
     # 系统级错误码
     10001:{'errcode':10001,'reason':'错误的请求KEY.'},
