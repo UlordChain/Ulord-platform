@@ -27,6 +27,7 @@ class Consume(db.Model):
     claim_id = db.Column(db.String(64), db.ForeignKey('content.claim_id'), nullable=False, comment=u'外键,资源交易id')
     customer = db.Column(db.String(64), nullable=False, index=True, comment=u'消费者(某个应用的用户名)')
     appkey = db.Column(db.String(32), db.ForeignKey('apps.appkey'), index=True, nullable=False)
+    price = db.Column(db.Numeric(20, 8), nullable=False, default=0, comment=u'消费价格')
     create_timed = db.Column(db.DateTime, server_default=db.func.now(), comment=u'资源消费时间, 默认为当前时间')
 
 

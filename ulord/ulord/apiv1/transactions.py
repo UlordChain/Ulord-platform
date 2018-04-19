@@ -24,8 +24,10 @@ def create_address():
 
     server = get_jsonrpc_server()
     try:
-        if server.create(username_wallet, pay_password).get('success') is not True:
-            return return_result(20204)
+        result = server.create(username_wallet, pay_password)
+        if result.get('success') is not True:
+            print(result)
+            return return_result(20204, result=result)
         app_user = AppUser(appkey=appkey, app_username=username)
         db.session.add(app_user)
     except Exception as e:
@@ -57,8 +59,10 @@ def pay_to_user():
     server = get_jsonrpc_server()
     try:
         result = server.pay(send_user_wallet, pay_password, recv_wallet_username, amount)
+        print(result)
         if result.get('success') is not True:
-            return return_result(20206)
+            print(result)
+            return return_result(20206, result=result)
     except Exception as e:
         print(e)
         return return_result(20206, result=dict(wallet_reason=str(e)))
@@ -88,19 +92,21 @@ def publish():
                     description='', language='en',  # 枚举
                     license='', licenseUrl='', nsfw=False, preview='', thumbnail='', )
 
-    server = get_jsonrpc_server()
-    try:
-        result = server.publish(username_wallet, sourcename, bid, metadata, content_type, ipfs_hash, currency, price,
-                                pay_password)
-        if result.get('success') is not True:
-            print(result)
-            return return_result(20201)
-    except Exception as e:
-        print(e)
-        return return_result(20201, result=dict(wallet_reason=str(e)))
+    # server = get_jsonrpc_server()
+    # try:
+    #     result = server.publish(username_wallet, sourcename, bid, metadata, content_type, ipfs_hash, currency, price,
+    #                             pay_password)
+    #     if result.get('success') is not True:
+    #         print(result)
+    #         return return_result(20201, result=result)
+    # except Exception as e:
+    #     print(e)
+    #     return return_result(20201, result=dict(wallet_reason=str(e)))
 
-    claim_id = result.get('claim_id')
-    txid = result.get('txid')
+    # claim_id = result.get('claim_id')
+    # txid = result.get('txid')
+    claim_id='shuxudong'
+    txid='shuxudong'
     status = 1
     tags = save_tag(tags)
     history = save_content_history(txid=txid, claim_id=claim_id, author=author, appkey=appkey, title=title,
@@ -152,27 +158,38 @@ def consume():
     customer = request.json.get('username')
     wallet_username = get_wallet_name(customer)
     claim_id = request.json.get('claim_id')
-    pay_password = request.json.get('pay_password')
+    # 正常消费传值
+    customer_pay_password = request.json.get('customer_pay_password')
+    # 广告点击传值
+    author_pay_password=request.json.get('author_pay_password')
 
     content = Content.query.filter_by(claim_id=claim_id, appkey=appkey).first()
     if not content:
         return return_result(20007)
+    price = content.price
     if content.author != customer:
-        consume = Consume.query.filter_by(claim_id=claim_id, customer=customer, appkey=appkey).first()
-        if not consume:
-            server = get_jsonrpc_server()
-            try:
-                result = server.consume(wallet_username, claim_id, pay_password)
-                if result.get('success') is not True:
-                    print(result)
-                    return return_result(20202)
-            except Exception as e:
-                print(e)
-                return return_result(20202, result=dict(wallet_reason=str(e)))
+        if content.price!=0:  # 非免费资源(收费资源/广告)
+            consume = Consume.query.filter_by(claim_id=claim_id, customer=customer, appkey=appkey).first()
+            if not consume:
+                # server = get_jsonrpc_server()
+                # try:
+                #     if price >= 0:  # 普通消费
+                #         result = server.consume(wallet_username, claim_id, customer_pay_password)
+                #     else:  # 广告
+                #         wallet_username=get_wallet_name(content.author)
+                #         result=server.pay(wallet_username, author_pay_password, customer, price)
+                #     if result.get('success') is not True:
+                #         print(result)
+                #         return return_result(20202, result=result)
+                # except Exception as e:
+                #     print(e)
+                #     return return_result(20202, result=dict(wallet_reason=str(e)))
 
-            txid = result.get('txid')
-            consume = Consume(txid=txid, claim_id=claim_id, customer=customer, appkey=appkey)
-            db.session.add(consume)
+
+                # txid = result.get('txid')
+                txid='fhuwqhfiweugh1'
+                c = Consume(txid=txid, claim_id=claim_id, customer=customer, appkey=appkey, price=price)
+                db.session.add(c)
 
     return return_result(result=dict(ipfs_hash=content.ipfs_hash))
 
@@ -188,7 +205,7 @@ def balance():
         result = server.getbalance(username_wallet, pay_password)
         if result.get('success') is not True:
             print(result)
-            return return_result(20203)
+            return return_result(20203, result=result)
     except Exception as e:
         print(e)
         return return_result(20203, result=dict(wallet_reason=str(e)))
@@ -198,6 +215,22 @@ def balance():
     unmatured = result.get('unmatured', '0')
     total = result.get('total', '0')
     return return_result(result=dict(total=total, confirmed=confirmed, unconfirmed=unconfirmed, unmatured=unmatured))
+
+
+@bpv1.route('/transactions/income/', methods=['POST'])
+@appkey_check
+def income():
+    appkey = g.appkey
+    username = request.json.get('username')
+    contents = Content.query.with_entities(Content.claim_id, Content.price).filter_by(author=username).all()
+
+    print(contents)
+
+
+@bpv1.route('/transactions/expense/', methods=['POST'])
+@appkey_check
+def expense():
+    appkey = g.appkey
 
 
 def save_content(**kwargs):

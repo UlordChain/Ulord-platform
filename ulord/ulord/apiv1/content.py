@@ -20,7 +20,6 @@ def content_list(page, num):
     ref: https://github.com/pallets/flask/issues/835
     """
     appkey = g.appkey
-    # error_out:超过页数, 显示404
     contents = Content.query.filter(Content.appkey == appkey, Content.enabled == True).paginate(page, num,error_out=False)
     total = contents.total
     pages = contents.pages
@@ -41,7 +40,14 @@ def bought(page, num):
     consumes = consumes_schema.dump(consumes.items).data
     contents=[consume['content'] for consume in consumes ]
     result=contents_schema.dump(contents).data
-    return return_result(result=dict(total=total,pages=pages,data=result))
+    consumes=[]
+    ads=[]
+    for r in result:
+        if r.get('price')>=0:
+            consumes.append(r)
+        else:
+            ads.append(r)
+    return return_result(result=dict(total=total,pages=pages,consumes=consumes,ads=ads))
 
 @bpv1.route("/content/published/<int:page>/<int:num>/", methods=['POST'])
 @appkey_check
