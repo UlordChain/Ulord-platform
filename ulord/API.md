@@ -672,6 +672,42 @@
 }
 ```
 
+##### 8. 发布资源者收支记录  `POST`    `/v1/content/published/<page>/<num>/`
+```
+# 请求参数:
+{
+    'author':发布者
+}
+
+# 返回值:
+
+成功
+{
+    "errcode": 0,
+    "reason": "success",
+    "result": {
+        "pages": 1,
+        "records": [  # 根据price来判断是收入还是支出
+            {
+                "claim_id": "abcdefg",
+                "create_timed": "2018-04-19T14:58:44.705105+00:00",
+                "customer": "user2",
+                "price": -1,
+                "txid": "fhuwqhfiweugh"
+            },
+            {
+                "claim_id": "1234567890",
+                "create_timed": "2018-04-19T15:28:37.735119+00:00",
+                "customer": "user2",
+                "price": 0.5,
+                "txid": "fhuwqhfiweugh1"
+            }
+        ],
+        "total": 2
+    }
+}
+```
+
 ### 附录A: 错误码对照表
 ```
 {

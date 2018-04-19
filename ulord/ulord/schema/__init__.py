@@ -4,7 +4,5 @@
 # @Email   : httpservlet@yeah.net
 # 用于格式化输出(将sqlalchemy模型实例转化为字典)
 
-from .role import *
-from .app_type import *
-from .uapp import *
-from .content import *
+from .users import *
+from .transactions import *

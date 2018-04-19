@@ -5,7 +5,7 @@
 from . import bpv1, appkey_check
 from flask import request, g
 from ulord.models import Content, Consume
-from ulord.schema import contents_schema, consumes_schema
+from ulord.schema import contents_schema, content_consumes_schema
 from ulord import return_result
 
 
@@ -37,7 +37,7 @@ def bought(page, num):
     consumes = Consume.query.filter_by(appkey=appkey,customer=customer).paginate(page, num,error_out=False)
     total = consumes.total
     pages = consumes.pages
-    consumes = consumes_schema.dump(consumes.items).data
+    consumes = content_consumes_schema.dump(consumes.items).data
     contents=[consume['content'] for consume in consumes ]
     result=contents_schema.dump(contents).data
     consumes=[]

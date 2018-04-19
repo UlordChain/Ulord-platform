@@ -11,6 +11,7 @@ from . import appkey_check, get_jsonrpc_server
 from ulord.models import Content, Tag, ContentHistory, Consume, AppUser, Application
 from ulord.extensions import db
 from ulord.utils.generate import generate_appkey
+from ulord.schema import consume_schema
 
 
 @bpv1.route('/transactions/createwallet/', methods=['POST'])
@@ -105,8 +106,8 @@ def publish():
 
     # claim_id = result.get('claim_id')
     # txid = result.get('txid')
-    claim_id='shuxudong'
-    txid='shuxudong'
+    claim_id = 'shuxudong'
+    txid = 'shuxudong'
     status = 1
     tags = save_tag(tags)
     history = save_content_history(txid=txid, claim_id=claim_id, author=author, appkey=appkey, title=title,
@@ -161,14 +162,14 @@ def consume():
     # 正常消费传值
     customer_pay_password = request.json.get('customer_pay_password')
     # 广告点击传值
-    author_pay_password=request.json.get('author_pay_password')
+    author_pay_password = request.json.get('author_pay_password')
 
     content = Content.query.filter_by(claim_id=claim_id, appkey=appkey).first()
     if not content:
         return return_result(20007)
     price = content.price
     if content.author != customer:
-        if content.price!=0:  # 非免费资源(收费资源/广告)
+        if content.price != 0:  # 非免费资源(收费资源/广告)
             consume = Consume.query.filter_by(claim_id=claim_id, customer=customer, appkey=appkey).first()
             if not consume:
                 # server = get_jsonrpc_server()
@@ -185,9 +186,8 @@ def consume():
                 #     print(e)
                 #     return return_result(20202, result=dict(wallet_reason=str(e)))
 
-
                 # txid = result.get('txid')
-                txid='fhuwqhfiweugh1'
+                txid = 'fhuwqhfiweugh1'
                 c = Consume(txid=txid, claim_id=claim_id, customer=customer, appkey=appkey, price=price)
                 db.session.add(c)
 
@@ -217,19 +217,37 @@ def balance():
     return return_result(result=dict(total=total, confirmed=confirmed, unconfirmed=unconfirmed, unmatured=unmatured))
 
 
-@bpv1.route('/transactions/income/', methods=['POST'])
+@bpv1.route('/transactions/publisherinout/<int:page>/<int:num>/', methods=['POST'])
 @appkey_check
-def income():
+def publisher_inout(page,num):
+    """发布者收支 (分为 资源收入/广告支出)"""
     appkey = g.appkey
-    username = request.json.get('username')
-    contents = Content.query.with_entities(Content.claim_id, Content.price).filter_by(author=username).all()
+    author = request.json.get('author')
+    contents = Content.query.with_entities(Content.claim_id,Content.title).filter_by(appkey=appkey, author=author).all()
+    claims={c.claim_id:c.title for c in contents}
+    claim_ids=list(claims.keys())
+    records=Consume.query.filter(Consume.claim_id.in_(claim_ids),appkey==appkey).paginate(page, num,error_out=False)
+    total = records.total
+    pages = records.pages
+    records=consume_schema.dump(records.items).data
+    # consumes=[]  # 发布资源的收入
+    # ads=[]  # 发布广告的支出
+    # for record in records:
+    #     for claim_id,title in claims.items():
+    #         if record.get('claim_id')==claim_id:
+    #             record.update(dict(title=title))
+    #     if record.get('price',0) >=0:
+    #         consumes.append(record)
+    #     else:
+    #         ads.append(record)
 
-    print(contents)
+    return return_result(result=dict(total=total,pages=pages,records=records))
 
 
-@bpv1.route('/transactions/expense/', methods=['POST'])
+@bpv1.route('/transactions/customerinout/', methods=['POST'])
 @appkey_check
-def expense():
+def customer_inout():
+    """消费者收支 (分为 消费支出/广告收入)"""
     appkey = g.appkey
 
 
