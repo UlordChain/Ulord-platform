@@ -444,7 +444,8 @@
 {
         'username':消费者用户名,
         'claim_id':'45cdb43d78bd12ee3acfa9be7c56ae02d6c88d3e'
-        'pay_password':消费密码(在创建用户时指定),
+        'customer_pay_password':消费密码(登录用户的支付密码,消费正常资源时传入),
+        "author_pay_password":资源发布者的支付密码(点击广告时传入)
 }
 
 # 返回值:
@@ -455,13 +456,6 @@
     "reason": "success",
     "result":{
         "ipfs_hash":ipfs_hash,
-    }
-}
-
-失败
-{
-    "errcode": 20008,
-    "reason": "资源需付费",
     }
 }
 ```
@@ -595,27 +589,45 @@
     "errcode": 0,
     "reason": "success",
     "result": {
-        "data": [
+        "ads": [  # 广告列表(收币)
             {
-                "author": "shu",
-                "claim_id": "b7fb27065dd919968c9d4188a4bdbff1e3d1a668",
+                "author": "user1",
+                "claim_id": "abcdefg",
                 "content_type": ".txt",
-                "create_timed": "2018-04-17T09:25:27.427384+00:00",
+                "create_timed": "2018-04-19T14:36:44.536818+00:00",
                 "currency": "ULD",
-                "des": "shu的第一篇博客",
-                "id": 23,
-                "price": 1,
+                "des": "blog description",
+                "id": 45,
+                "price": -1,
                 "status": 1,
                 "tags": [
-                    "go",
-                    "python",
-                    "ruby"
+                    "Python",
+                    "Ruby"
                 ],
-                "title": "shu的第一篇博客",
+                "title": "This is first blog",
                 "update_timed": null
             }
         ],
-        "pages": 2,
+        "consumes": [  # 消费列表(出币)
+            {
+                "author": "user1",
+                "claim_id": "1234567890",
+                "content_type": ".txt",
+                "create_timed": "2018-04-19T14:22:20.226816+00:00",
+                "currency": "ULD",
+                "des": "blog description",
+                "id": 44,
+                "price": 0.5,
+                "status": 1,
+                "tags": [
+                    "Ruby",
+                    "Python"
+                ],
+                "title": "This is first blog",
+                "update_timed": null
+            }
+        ],
+        "pages": 1,
         "total": 2
     }
 }
