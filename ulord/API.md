@@ -672,7 +672,7 @@
 }
 ```
 
-##### 8. 发布资源者收支记录  `POST`    `/v1/content/published/<page>/<num>/`
+##### 9. 发布资源者收支记录  `POST`    `/v1/transactions/publisherinout/<page>/<num>/`
 ```
 # 请求参数:
 {
@@ -687,23 +687,83 @@
     "reason": "success",
     "result": {
         "pages": 1,
-        "records": [  # 根据price来判断是收入还是支出
+        "records": [
             {
-                "claim_id": "abcdefg",
-                "create_timed": "2018-04-19T14:58:44.705105+00:00",
-                "customer": "user2",
-                "price": -1,
-                "txid": "fhuwqhfiweugh"
+                "author": "ads",
+                "create_timed": "2018-04-20T14:11:16.856288+00:00",
+                "customer": "shu",
+                "id": "bc12825bd069cf3f82158aadef60e87cbda76a6f",
+                "price": -0.02,
+                "title": "the first ads",
+                "txid": "4ba9370faeca247499d32815ea5be6179293c6306b8f88848691ff0e9c0cb513"
             },
             {
-                "claim_id": "1234567890",
-                "create_timed": "2018-04-19T15:28:37.735119+00:00",
-                "customer": "user2",
-                "price": 0.5,
-                "txid": "fhuwqhfiweugh1"
+                "author": "ads",
+                "create_timed": "2018-04-20T14:11:16.856288+00:00",
+                "customer": "tttttttttttt",
+                "id": "bc12825bd069cf3f82158aadef60e87cbda76a6f",
+                "price": -0.02,
+                "title": "the first ads",
+                "txid": "4ba9370faeca247499d32815ea5be6179293c6306b8f88848691ff0e9c0cb515"
             }
         ],
         "total": 2
+    }
+}
+```
+
+
+##### 10. 发布资源者收支记录  `POST`    `/v1/transactions/customerinout/<page>/<num>/`
+```
+# 请求参数:
+{
+    'customer':消费者
+}
+
+# 返回值:
+
+成功
+{
+    "errcode": 0,
+    "reason": "success",
+    "result": {
+        "pages": 1,
+        "records": [
+            {
+                "claim_id": "ca067e452618915fab2d33cdb6cecca83ae95659",
+                "create_timed": "2018-04-20T14:11:16.856288+00:00",
+                "price": 0.02,
+                "title": "df",
+                "txid": "4ba9370faeca247499d32815ea5be6179293c6306b8f88848691ff0e9c0cb514"
+            },
+            {
+                "claim_id": "bc12825bd069cf3f82158aadef60e87cbda76a6f",
+                "create_timed": "2018-04-20T14:11:16.856288+00:00",
+                "price": -0.02,
+                "title": "the first ads",
+                "txid": "4ba9370faeca247499d32815ea5be6179293c6306b8f88848691ff0e9c0cb515"
+            }
+        ],
+        "total": 2
+    }
+}
+```
+
+##### 11. 发布资源数量  `POST`    `/v1/transactions/publish/count/`
+```
+# 请求参数:
+{
+    'author':发布者
+}
+
+# 返回值:
+
+成功
+{
+    "errcode": 0,
+    "reason": "success",
+    "result": {
+        "count": 0
     }
 }
 ```

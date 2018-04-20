@@ -258,6 +258,34 @@ def customer_inout(page, num):
     records = consumeinouts_schema.dump(records.items).data
     return return_result(result=dict(total=total, pages=pages, records=records))
 
+@bpv1.route('/transactions/publish/count/',methods=['POST'])
+@appkey_check
+def publish_count():
+    """发布资源数量"""
+    author=request.json.get('author')
+    count=Content.query.filter_by(author=author).count()
+    return return_result(result=dict(count=count))
+
+@bpv1.route('/transactions/totalamount/',methods=['POST'])
+@appkey_check
+def total_amount():
+    """
+    计算总收支分为2个部分:
+    1. 发布者收支
+    2. 消费者收支
+    :return:
+    """
+    username=request.json.get('username')
+    publish_amount=Content.query.with_entities(db.func.sum(Content.price)). \
+                join(Consume,Content.claim_id==Consume.claim_id). \
+                filter(Content.author==username).first()
+
+    consutomer_amount=Content.query.with_entities(db.func.sum(Content.price)). \
+                join(Consume,Content.claim_id==Consume.claim_id). \
+                filter(Consume.customer==username).first()
+
+    return return_result(result=dict(publish=publish_amount[0],consume=consutomer_amount[0]))
+
 
 def save_content(**kwargs):
     content = Content(**kwargs)
