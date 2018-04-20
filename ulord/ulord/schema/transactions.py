@@ -6,7 +6,8 @@
 from ulord.extensions import ma
 from ulord.models import Content,Consume
 
-_all__ = ['content_schema','contents_schema','content_consume_schema','content_consumes_schema']
+_all__ = ['content_schema','contents_schema','content_consume_schema',
+          'content_consumes_schema','consumeinout_schema','consumeinouts_schema']
 
 class ContentSchema(ma.ModelSchema):
     class Meta:
@@ -33,3 +34,9 @@ consume_schema = ConsumeSchema(many=True)
 
 
 
+class ConsumeInoutSchema(ma.ModelSchema):
+    class Meta:
+        fields=('txid','claim_id','author','title','customer','price','create_timed')
+
+consumeinout_schema=ConsumeInoutSchema()
+consumeinouts_schema=ConsumeInoutSchema(many=True)

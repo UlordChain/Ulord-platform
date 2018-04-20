@@ -11,7 +11,7 @@ from . import appkey_check, get_jsonrpc_server
 from ulord.models import Content, Tag, ContentHistory, Consume, AppUser, Application
 from ulord.extensions import db
 from ulord.utils.generate import generate_appkey
-from ulord.schema import consume_schema
+from ulord.schema import consume_schema,consumeinouts_schema
 
 
 @bpv1.route('/transactions/createwallet/', methods=['POST'])
@@ -59,6 +59,7 @@ def pay_to_user():
 
     server = get_jsonrpc_server()
     try:
+        print(send_user_wallet, pay_password, recv_wallet_username, amount)
         result = server.pay(send_user_wallet, pay_password, recv_wallet_username, amount)
         print(result)
         if result.get('success') is not True:
@@ -93,21 +94,19 @@ def publish():
                     description='', language='en',  # 枚举
                     license='', licenseUrl='', nsfw=False, preview='', thumbnail='', )
 
-    # server = get_jsonrpc_server()
-    # try:
-    #     result = server.publish(username_wallet, sourcename, bid, metadata, content_type, ipfs_hash, currency, price,
-    #                             pay_password)
-    #     if result.get('success') is not True:
-    #         print(result)
-    #         return return_result(20201, result=result)
-    # except Exception as e:
-    #     print(e)
-    #     return return_result(20201, result=dict(wallet_reason=str(e)))
+    server = get_jsonrpc_server()
+    try:
+        result = server.publish(username_wallet, sourcename, bid, metadata, content_type, ipfs_hash, currency, price,
+                                pay_password)
+        if result.get('success') is not True:
+            print(result)
+            return return_result(20201, result=result)
+    except Exception as e:
+        print(e)
+        return return_result(20201, result=dict(wallet_reason=str(e)))
 
-    # claim_id = result.get('claim_id')
-    # txid = result.get('txid')
-    claim_id = 'shuxudong'
-    txid = 'shuxudong'
+    claim_id = result.get('claim_id')
+    txid = result.get('txid')
     status = 1
     tags = save_tag(tags)
     history = save_content_history(txid=txid, claim_id=claim_id, author=author, appkey=appkey, title=title,
@@ -172,22 +171,25 @@ def consume():
         if content.price != 0:  # 非免费资源(收费资源/广告)
             consume = Consume.query.filter_by(claim_id=claim_id, customer=customer, appkey=appkey).first()
             if not consume:
-                # server = get_jsonrpc_server()
-                # try:
-                #     if price >= 0:  # 普通消费
-                #         result = server.consume(wallet_username, claim_id, customer_pay_password)
-                #     else:  # 广告
-                #         wallet_username=get_wallet_name(content.author)
-                #         result=server.pay(wallet_username, author_pay_password, customer, price)
-                #     if result.get('success') is not True:
-                #         print(result)
-                #         return return_result(20202, result=result)
-                # except Exception as e:
-                #     print(e)
-                #     return return_result(20202, result=dict(wallet_reason=str(e)))
+                server = get_jsonrpc_server()
+                try:
+                    if price >= 0:  # 普通消费
+                        result = server.consume(wallet_username, claim_id, customer_pay_password)
+                    else:  # 广告
+                        send_wallet_username = get_wallet_name(content.author)
+                        recv_wallet_username = get_wallet_name(customer)
+                        abs_price = abs(float(price))  # decimal 类型 会是这样 0.030000, 要去掉后面的0
+                        print(send_wallet_username, author_pay_password, recv_wallet_username, abs_price)
+                        result = server.pay(send_wallet_username, author_pay_password, recv_wallet_username, abs_price)
+                    if result.get('success') is not True:
+                        print(result)
+                        return return_result(20202, result=result)
+                except Exception as e:
+                    print(e)
+                    return return_result(20202, result=dict(wallet_reason=str(e)))
 
-                # txid = result.get('txid')
-                txid = 'fhuwqhfiweugh1'
+                txid = result.get('txid')
+                print(result)
                 c = Consume(txid=txid, claim_id=claim_id, customer=customer, appkey=appkey, price=price)
                 db.session.add(c)
 
@@ -197,7 +199,11 @@ def consume():
 @bpv1.route('/transactions/balance/', methods=['POST'])
 @appkey_check
 def balance():
-    username_wallet = get_wallet_name(request.json.get('username', ''))
+    is_developer = request.json.get('is_developer')
+    if is_developer:
+        username_wallet = request.json.get('username')
+    else:
+        username_wallet = get_wallet_name(request.json.get('username'))
     pay_password = request.json.get('pay_password')
 
     server = get_jsonrpc_server()
@@ -219,36 +225,38 @@ def balance():
 
 @bpv1.route('/transactions/publisherinout/<int:page>/<int:num>/', methods=['POST'])
 @appkey_check
-def publisher_inout(page,num):
+def publisher_inout(page, num):
     """发布者收支 (分为 资源收入/广告支出)"""
     appkey = g.appkey
     author = request.json.get('author')
-    contents = Content.query.with_entities(Content.claim_id,Content.title).filter_by(appkey=appkey, author=author).all()
-    claims={c.claim_id:c.title for c in contents}
-    claim_ids=list(claims.keys())
-    records=Consume.query.filter(Consume.claim_id.in_(claim_ids),appkey==appkey).paginate(page, num,error_out=False)
+    # with_entities的field可以使用lable指定别名
+    records = Content.query. \
+                with_entities(Content.claim_id, Content.author,Content.title,
+                              Consume.txid, Consume.customer,Consume.price, Consume.create_timed). \
+                join(Consume, Content.claim_id == Consume.claim_id). \
+                filter(Content.author==author).paginate(page,num,error_out=False)
     total = records.total
     pages = records.pages
-    records=consume_schema.dump(records.items).data
-    # consumes=[]  # 发布资源的收入
-    # ads=[]  # 发布广告的支出
-    # for record in records:
-    #     for claim_id,title in claims.items():
-    #         if record.get('claim_id')==claim_id:
-    #             record.update(dict(title=title))
-    #     if record.get('price',0) >=0:
-    #         consumes.append(record)
-    #     else:
-    #         ads.append(record)
+    records = consumeinouts_schema.dump(records.items).data
 
-    return return_result(result=dict(total=total,pages=pages,records=records))
+    return return_result(result=dict(total=total, pages=pages, records=records))
 
 
-@bpv1.route('/transactions/customerinout/', methods=['POST'])
+@bpv1.route('/transactions/customerinout/<int:page>/<int:num>/', methods=['POST'])
 @appkey_check
-def customer_inout():
+def customer_inout(page, num):
     """消费者收支 (分为 消费支出/广告收入)"""
     appkey = g.appkey
+    customer = request.json.get('customer')
+    records = Content.query. \
+                with_entities(Content.claim_id, Content.author,Content.title,
+                              Consume.txid, Consume.customer,Consume.price, Consume.create_timed).\
+                join(Consume, Content.claim_id == Consume.claim_id).\
+                filter(Consume.customer==customer).paginate(page, num, error_out=False)
+    total = records.total
+    pages = records.pages
+    records = consumeinouts_schema.dump(records.items).data
+    return return_result(result=dict(total=total, pages=pages, records=records))
 
 
 def save_content(**kwargs):

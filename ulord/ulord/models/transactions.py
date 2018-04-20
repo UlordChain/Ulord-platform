@@ -56,7 +56,7 @@ class Content(db.Model):
     enabled = db.Column(db.Boolean, nullable=False, default=True, comment=u'标识资源是否可用')
     create_timed = db.Column(db.DateTime, server_default=db.func.now(), comment=u'资源创建时间, 默认为当前时间')
     update_timed = db.Column(db.DateTime, onupdate=db.func.now(), comment=u'最后更新时间')
-
+    views = db.Column(db.Integer, default=0, comment=u'浏览量')
     tags = db.relationship('Tag', secondary='content_tag', backref=db.backref('content', lazy='dynamic'))
     consumes = db.relationship('Consume', backref=db.backref('content'), lazy='dynamic')
 
