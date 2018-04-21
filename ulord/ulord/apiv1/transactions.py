@@ -11,7 +11,7 @@ from . import appkey_check, get_jsonrpc_server
 from ulord.models import Content, Tag, ContentHistory, Consume, AppUser, Application
 from ulord.extensions import db
 from ulord.utils.generate import generate_appkey
-from ulord.schema import consume_schema,consumeinouts_schema
+from ulord.schema import consume_schema, consumeinouts_schema
 
 
 @bpv1.route('/transactions/createwallet/', methods=['POST'])
@@ -223,18 +223,17 @@ def balance():
     return return_result(result=dict(total=total, confirmed=confirmed, unconfirmed=unconfirmed, unmatured=unmatured))
 
 
-@bpv1.route('/transactions/publisherinout/<int:page>/<int:num>/', methods=['POST'])
+@bpv1.route('/transactions/publisher/account/<int:page>/<int:num>/', methods=['POST'])
 @appkey_check
 def publisher_inout(page, num):
     """发布者收支 (分为 资源收入/广告支出)"""
     appkey = g.appkey
     author = request.json.get('author')
     # with_entities的field可以使用lable指定别名
-    records = Content.query. \
-                with_entities(Content.claim_id, Content.author,Content.title,
-                              Consume.txid, Consume.customer,Consume.price, Consume.create_timed). \
-                join(Consume, Content.claim_id == Consume.claim_id). \
-                filter(Content.author==author).paginate(page,num,error_out=False)
+    records = Content.query.with_entities(Content.claim_id, Content.author, Content.title, Consume.txid,
+                                          Consume.customer, Consume.price, Consume.create_timed).join(Consume,
+                                                                                                      Content.claim_id == Consume.claim_id).filter(
+        Content.author == author).paginate(page, num, error_out=False)
     total = records.total
     pages = records.pages
     records = consumeinouts_schema.dump(records.items).data
@@ -242,49 +241,75 @@ def publisher_inout(page, num):
     return return_result(result=dict(total=total, pages=pages, records=records))
 
 
-@bpv1.route('/transactions/customerinout/<int:page>/<int:num>/', methods=['POST'])
+@bpv1.route('/transactions/customer/account/<int:page>/<int:num>/', methods=['POST'])
 @appkey_check
 def customer_inout(page, num):
     """消费者收支 (分为 消费支出/广告收入)"""
     appkey = g.appkey
     customer = request.json.get('customer')
-    records = Content.query. \
-                with_entities(Content.claim_id, Content.author,Content.title,
-                              Consume.txid, Consume.customer,Consume.price, Consume.create_timed).\
-                join(Consume, Content.claim_id == Consume.claim_id).\
-                filter(Consume.customer==customer).paginate(page, num, error_out=False)
+    records = Content.query.with_entities(Content.claim_id, Content.author, Content.title, Consume.txid,
+                                          Consume.customer, Consume.price, Consume.create_timed).join(Consume,
+                                                                                                      Content.claim_id == Consume.claim_id).filter(
+        Consume.customer == customer).paginate(page, num, error_out=False)
     total = records.total
     pages = records.pages
     records = consumeinouts_schema.dump(records.items).data
     return return_result(result=dict(total=total, pages=pages, records=records))
 
-@bpv1.route('/transactions/publish/count/',methods=['POST'])
+
+@bpv1.route('/transactions/publish/count/', methods=['POST'])
 @appkey_check
 def publish_count():
     """发布资源数量"""
-    author=request.json.get('author')
-    count=Content.query.filter_by(author=author).count()
+    author = request.json.get('author')
+    count = Content.query.filter_by(author=author).count()
     return return_result(result=dict(count=count))
 
-@bpv1.route('/transactions/totalamount/',methods=['POST'])
+
+@bpv1.route('/transactions/publish/inout/', methods=['POST'])
 @appkey_check
-def total_amount():
-    """
+def publisher_income():
+    """ 发布者 收入总额和资源数量
     计算总收支分为2个部分:
     1. 发布者收支
     2. 消费者收支
     :return:
     """
-    username=request.json.get('username')
-    publish_amount=Content.query.with_entities(db.func.sum(Content.price)). \
-                join(Consume,Content.claim_id==Consume.claim_id). \
-                filter(Content.author==username).first()
+    username = request.json.get('username')
+    publisher_income = Consume.query.with_entities(
+                    db.func.sum(Consume.price).label('sum'),db.func.count(Consume.price).label('count')). \
+                    join(Content,Content.claim_id == Consume.claim_id). \
+                    filter(Content.author == username,Consume.price>0).first()
+    publisher_expenditure=Consume.query.with_entities(
+                    db.func.sum(Consume.price).label('sum'),db.func.count(Consume.price).label('count')). \
+                    join(Content,Content.claim_id==Consume.claim_id). \
+                    filter(Content.author==username,Consume.price<0).first()
 
-    consutomer_amount=Content.query.with_entities(db.func.sum(Content.price)). \
-                join(Consume,Content.claim_id==Consume.claim_id). \
-                filter(Consume.customer==username).first()
+    customer_income = Consume.query.with_entities(
+                    db.func.sum(Consume.price).label('sum'),db.func.count(Consume.price).label('count')). \
+                    filter(Consume.customer == username,Consume.price<0).first()
+    customer_expenditure=Consume.query.with_entities(
+                    db.func.sum(Consume.price).label('sum'),db.func.count(Consume.price).label('count')). \
+                    filter(Consume.customer==username,Consume.price>0).first()
 
-    return return_result(result=dict(publish=publish_amount[0],consume=consutomer_amount[0]))
+
+    return return_result(result=dict(publisher_income=publisher_income, publisher_expenditure=publisher_expenditure,
+                                     customer_income=customer_income,customer_expenditure=customer_expenditure))
+
+
+# @bpv1.route('/transactions/publish/expenditure/', methods=['POST'])
+# @appkey_check
+# def publisher_expenditure():
+
+# @bpv1.route('/transactions/consume/income/', methods=['POST'])
+# @appkey_check
+# def customer_income():
+#
+#
+# @bpv1.route('/transactions/consume/expenditure/', methods=['POST'])
+# @appkey_check
+# def customer_expenditure():
+
 
 
 def save_content(**kwargs):

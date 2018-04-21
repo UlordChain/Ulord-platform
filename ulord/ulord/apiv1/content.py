@@ -27,10 +27,10 @@ def content_list(page, num):
     return return_result(result=dict(total=total, pages=pages, data=result))
 
 
-@bpv1.route("/content/bought/<int:page>/<int:num>/", methods=['POST'])
+@bpv1.route("/content/consume/list/<int:page>/<int:num>/", methods=['POST'])
 @appkey_check
-def bought(page, num):
-    """已购买"""
+def consumed(page, num):
+    """已消费"""
     appkey = g.appkey
     customer = request.json.get('customer')
 
@@ -49,7 +49,7 @@ def bought(page, num):
             ads.append(r)
     return return_result(result=dict(total=total,pages=pages,consumes=consumes,ads=ads))
 
-@bpv1.route("/content/published/<int:page>/<int:num>/", methods=['POST'])
+@bpv1.route("/content/publish/list/<int:page>/<int:num>/", methods=['POST'])
 @appkey_check
 def published (page, num):
     """已发布"""

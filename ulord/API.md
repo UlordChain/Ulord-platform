@@ -575,7 +575,7 @@
 }
 ```
 
-##### 7. 已购买列表  `POST`    `/v1/content/bought/<page>/<num>/`
+##### 7. 已消费列表  `POST`    `/v1/content/consume/list/<page>/<num>/`
 ```
 # 请求参数:
 {
@@ -633,7 +633,7 @@
 }
 ```
 
-##### 8. 已发布列表  `POST`    `/v1/content/published/<page>/<num>/`
+##### 8. 已发布列表  `POST`    `/v1/content/publish/list/<page>/<num>/`
 ```
 # 请求参数:
 {
@@ -672,7 +672,7 @@
 }
 ```
 
-##### 9. 发布资源者收支记录  `POST`    `/v1/transactions/publisherinout/<page>/<num>/`
+##### 9. 发布者收支记录  `POST`    `/v1/transactions/publisher/account/<page>/<num>/`
 ```
 # 请求参数:
 {
@@ -713,7 +713,7 @@
 ```
 
 
-##### 10. 发布资源者收支记录  `POST`    `/v1/transactions/customerinout/<page>/<num>/`
+##### 10. 消费者收支记录  `POST`    `/v1/transactions/customer/account/<page>/<num>/`
 ```
 # 请求参数:
 {
@@ -764,6 +764,40 @@
     "reason": "success",
     "result": {
         "count": 0
+    }
+}
+```
+
+##### 12. 账单统计信息  `POST`    `/v1/transactions/publish/inout/`
+```
+# 请求参数:
+{
+    'username':登录用户
+}
+
+# 返回值:
+
+成功
+{
+    "errcode": 0,
+    "reason": "success",
+    "result": {
+        "customer_expenditure": {  # 消费支出
+            "count": 2,  # 记录数量
+            "sum": 1.17755  # 总支出
+        },
+        "customer_income": {  # 消费收入
+            "count": 0,
+            "sum": null
+        },
+        "publisher_expenditure": {  # 发布支出
+            "count": 0,
+            "sum": null
+        },
+        "publisher_income": {  # 发布收入
+            "count": 0,
+            "sum": null
+        }
     }
 }
 ```
