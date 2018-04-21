@@ -376,7 +376,76 @@
 
 #### 说明: 将appkey将如到请求头headers中.如: `appkey:123412`
 ​
-##### 1. 发布资源  `POST`    `/v1/transactions/publish/`
+### 交易相关
+
+##### 1. 创建钱包  `POST`    `/v1/transactions/createwallet/`
+```
+# 请求参数:
+
+{
+    "username": 钱包用户名,
+    "pay_passwrod":支付密码
+}
+
+# 返回值:
+
+成功
+{
+    "errcode": 0,
+    "reason": "success",
+    "result": {
+            "id": "justin",
+        },
+}
+```
+
+##### 2. 转账  `POST`    `/v1/transactions/paytouser/`
+```
+# 请求参数:
+{
+    'is_developer':bool,  # 是否是开发者帐号转账
+    # 如果is_developer为True, 下面两个参数不需要
+    'send_user':转账的支付用户,
+    'pay_password':转账支付密码,
+    'recv_user': 转账的接收用户,
+    'amount':金额,
+}
+
+# 返回值:
+
+成功
+{
+    "errcode": 0,
+    "reason": "success",
+}
+```
+
+
+##### 3. 查询余额  `POST`    `/v1/transactions/balance/`
+```
+# 请求参数:
+
+{
+        'username':消费者用户名,
+        'pay_password':支付密码(在创建用户时指定),
+}
+
+# 返回值:
+
+成功
+{
+    "errcode": 0,
+    "reason": "success",
+    "result":{
+        "total":总余额,
+        "confirmed":已确认余额,
+        "unconfirmed":未确认余额,
+        "unmatured":未成熟的余额(挖矿所得,100个块才成熟),
+    }
+}
+```
+
+##### 4. 发布资源  `POST`    `/v1/transactions/publish/`
 ```
 # 请求参数:
 
@@ -404,7 +473,7 @@
 }
 ```
 
-##### 2. 检查是否付费  `POST`    `/v1/transactions/check/`
+##### 5. 检查是否付费  `POST`    `/v1/transactions/check/`
 ```
 # 请求参数:
 
@@ -437,7 +506,7 @@
 }
 ```
 
-##### 3. 消费  `POST`    `/v1/transactions/consume/`
+##### 6. 消费资源  `POST`    `/v1/transactions/consume/`
 ```
 # 请求参数:
 
@@ -460,13 +529,11 @@
 }
 ```
 
-##### 3. 查询余额  `POST`    `/v1/transactions/balance/`
+##### 7. 发布者账单列表  `POST`    `/v1/transactions/publisher/account/<page>/<num>/`
 ```
 # 请求参数:
-
 {
-        'username':消费者用户名,
-        'pay_password':支付密码(在创建用户时指定),
+    'author':发布者
 }
 
 # 返回值:
@@ -475,23 +542,127 @@
 {
     "errcode": 0,
     "reason": "success",
-    "result":{
-        "total":总余额,
-        "confirmed":已确认余额,
-        "unconfirmed":未确认余额,
-        "unmatured":未成熟的余额(挖矿所得,100个块才成熟),
-    }
-}
-
-失败
-{
-    "errcode": 20203,
-    "reason": "查询余额失败",
+    "result": {
+        "pages": 1,
+        "records": [
+            {
+                "author": "ads",
+                "create_timed": "2018-04-20T14:11:16.856288+00:00",
+                "customer": "shu",
+                "id": "bc12825bd069cf3f82158aadef60e87cbda76a6f",
+                "price": -0.02,
+                "title": "the first ads",
+                "txid": "4ba9370faeca247499d32815ea5be6179293c6306b8f88848691ff0e9c0cb513"
+            },
+            {
+                "author": "ads",
+                "create_timed": "2018-04-20T14:11:16.856288+00:00",
+                "customer": "tttttttttttt",
+                "id": "bc12825bd069cf3f82158aadef60e87cbda76a6f",
+                "price": -0.02,
+                "title": "the first ads",
+                "txid": "4ba9370faeca247499d32815ea5be6179293c6306b8f88848691ff0e9c0cb515"
+            }
+        ],
+        "total": 2
     }
 }
 ```
 
-##### 4. 资源查询  `GET`    `/v1/content/list/<page>/<num>`
+
+##### 8. 消费者账单列表  `POST`    `/v1/transactions/customer/account/<page>/<num>/`
+```
+# 请求参数:
+{
+    'customer':消费者
+}
+
+# 返回值:
+
+成功
+{
+    "errcode": 0,
+    "reason": "success",
+    "result": {
+        "pages": 1,
+        "records": [
+            {
+                "claim_id": "ca067e452618915fab2d33cdb6cecca83ae95659",
+                "create_timed": "2018-04-20T14:11:16.856288+00:00",
+                "price": 0.02,
+                "title": "df",
+                "txid": "4ba9370faeca247499d32815ea5be6179293c6306b8f88848691ff0e9c0cb514"
+            },
+            {
+                "claim_id": "bc12825bd069cf3f82158aadef60e87cbda76a6f",
+                "create_timed": "2018-04-20T14:11:16.856288+00:00",
+                "price": -0.02,
+                "title": "the first ads",
+                "txid": "4ba9370faeca247499d32815ea5be6179293c6306b8f88848691ff0e9c0cb515"
+            }
+        ],
+        "total": 2
+    }
+}
+```
+
+##### 9. 收支总额  `POST`    `/v1/transactions/publish/inout/`
+```
+# 请求参数:
+{
+    'username':登录用户
+}
+
+# 返回值:
+
+成功
+{
+    "errcode": 0,
+    "reason": "success",
+    "result": {
+        "customer_expenditure": {  # 消费支出
+            "count": 2,  # 记录数量
+            "sum": 1.17755  # 总支出
+        },
+        "customer_income": {  # 消费收入
+            "count": 0,
+            "sum": null
+        },
+        "publisher_expenditure": {  # 发布支出
+            "count": 0,
+            "sum": null
+        },
+        "publisher_income": {  # 发布收入
+            "count": 0,
+            "sum": null
+        }
+    }
+}
+```
+
+##### 10. 资源总数  `POST`    `/v1/transactions/publish/count/`
+```
+# 请求参数:
+{
+    'author':发布者
+}
+
+# 返回值:
+
+成功
+{
+    "errcode": 0,
+    "reason": "success",
+    "result": {
+        "count": 0
+    }
+}
+```
+
+
+### 资源相关
+
+##### 1. 资源列表查询  `GET`    `/v1/content/list/<page>/<num>`
 ```
 # 请求参数:
     page: 页码
@@ -533,49 +704,7 @@
 }
 ```
 
-##### 5. 创建钱包  `POST`    `/v1/transactions/createwallet/`
-```
-# 请求参数:
-
-{
-    "username": 钱包用户名,
-    "pay_passwrod":支付密码
-}
-
-# 返回值:
-
-成功
-{
-    "errcode": 0,
-    "reason": "success",
-    "result": {
-            "id": "justin",
-        },
-}
-```
-
-##### 6. 转账  `POST`    `/v1/transactions/paytouser/`
-```
-# 请求参数:
-{
-    'is_developer':bool,  # 是否是开发者帐号转账
-    # 如果is_developer为True, 下面两个参数不需要
-    'send_user':转账的支付用户,
-    'pay_password':转账支付密码,
-    'recv_user': 转账的接收用户,
-    'amount':金额,
-}
-
-# 返回值:
-
-成功
-{
-    "errcode": 0,
-    "reason": "success",
-}
-```
-
-##### 7. 已消费列表  `POST`    `/v1/content/consume/list/<page>/<num>/`
+##### 2. 单用户已消费资源列表  `POST`    `/v1/content/consume/list/<page>/<num>/`
 ```
 # 请求参数:
 {
@@ -633,7 +762,7 @@
 }
 ```
 
-##### 8. 已发布列表  `POST`    `/v1/content/publish/list/<page>/<num>/`
+##### 3. 单用户已发布资源列表  `POST`    `/v1/content/publish/list/<page>/<num>/`
 ```
 # 请求参数:
 {
@@ -672,135 +801,7 @@
 }
 ```
 
-##### 9. 发布者收支记录  `POST`    `/v1/transactions/publisher/account/<page>/<num>/`
-```
-# 请求参数:
-{
-    'author':发布者
-}
 
-# 返回值:
-
-成功
-{
-    "errcode": 0,
-    "reason": "success",
-    "result": {
-        "pages": 1,
-        "records": [
-            {
-                "author": "ads",
-                "create_timed": "2018-04-20T14:11:16.856288+00:00",
-                "customer": "shu",
-                "id": "bc12825bd069cf3f82158aadef60e87cbda76a6f",
-                "price": -0.02,
-                "title": "the first ads",
-                "txid": "4ba9370faeca247499d32815ea5be6179293c6306b8f88848691ff0e9c0cb513"
-            },
-            {
-                "author": "ads",
-                "create_timed": "2018-04-20T14:11:16.856288+00:00",
-                "customer": "tttttttttttt",
-                "id": "bc12825bd069cf3f82158aadef60e87cbda76a6f",
-                "price": -0.02,
-                "title": "the first ads",
-                "txid": "4ba9370faeca247499d32815ea5be6179293c6306b8f88848691ff0e9c0cb515"
-            }
-        ],
-        "total": 2
-    }
-}
-```
-
-
-##### 10. 消费者收支记录  `POST`    `/v1/transactions/customer/account/<page>/<num>/`
-```
-# 请求参数:
-{
-    'customer':消费者
-}
-
-# 返回值:
-
-成功
-{
-    "errcode": 0,
-    "reason": "success",
-    "result": {
-        "pages": 1,
-        "records": [
-            {
-                "claim_id": "ca067e452618915fab2d33cdb6cecca83ae95659",
-                "create_timed": "2018-04-20T14:11:16.856288+00:00",
-                "price": 0.02,
-                "title": "df",
-                "txid": "4ba9370faeca247499d32815ea5be6179293c6306b8f88848691ff0e9c0cb514"
-            },
-            {
-                "claim_id": "bc12825bd069cf3f82158aadef60e87cbda76a6f",
-                "create_timed": "2018-04-20T14:11:16.856288+00:00",
-                "price": -0.02,
-                "title": "the first ads",
-                "txid": "4ba9370faeca247499d32815ea5be6179293c6306b8f88848691ff0e9c0cb515"
-            }
-        ],
-        "total": 2
-    }
-}
-```
-
-##### 11. 发布资源数量  `POST`    `/v1/transactions/publish/count/`
-```
-# 请求参数:
-{
-    'author':发布者
-}
-
-# 返回值:
-
-成功
-{
-    "errcode": 0,
-    "reason": "success",
-    "result": {
-        "count": 0
-    }
-}
-```
-
-##### 12. 账单统计信息  `POST`    `/v1/transactions/publish/inout/`
-```
-# 请求参数:
-{
-    'username':登录用户
-}
-
-# 返回值:
-
-成功
-{
-    "errcode": 0,
-    "reason": "success",
-    "result": {
-        "customer_expenditure": {  # 消费支出
-            "count": 2,  # 记录数量
-            "sum": 1.17755  # 总支出
-        },
-        "customer_income": {  # 消费收入
-            "count": 0,
-            "sum": null
-        },
-        "publisher_expenditure": {  # 发布支出
-            "count": 0,
-            "sum": null
-        },
-        "publisher_income": {  # 发布收入
-            "count": 0,
-            "sum": null
-        }
-    }
-}
-```
 
 ### 附录A: 错误码对照表
 ```
@@ -809,11 +810,11 @@
     0:{'errcode':0,'reason':'success'},  # 可以重写reason与result内容
 
     # HTTP协议错误码
-    400:{'errcode':400,'reason':'错误的请求.'},
-    403:{'errcode':403,'reason':'您没有权限进行此操作.'},
-    404:{'errcode':404,'reason':'Api不存在.'},
-    405:{'errcode':405,'reason':'http请求方法不允许.'},
-    500:{'errcode':500,'reason':'Api出错了, 请检查url以及参数.'},
+    400:{'errcode':400,'reason':'Bad Request.'},
+    403:{'errcode':403,'reason':'Forbidden.'},
+    404:{'errcode':404,'reason':'Not found.'},
+    405:{'errcode':405,'reason':'Method Not Allowed.'},
+    500:{'errcode':500,'reason':'Internal Server Error.'},
 
     # 系统级错误码
     10001:{'errcode':10001,'reason':'错误的请求KEY.'},
@@ -852,6 +853,8 @@
     20202:{'errcode':20202,'reason':'资源消费失败.'},
     20203:{'errcode':20203,'reason':'查询余额失败.'},
     20204:{'errcode':20204,'reason':'创建钱包失败.'},
+    20205:{'errcode':20205,'reason':'用户注册失败,因为没有成功创建ulord钱包.'},
+    20206:{'errcode':20206,'reason':'支付失败.'},
 }
 ```
 ### 附录B: 数据库ER图
