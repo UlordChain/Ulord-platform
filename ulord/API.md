@@ -774,7 +774,7 @@
 }
 ```
 
-##### 4. 浏览量增加  `POST`    `/v1/content/publish/list/<page>/<num>/`
+##### 4. 浏览量增加  `POST`    `/v1/content/view/`
 ```
 # 请求参数:
 {
