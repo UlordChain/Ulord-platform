@@ -2,6 +2,7 @@
 *.swp
 build/
 dist/
+*egg-info/
 .devlocaltmp/
 .tox/
 .coverage

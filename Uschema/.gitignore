@@ -1,0 +1,9 @@
+
+*.pyc
+*.txt
+unetschema.egg-info/PKG-INFO
+*.xml
+*.iml
+build/lib/unetschema/
+*.egg
+build/
