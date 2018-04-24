@@ -32,24 +32,24 @@ class ReturnError(Exception):
 
 class ParamsError(ReturnError):
     error_desc = {
-        '10000': 'command not found',
-        '10001': 'password error',
-        '10002': 'password cannot be empty',
-        '10003': 'user not exists',
-        '10004': 'user already exists',
-        '10005': 'invalid claim_id',
-        '10006': "claim not find",
+        '51000': 'command not found',
+        '51001': 'password error',
+        '51002': 'password cannot be empty',
+        '51003': 'user not exists',
+        '51004': 'user already exists',
+        '51005': 'invalid claim_id',
+        '51006': "claim not find",
 
     }
 
 
 class ServerError(ReturnError):
     error_desc = {
-        '20000': "Unknown Error",  # 优化
-        '20001': 'payment Failed',
-        '20002': "can't find fee in the claim.",  #  优化
-        '20003': 'permission denied',
-        '20004': 'Not enough funds',
+        '50000': "Unknown Error",
+        '52001': 'payment Failed',
+        '52002': "can't find fee in the claim.",  #  优化
+        '52003': 'permission denied',
+        '52004': 'Not enough funds',
 
     }
 
@@ -61,6 +61,6 @@ class EncryptionError(ReturnError):
 
 class DecryptionError(ReturnError):
     error_desc = {
-        '40000': 'Decode claim value error',
+        '53000': 'Decode claim value error',
     }
 

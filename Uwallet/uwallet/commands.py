@@ -117,7 +117,7 @@ def command(s):
 
             try:
                 if cmd.requires_command and (not l_args or l_args.pop(0) != 'is_command'):
-                    raise ServerError('20003', name)
+                    raise ServerError('52003', name)
                 elif 'is_command' in l_args:
                     l_args.remove('is_command')
 
@@ -164,11 +164,11 @@ class Commands(object):
         self.user = args.pop(0)
 
         if not password:
-            raise ParamsError('10002')
+            raise ParamsError('51002')
         try:
             password = str(password)
         except:
-            raise ParamsError('10001', "the password can't conversion into str: %s" % password)
+            raise ParamsError('51001', "the password can't conversion into str: %s" % password)
 
 
         self.load_wallet(self.user)
@@ -176,7 +176,7 @@ class Commands(object):
         try:
             seed = self.wallets[self.user].check_password(password)
         except InvalidPassword:
-            raise ParamsError('10001', password)
+            raise ParamsError('51001', password)
 
         self._password = password
         args.insert(0, self)
@@ -189,7 +189,7 @@ class Commands(object):
         wallet = Wallet(storage)
         # automatically generate wallet for ulord
         if not storage.file_exists:
-            raise ParamsError('10003', user)
+            raise ParamsError('51003', user)
 
         wallet.start_threads(self.network)
         if wallet:
@@ -1158,7 +1158,7 @@ class Commands(object):
         for claim in channel_claims:
             if claim['name'] == name:
                 return claim
-        raise ParamsError('10006', name)
+        raise ParamsError('51006', name)
 
     @command('uc')
     def getdefaultcertificate(self):
@@ -1893,20 +1893,19 @@ class Commands(object):
 
         # commission : The amount paid to the platform.  --JustinQP
         commission = amount - BINDING_FEE
-        outputs = [(TYPE_ADDRESS | TYPE_CLAIM, ((name, val), claim_addr), BINDING_FEE),
-                            +                   (TYPE_ADDRESS, PLATFORM_ADDRESS, commission)]
+        outputs = [(TYPE_ADDRESS | TYPE_CLAIM, ((name, val), claim_addr), BINDING_FEE), (TYPE_ADDRESS, PLATFORM_ADDRESS, commission)]
         # outputs = [(TYPE_ADDRESS | TYPE_CLAIM, ((name, val), claim_addr), amount)]
         coins = wallet.get_spendable_coins()
         try:
             tx = wallet.make_unsigned_transaction(coins, outputs,
                                                   self.config, tx_fee, change_addr)
         except NotEnoughFunds:
-            raise ServerError('20004')
+            raise ServerError('52004')
         wallet.sign_transaction(tx, self._password)
         if broadcast:
             success, out = wallet.send_tx(tx)
             if not success:
-                raise ServerError('20000', out)
+                raise ServerError('50000', out)
 
         nout = None
         for i, output in enumerate(tx._outputs):
@@ -2651,15 +2650,15 @@ class Commands(object):
     def create(self, user, password):
         """Create a new wallet"""
         if not password:
-            raise ParamsError('10002')
+            raise ParamsError('51002')
         try:
             password = str(password)
         except:
-            raise ParamsError('10001', "the password can't conversion into str: %s" % password)
+            raise ParamsError('51001', "the password can't conversion into str: %s" % password)
 
         storage = WalletStorage(user)
         if storage.file_exists:
-            raise ParamsError('10004', 'user')
+            raise ParamsError('51004', 'user')
         wallet = Wallet(storage)
         seed = wallet.make_seed()
         wallet.add_seed(seed, password)
@@ -2837,7 +2836,7 @@ class Commands(object):
         if broadcast:
             success, out = wallet.send_tx(tx)
             if not success:
-                return ServerError('20000', out)
+                return ServerError('50000', out)
 
         nout = None
         amount = 0
@@ -2925,23 +2924,23 @@ class Commands(object):
                 'txid': res
             }
         else:
-            raise ServerError('20001', res)
+            raise ServerError('52001', res)
 
     @command('u')
     def consume(self, claim_id):
         try:
             validate_claim_id(claim_id)
         except Exception as err:
-            raise ParamsError('10005', claim_id)
+            raise ParamsError('51005', claim_id)
 
         claim = self.getclaimbyid(claim_id)
         if not claim:
-            raise ParamsError('10006', claim_id)
+            raise ParamsError('51006', claim_id)
 
         try:
             claim_value = smart_decode(claim['value'])
         except DecodeError as err:
-            return DecryptionError('40000', claim['value'])
+            return DecryptionError('54000', claim['value'])
         if claim_value.has_fee:
             address = claim_value.source_fee.address
             amount = claim_value.source_fee.amount
@@ -2949,7 +2948,7 @@ class Commands(object):
             res = self.paytoandsend(address, amount)
             return res
         else:
-            raise ServerError('20002')
+            raise ServerError('52002')
 
 
 # ----------------------------------------------------------------------------------------------------------------------
