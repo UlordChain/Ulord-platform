@@ -1893,8 +1893,7 @@ class Commands(object):
 
         # commission : The amount paid to the platform.  --JustinQP
         commission = amount - BINDING_FEE
-        outputs = [(TYPE_ADDRESS | TYPE_CLAIM, ((name, val), claim_addr), BINDING_FEE),
-                            +                   (TYPE_ADDRESS, PLATFORM_ADDRESS, commission)]
+        outputs = [(TYPE_ADDRESS | TYPE_CLAIM, ((name, val), claim_addr), BINDING_FEE), (TYPE_ADDRESS, PLATFORM_ADDRESS, commission)]
         # outputs = [(TYPE_ADDRESS | TYPE_CLAIM, ((name, val), claim_addr), amount)]
         coins = wallet.get_spendable_coins()
         try:

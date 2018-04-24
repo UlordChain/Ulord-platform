@@ -7,4 +7,5 @@ slowaes==0.1a1
 appdirs==1.4.3
 protobuf==3.2.0
 jsonschema==2.6.0
+pymongo==3.6.1
 git+https://github.com/UlordChain/Uschema.git@#egg=unetschema

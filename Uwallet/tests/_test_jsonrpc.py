@@ -72,15 +72,15 @@ def pay(receive_user, amount):
 
 if __name__ == '__main__':
     t = time.time()
-    user = 'test_justin11'
-    password = '123456'
+    user = 'test_shuxudong'
+    password = 'pbkdf2:sha256:50000$wehBmcjx$577a123e5b69de72f15e907b97cdecb7c59bd44dc842f0249c2d989f5e3cb95e'
     claim_id = 'b6d4bdf2df77c1d8f9cd7741853f30a00ecca637'
 
     # print create(user, password)  # 0.8
-    print pay(user, amount=10)
+    # print pay(user, amount=10)
     # print getbalance(user, password)
     # print publish(user, password) # 1.88
-    # print consume(claim_id)  # 1.4
+    print consume(claim_id)  # 1.4
     print '** time:',  time.time() - t
 
     # print server.commands()
