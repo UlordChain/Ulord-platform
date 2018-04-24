@@ -5,7 +5,7 @@
 from . import bpv1, appkey_check
 from flask import request, g
 from ulord.models import Content, Consume
-from ulord.schema import contents_schema, content_consumes_schema
+from ulord.schema import contents_schema, content_consumes_schema,content_publishs_schema
 from ulord import return_result
 
 
@@ -20,7 +20,8 @@ def content_list(page, num):
     ref: https://github.com/pallets/flask/issues/835
     """
     appkey = g.appkey
-    contents = Content.query.filter(Content.appkey == appkey, Content.enabled == True).paginate(page, num,error_out=False)
+    contents = Content.query.filter(Content.appkey == appkey, Content.enabled == True).order_by(
+        Content.create_timed.desc()).paginate(page, num, error_out=False)
     total = contents.total
     pages = contents.pages
     result = contents_schema.dump(contents.items).data
@@ -30,34 +31,54 @@ def content_list(page, num):
 @bpv1.route("/content/consume/list/<int:page>/<int:num>/", methods=['POST'])
 @appkey_check
 def consumed(page, num):
-    """已消费"""
+    """用户已消费的资源记录"""
     appkey = g.appkey
     customer = request.json.get('customer')
+    category = request.json.get('category')  # 0: 消费支出 1: 广告收入 其他:all
+    query = Content.query.with_entities(Content.id, Content.author, Content.title, Consume.txid, Content.enabled,
+                                        Content.claim_id, Consume.price, Consume.create_timed). \
+                        join(Consume,Content.claim_id==Consume.claim_id). \
+                        filter(Content.appkey == appkey, Consume.customer == customer)
+    if category == 0:
+        query = query.filter(Consume.price > 0)
+    if category == 1:
+        query = query.filter(Consume.price < 0)
 
-    consumes = Consume.query.filter_by(appkey=appkey,customer=customer).paginate(page, num,error_out=False)
-    total = consumes.total
-    pages = consumes.pages
-    consumes = content_consumes_schema.dump(consumes.items).data
-    contents=[consume['content'] for consume in consumes ]
-    result=contents_schema.dump(contents).data
-    consumes=[]
-    ads=[]
-    for r in result:
-        if r.get('price')>=0:
-            consumes.append(r)
-        else:
-            ads.append(r)
-    return return_result(result=dict(total=total,pages=pages,consumes=consumes,ads=ads))
+    records = query.order_by(Consume.create_timed.desc()).paginate(page, num, error_out=False)
+    total = records.total
+    pages = records.pages
+    records = content_consumes_schema.dump(records.items).data
+    return return_result(result=dict(total=total, pages=pages, records=records))
+
 
 @bpv1.route("/content/publish/list/<int:page>/<int:num>/", methods=['POST'])
 @appkey_check
-def published (page, num):
-    """已发布"""
+def published(page, num):
+    """作者已发布资源被消费记录"""
     appkey = g.appkey
     author = request.json.get('author')
+    category = request.json.get('category')  # 0: 资源收入 1: 广告支出 其他:all
 
-    contents = Content.query.filter_by(appkey=appkey,author=author).paginate(page, num,error_out=False)
-    total = contents.total
-    pages = contents.pages
-    result = contents_schema.dump(contents.items).data
-    return return_result(result=dict(total=total,pages=pages,data=result))
+    query = Content.query.with_entities(Content.id, Content.title, Consume.txid, Content.enabled,
+                                        Content.claim_id, Consume.customer,Consume.price, Consume.create_timed). \
+                        join(Consume,Content.claim_id==Consume.claim_id). \
+                        filter(Content.appkey == appkey, Content.author==author)
+    if category == 0:
+        query = query.filter(Consume.price > 0)
+    if category == 1:
+        query = query.filter(Consume.price < 0)
+
+    records = query.order_by(Consume.create_timed.desc()).paginate(page, num, error_out=False)
+    total = records.total
+    pages = records.pages
+    result = content_publishs_schema.dump(records.items).data
+    return return_result(result=dict(total=total, pages=pages, data=result))
+
+
+@bpv1.route("/content/view/", methods=['POST'])
+@appkey_check
+def view():
+    """浏览量+1"""
+    _id = request.json.get('id')
+    num = Content.query.filter_by(id=_id).update({Content.views: Content.views + 1})
+    return return_result(result=dict(num=num))

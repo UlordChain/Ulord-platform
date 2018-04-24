@@ -167,31 +167,30 @@ def consume():
     if not content:
         return return_result(20007)
     price = content.price
-    if content.author != customer:
-        if content.price != 0:  # 非免费资源(收费资源/广告)
-            consume = Consume.query.filter_by(claim_id=claim_id, customer=customer, appkey=appkey).first()
-            if not consume:
-                server = get_jsonrpc_server()
-                try:
-                    if price >= 0:  # 普通消费
-                        result = server.consume(wallet_username, claim_id, customer_pay_password)
-                    else:  # 广告
-                        send_wallet_username = get_wallet_name(content.author)
-                        recv_wallet_username = get_wallet_name(customer)
-                        abs_price = abs(float(price))  # decimal 类型 会是这样 0.030000, 要去掉后面的0
-                        print(send_wallet_username, author_pay_password, recv_wallet_username, abs_price)
-                        result = server.pay(send_wallet_username, author_pay_password, recv_wallet_username, abs_price)
-                    if result.get('success') is not True:
-                        print(result)
-                        return return_result(20202, result=result)
-                except Exception as e:
-                    print(e)
-                    return return_result(20202, result=dict(wallet_reason=str(e)))
+    if content.author != customer and content.price != 0:  # 非免费资源(收费资源/广告)
+        consume = Consume.query.filter_by(claim_id=claim_id, customer=customer, appkey=appkey).first()
+        if not consume:
+            server = get_jsonrpc_server()
+            try:
+                if price >= 0:  # 普通消费
+                    result = server.consume(wallet_username, claim_id, customer_pay_password)
+                else:  # 广告
+                    send_wallet_username = get_wallet_name(content.author)
+                    recv_wallet_username = get_wallet_name(customer)
+                    abs_price = abs(float(price))  # decimal 类型 会是这样 0.030000, 要去掉后面的0
+                    print(send_wallet_username, author_pay_password, recv_wallet_username, abs_price)
+                    result = server.pay(send_wallet_username, author_pay_password, recv_wallet_username, abs_price)
+                if result.get('success') is not True:
+                    print(result)
+                    return return_result(20202, result=result)
+            except Exception as e:
+                print(e)
+                return return_result(20202, result=dict(wallet_reason=str(e)))
 
-                txid = result.get('txid')
-                print(result)
-                c = Consume(txid=txid, claim_id=claim_id, customer=customer, appkey=appkey, price=price)
-                db.session.add(c)
+            txid = result.get('txid')
+            print(result)
+            c = Consume(txid=txid, claim_id=claim_id, customer=customer, appkey=appkey, price=price)
+            db.session.add(c)
 
     return return_result(result=dict(ipfs_hash=content.ipfs_hash))
 
@@ -223,17 +222,21 @@ def balance():
     return return_result(result=dict(total=total, confirmed=confirmed, unconfirmed=unconfirmed, unmatured=unmatured))
 
 
-@bpv1.route('/transactions/publisher/account/<int:page>/<int:num>/', methods=['POST'])
+@bpv1.route('/transactions/account/in/<int:page>/<int:num>/', methods=['POST'])
 @appkey_check
-def publisher_inout(page, num):
-    """发布者收支 (分为 资源收入/广告支出)"""
+def account_in(page, num):
+    """收入 (分为 发布者资源收入/消费者广告收入)"""
     appkey = g.appkey
-    author = request.json.get('author')
+    username = request.json.get('username')
     # with_entities的field可以使用lable指定别名
     records = Content.query.with_entities(Content.claim_id, Content.author, Content.title, Consume.txid,
-                                          Consume.customer, Consume.price, Consume.create_timed).join(Consume,
-                                                                                                      Content.claim_id == Consume.claim_id).filter(
-        Content.author == author).paginate(page, num, error_out=False)
+                    Consume.customer, db.func.abs(Consume.price).label('price'), Consume.create_timed). \
+                    join(Consume, Content.claim_id == Consume.claim_id). \
+                    filter(Content.appkey==appkey). \
+                    filter(db.and_(Content.author == username,Consume.price>0)|
+                           db.and_(Consume.customer==username,Consume.price<0)). \
+                    order_by(Consume.create_timed.desc()). \
+                    paginate(page, num, error_out=False)
     total = records.total
     pages = records.pages
     records = consumeinouts_schema.dump(records.items).data
@@ -241,16 +244,21 @@ def publisher_inout(page, num):
     return return_result(result=dict(total=total, pages=pages, records=records))
 
 
-@bpv1.route('/transactions/customer/account/<int:page>/<int:num>/', methods=['POST'])
+@bpv1.route('/transactions/account/out/<int:page>/<int:num>/', methods=['POST'])
 @appkey_check
-def customer_inout(page, num):
-    """消费者收支 (分为 消费支出/广告收入)"""
+def account_out(page, num):
+    """支出 (分为 消费者消费支出/发布者广告支出)"""
     appkey = g.appkey
-    customer = request.json.get('customer')
+    username = request.json.get('username')
+    # with_entities的field可以使用lable指定别名
     records = Content.query.with_entities(Content.claim_id, Content.author, Content.title, Consume.txid,
-                                          Consume.customer, Consume.price, Consume.create_timed).join(Consume,
-                                                                                                      Content.claim_id == Consume.claim_id).filter(
-        Consume.customer == customer).paginate(page, num, error_out=False)
+                    Consume.customer, db.func.abs(Consume.price).label('price'), Consume.create_timed). \
+                    join(Consume, Content.claim_id == Consume.claim_id). \
+                    filter(Content.appkey==appkey). \
+                    filter(db.and_(Content.author == username,Consume.price<0)|
+                           db.and_(Consume.customer==username,Consume.price>0)). \
+                    order_by(Consume.create_timed.desc()). \
+                    paginate(page, num, error_out=False)
     total = records.total
     pages = records.pages
     records = consumeinouts_schema.dump(records.items).data
@@ -261,54 +269,40 @@ def customer_inout(page, num):
 @appkey_check
 def publish_count():
     """发布资源数量"""
+    appkey=g.appkey
     author = request.json.get('author')
-    count = Content.query.filter_by(author=author).count()
+    count = Content.query.filter_by(appkey=appkey,author=author).count()
     return return_result(result=dict(count=count))
 
 
-@bpv1.route('/transactions/publish/inout/', methods=['POST'])
+@bpv1.route('/transactions/account/', methods=['POST'])
 @appkey_check
-def publisher_income():
-    """ 发布者 收入总额和资源数量
-    计算总收支分为2个部分:
-    1. 发布者收支
-    2. 消费者收支
-    :return:
-    """
+def account():
+    """ 用户收支总额及资源统计"""
+    appkey=g.appkey
     username = request.json.get('username')
-    publisher_income = Consume.query.with_entities(
+    # 发布者收入
+    publisher_in=Consume.query.with_entities(
                     db.func.sum(Consume.price).label('sum'),db.func.count(Consume.price).label('count')). \
                     join(Content,Content.claim_id == Consume.claim_id). \
-                    filter(Content.author == username,Consume.price>0).first()
-    publisher_expenditure=Consume.query.with_entities(
-                    db.func.sum(Consume.price).label('sum'),db.func.count(Consume.price).label('count')). \
+                    filter(Content.appkey==appkey,Content.author == username,Consume.price>0).first()
+    # 发布者支出
+    publisher_out=Consume.query.with_entities(
+                    db.func.abs(db.func.sum(Consume.price)).label('sum'),db.func.count(Consume.price).label('count')). \
                     join(Content,Content.claim_id==Consume.claim_id). \
-                    filter(Content.author==username,Consume.price<0).first()
-
-    customer_income = Consume.query.with_entities(
+                    filter(Content.appkey==appkey,Content.author==username,Consume.price<0).first()
+    # 消费者收入
+    customer_in = Consume.query.with_entities(
+                    db.func.abs(db.func.sum(Consume.price)).label('sum'),db.func.count(Consume.price).label('count')). \
+                    filter(Consume.appkey==appkey, Consume.customer == username,Consume.price<0).first()
+    # 消费这支出
+    customer_out=Consume.query.with_entities(
                     db.func.sum(Consume.price).label('sum'),db.func.count(Consume.price).label('count')). \
-                    filter(Consume.customer == username,Consume.price<0).first()
-    customer_expenditure=Consume.query.with_entities(
-                    db.func.sum(Consume.price).label('sum'),db.func.count(Consume.price).label('count')). \
-                    filter(Consume.customer==username,Consume.price>0).first()
+                    filter(Consume.appkey==appkey, Consume.customer==username,Consume.price>0).first()
 
 
-    return return_result(result=dict(publisher_income=publisher_income, publisher_expenditure=publisher_expenditure,
-                                     customer_income=customer_income,customer_expenditure=customer_expenditure))
-
-
-# @bpv1.route('/transactions/publish/expenditure/', methods=['POST'])
-# @appkey_check
-# def publisher_expenditure():
-
-# @bpv1.route('/transactions/consume/income/', methods=['POST'])
-# @appkey_check
-# def customer_income():
-#
-#
-# @bpv1.route('/transactions/consume/expenditure/', methods=['POST'])
-# @appkey_check
-# def customer_expenditure():
+    return return_result(result=dict(publisher_in=publisher_in, publisher_out=publisher_out,
+                                     customer_in=customer_in,customer_out=customer_out))
 
 
 

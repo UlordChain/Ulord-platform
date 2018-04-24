@@ -529,11 +529,11 @@
 }
 ```
 
-##### 7. 发布者账单列表  `POST`    `/v1/transactions/publisher/account/<page>/<num>/`
+##### 7. 收入账单  `POST`    `/v1/transactions/account/in/<page>/<num>/`
 ```
 # 请求参数:
 {
-    'author':发布者
+    'username':719355782  # 用户
 }
 
 # 返回值:
@@ -545,23 +545,23 @@
     "result": {
         "pages": 1,
         "records": [
-            {
-                "author": "ads",
-                "create_timed": "2018-04-20T14:11:16.856288+00:00",
-                "customer": "shu",
-                "id": "bc12825bd069cf3f82158aadef60e87cbda76a6f",
-                "price": -0.02,
-                "title": "the first ads",
-                "txid": "4ba9370faeca247499d32815ea5be6179293c6306b8f88848691ff0e9c0cb513"
+            {  # 用户作为消费这, 点击广告收入
+                "author": "yyy",
+                "claim_id": "798aedf4fab2fa77a77b56528abe6e50afce37e6",
+                "create_timed": "2018-04-21T13:37:41.983595+00:00",
+                "customer": "719355782",
+                "price": 0.6,
+                "title": "666",
+                "txid": "d162db3c4185720d287b7fabbe560546c9bce06f0812fadeb9d78c8d0fe2a2aa"
             },
-            {
-                "author": "ads",
-                "create_timed": "2018-04-20T14:11:16.856288+00:00",
-                "customer": "tttttttttttt",
-                "id": "bc12825bd069cf3f82158aadef60e87cbda76a6f",
-                "price": -0.02,
-                "title": "the first ads",
-                "txid": "4ba9370faeca247499d32815ea5be6179293c6306b8f88848691ff0e9c0cb515"
+            {  # 用户作为发布者, 发布资源收入
+                "author": "719355782",
+                "claim_id": "870c3a35a8b82f1d4f8e89b89b5c7d3b80d6bc5b",
+                "create_timed": "2018-04-21T09:47:05.902228+00:00",
+                "customer": "zyding",
+                "price": 0.525,
+                "title": "123123123123",
+                "txid": "b781f7c12aa7b7a43c22a5bea2ac56d6d15a1dbde7eeea9e2774f7e5f168df56"
             }
         ],
         "total": 2
@@ -570,11 +570,11 @@
 ```
 
 
-##### 8. 消费者账单列表  `POST`    `/v1/transactions/customer/account/<page>/<num>/`
+##### 8. 支出账单  `POST`    `/v1/transactions/account/out/<page>/<num>/`
 ```
 # 请求参数:
 {
-    'customer':消费者
+    'username':719355782  # 用户
 }
 
 # 返回值:
@@ -586,19 +586,23 @@
     "result": {
         "pages": 1,
         "records": [
-            {
-                "claim_id": "ca067e452618915fab2d33cdb6cecca83ae95659",
-                "create_timed": "2018-04-20T14:11:16.856288+00:00",
+            {  # 用户作为发布者 支出广告费
+                "author": "719355782",  # 发布者
+                "claim_id": "870c3a35a8b82f1d4f8e89b89b5c7d3b80d6bc5b",
+                "create_timed": "2018-04-21T08:39:25.883777+00:00",
+                "customer": "935827234",  # 消费者
+                "price": 0.525,  # 交易金额
+                "title": "123123123123",
+                "txid": "31af05db89decfcd561ba79fbd130aacb8f02de4b75e55f4548626c1d9732c51"
+            },
+            {  # 用户作为消费者, 支出资源消费
+                "author": "tttttttttttt",
+                "claim_id": "010d23be8ce1e23da9dad94c61618d1e0b484c77",
+                "create_timed": "2018-04-21T11:55:43.680047+00:00",
+                "customer": "719355782",
                 "price": 0.02,
-                "title": "df",
-                "txid": "4ba9370faeca247499d32815ea5be6179293c6306b8f88848691ff0e9c0cb514"
-            },
-            {
-                "claim_id": "bc12825bd069cf3f82158aadef60e87cbda76a6f",
-                "create_timed": "2018-04-20T14:11:16.856288+00:00",
-                "price": -0.02,
-                "title": "the first ads",
-                "txid": "4ba9370faeca247499d32815ea5be6179293c6306b8f88848691ff0e9c0cb515"
+                "title": "the first blog",
+                "txid": "f672a32a11c1eb82a7a1b17e93bc823132c7bc75c3ed990fd1e797c8a11fbe50"
             }
         ],
         "total": 2
@@ -606,7 +610,7 @@
 }
 ```
 
-##### 9. 收支总额  `POST`    `/v1/transactions/publish/inout/`
+##### 9. 收支总额  `POST`    `/v1/transactions/account/`
 ```
 # 请求参数:
 {
@@ -620,19 +624,19 @@
     "errcode": 0,
     "reason": "success",
     "result": {
-        "customer_expenditure": {  # 消费支出
-            "count": 2,  # 记录数量
-            "sum": 1.17755  # 总支出
-        },
-        "customer_income": {  # 消费收入
+        "customer_out": {  # 消费者支出
             "count": 0,
             "sum": null
         },
-        "publisher_expenditure": {  # 发布支出
+        "customer_in": {  # 消费者收入
             "count": 0,
             "sum": null
         },
-        "publisher_income": {  # 发布收入
+        "publisher_out": {  # 发布者支出
+            "count": 2,
+            "sum": 0.04
+        },
+        "publisher_in": {  # 发布者收入
             "count": 0,
             "sum": null
         }
@@ -708,7 +712,8 @@
 ```
 # 请求参数:
 {
-    'customer':消费者
+    'customer':消费者,
+    'category':条件查询 (0:消费支出 1:广告收入 ,不传:all)
 }
 
 # 返回值:
@@ -718,46 +723,20 @@
     "errcode": 0,
     "reason": "success",
     "result": {
-        "ads": [  # 广告列表(收币)
-            {
-                "author": "user1",
-                "claim_id": "abcdefg",
-                "content_type": ".txt",
-                "create_timed": "2018-04-19T14:36:44.536818+00:00",
-                "currency": "ULD",
-                "des": "blog description",
-                "id": 45,
-                "price": -1,
-                "status": 1,
-                "tags": [
-                    "Python",
-                    "Ruby"
-                ],
-                "title": "This is first blog",
-                "update_timed": null
-            }
-        ],
-        "consumes": [  # 消费列表(出币)
-            {
-                "author": "user1",
-                "claim_id": "1234567890",
-                "content_type": ".txt",
-                "create_timed": "2018-04-19T14:22:20.226816+00:00",
-                "currency": "ULD",
-                "des": "blog description",
-                "id": 44,
-                "price": 0.5,
-                "status": 1,
-                "tags": [
-                    "Ruby",
-                    "Python"
-                ],
-                "title": "This is first blog",
-                "update_timed": null
-            }
-        ],
         "pages": 1,
-        "total": 2
+        "records": [
+            {
+                "author": 资源发布者,
+                "claim_id": 资源在链上的claim_id,
+                "create_timed": 消费时间,
+                "enabled": 资源是否删除,
+                "id": 资源在DB中id,
+                "price": 0.5, # 价格为正时, 是消费者的支出
+                "title": 资源标题,
+                "txid": 此条消费的txid
+            }
+        ],
+        "total": 7
     }
 }
 ```
@@ -766,7 +745,8 @@
 ```
 # 请求参数:
 {
-    'author':消费者
+    'author':消费者,
+    'category':条件查询 # 0: 资源收入 1: 广告支出 其他:all
 }
 
 # 返回值:
@@ -778,30 +758,40 @@
     "result": {
         "data": [
             {
-                "author": "user2",
-                "claim_id": "c51fe46a429aa4d76b800cd17e771392d1af90b8",
-                "content_type": ".txt",
-                "create_timed": "2018-04-16T09:06:56.477060+00:00",
-                "currency": "ULD",
-                "des": "blog description",
-                "id": 13,
-                "price": 0.5,
-                "status": 1,
-                "tags": [
-                    "Ruby",
-                    "Python"
-                ],
-                "title": "first blog12",
-                "update_timed": null
+                "claim_id": 资源的claim_id,
+                "create_timed": 此条消费的时间,
+                "customer": 消费者,
+                "enabled": 资源是否删除,
+                "id": 资源在DB中的id,
+                "price": 0.6,  # 价格为正, 是发布者的收入
+                "title": 资源标题,
+                "txid": 此条消费的txid
             }
         ],
-        "pages": 6,
-        "total": 6
+        "pages": 1,
+        "total": 4
     }
 }
 ```
 
+##### 4. 浏览量增加  `POST`    `/v1/content/view/`
+```
+# 请求参数:
+{
+    'id':资源id
+}
 
+# 返回值:
+
+成功
+{
+    "errcode": 0,
+    "reason": "success",
+    "result": {
+        "num": 修改影响行数
+    }
+}
+```
 
 ### 附录A: 错误码对照表
 ```
