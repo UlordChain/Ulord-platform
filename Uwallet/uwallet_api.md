@@ -214,5 +214,4 @@ print res
       'success': True, # 是否成功
       'txid':'3ecce656dbfeea5b38f385549ac51e550bfa6d70bba9d2042dacdd3c1def662a'   # 交易id
   }
-
   ```
