@@ -117,6 +117,7 @@ class Daemon(DaemonThread):
         os.unlink(lockfile(self.config))
 
     def stop(self):
-        for k, wallet in self.wallets.items():
+        # todo: 修改, 这里暂时会报错,
+        for k, wallet in self.server.wallets.items():
             wallet.stop_threads()
         DaemonThread.stop(self)

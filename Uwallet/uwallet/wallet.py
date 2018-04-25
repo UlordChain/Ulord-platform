@@ -43,10 +43,10 @@ IMPORTED_ACCOUNT = '/x'
 class WalletStorage(PrintError):
     def __init__(self, user):
         # todo: 现在钱包的数据操作都是依赖于内存中的self.data， 需要将他重构为直接和数据库的交互
-        try:
+        if '_' in user:
             self.app_key, self.user_name = tuple(user.split('_'))
-        except ValueError:
-            raise ValueError("invalid user_name: '_' not in the user_name")
+        else:
+            self.app_key, self.user_name = 'ulord', user
 
         self.executeMongodb = ExecuteMongodb('uwallet_user', self.app_key)
 
