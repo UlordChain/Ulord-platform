@@ -5,8 +5,9 @@
 from . import bpv1, appkey_check
 from flask import request, g
 from ulord.models import Content, Consume
-from ulord.schema import contents_schema, content_consumes_schema,content_publishs_schema
+from ulord.schema import contents_schema
 from ulord import return_result
+from ulord.utils.formatter import add_timestamp
 
 
 @bpv1.route("/content/list/<int:page>/<int:num>/")
@@ -36,7 +37,8 @@ def consumed(page, num):
     customer = request.json.get('customer')
     category = request.json.get('category')  # 0: 消费支出 1: 广告收入 其他:all
     query = Content.query.with_entities(Content.id, Content.author, Content.title, Consume.txid, Content.enabled,
-                                        Content.claim_id, Consume.price, Consume.create_timed). \
+                                        Content.claim_id, Consume.price,
+                                        Consume.create_timed). \
                         join(Consume,Content.claim_id==Consume.claim_id). \
                         filter(Content.appkey == appkey, Consume.customer == customer)
     if category == 0:
@@ -47,7 +49,9 @@ def consumed(page, num):
     records = query.order_by(Consume.create_timed.desc()).paginate(page, num, error_out=False)
     total = records.total
     pages = records.pages
-    records = content_consumes_schema.dump(records.items).data
+    # 联表查询的结果是sqlalchemy.util._collections.result对象, 不是一个model对象
+    # 所以不能够想content_list接口那样格式化数据
+    records=add_timestamp(records.items)
     return return_result(result=dict(total=total, pages=pages, records=records))
 
 
@@ -71,8 +75,8 @@ def published(page, num):
     records = query.order_by(Consume.create_timed.desc()).paginate(page, num, error_out=False)
     total = records.total
     pages = records.pages
-    result = content_publishs_schema.dump(records.items).data
-    return return_result(result=dict(total=total, pages=pages, data=result))
+    records=add_timestamp(records.items)
+    return return_result(result=dict(total=total, pages=pages, records=records))
 
 
 @bpv1.route("/content/view/", methods=['POST'])

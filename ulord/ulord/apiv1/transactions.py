@@ -6,12 +6,12 @@
 import decimal
 from . import bpv1
 from ulord.utils import return_result
+from ulord.utils.formatter import add_timestamp
 from flask import request, g
 from . import appkey_check, get_jsonrpc_server
 from ulord.models import Content, Tag, ContentHistory, Consume, AppUser, Application
 from ulord.extensions import db
 from ulord.utils.generate import generate_appkey
-from ulord.schema import consume_schema, consumeinouts_schema
 
 
 @bpv1.route('/transactions/createwallet/', methods=['POST'])
@@ -52,16 +52,17 @@ def pay_to_user():
         pay_password = g.user.password_hash
     else:
         send_user_wallet = get_wallet_name(request.json.get('send_user'))
+        # send_user_wallet = request.json.get('send_user')
         pay_password = request.json.get('pay_password')
 
     recv_wallet_username = get_wallet_name(request.json.get('recv_user'))
+    # recv_wallet_username = request.json.get('recv_user')
     amount = request.json.get('amount')
 
     server = get_jsonrpc_server()
     try:
         print(send_user_wallet, pay_password, recv_wallet_username, amount)
         result = server.pay(send_user_wallet, pay_password, recv_wallet_username, amount)
-        print(result)
         if result.get('success') is not True:
             print(result)
             return return_result(20206, result=result)
@@ -96,8 +97,11 @@ def publish():
 
     server = get_jsonrpc_server()
     try:
-        result = server.publish(username_wallet, sourcename, bid, metadata, content_type, ipfs_hash, currency, price,
-                                pay_password)
+
+        # print(username_wallet, pay_password, sourcename, bid, metadata, content_type, ipfs_hash, currency, price)
+        result = server.publish(username_wallet, sourcename,
+                                bid, metadata, content_type, ipfs_hash, currency, price,pay_password)
+        print(result)
         if result.get('success') is not True:
             print(result)
             return return_result(20201, result=result)
@@ -173,7 +177,7 @@ def consume():
             server = get_jsonrpc_server()
             try:
                 if price >= 0:  # 普通消费
-                    result = server.consume(wallet_username, claim_id, customer_pay_password)
+                    result = server.consume(wallet_username,claim_id, customer_pay_password)
                 else:  # 广告
                     send_wallet_username = get_wallet_name(content.author)
                     recv_wallet_username = get_wallet_name(customer)
@@ -214,7 +218,7 @@ def balance():
     except Exception as e:
         print(e)
         return return_result(20203, result=dict(wallet_reason=str(e)))
-
+    # result=result.get('result')
     confirmed = result.get('confirmed', '0')
     unconfirmed = result.get('unconfirmed', '0')
     unmatured = result.get('unmatured', '0')
@@ -222,23 +226,7 @@ def balance():
     return return_result(result=dict(total=total, confirmed=confirmed, unconfirmed=unconfirmed, unmatured=unmatured))
 
 
-@bpv1.route('/transactions/account/inout/<int:page>/<int:num>/', methods=['POST'])
-@appkey_check
-def account_inout(page, num):
-    appkey = g.appkey
-    username = request.json.get('username')
-    records = Content.query.with_entities(Content.claim_id, Content.author, Content.title, Consume.txid,
-                    Consume.customer, Consume.price, Consume.create_timed). \
-                    join(Consume, Content.claim_id == Consume.claim_id). \
-                    filter(Content.appkey==appkey). \
-                    filter((Content.author == username)|(Consume.customer==username)). \
-                    order_by(Consume.create_timed.desc()). \
-                    paginate(page, num, error_out=False)
-    total = records.total
-    pages = records.pages
-    records = consumeinouts_schema.dump(records.items).data
 
-    return return_result(result=dict(total=total, pages=pages, records=records))
 
 @bpv1.route('/transactions/account/in/<int:page>/<int:num>/', methods=['POST'])
 @appkey_check
@@ -257,8 +245,7 @@ def account_in(page, num):
                     paginate(page, num, error_out=False)
     total = records.total
     pages = records.pages
-    records = consumeinouts_schema.dump(records.items).data
-
+    records=add_timestamp(records.items)
     return return_result(result=dict(total=total, pages=pages, records=records))
 
 
@@ -279,7 +266,26 @@ def account_out(page, num):
                     paginate(page, num, error_out=False)
     total = records.total
     pages = records.pages
-    records = consumeinouts_schema.dump(records.items).data
+    records = add_timestamp(records.items)
+    return return_result(result=dict(total=total, pages=pages, records=records))
+
+
+@bpv1.route('/transactions/account/inout/<int:page>/<int:num>/', methods=['POST'])
+@appkey_check
+def account_inout(page, num):
+    """用户收支账单(将account_in与account_out合二为一)"""
+    appkey = g.appkey
+    username = request.json.get('username')
+    records = Content.query.with_entities(Content.claim_id, Content.author, Content.title, Consume.txid,
+                    Consume.customer, Consume.price, Consume.create_timed). \
+                    join(Consume, Content.claim_id == Consume.claim_id). \
+                    filter(Content.appkey==appkey). \
+                    filter((Content.author == username)|(Consume.customer==username)). \
+                    order_by(Consume.create_timed.desc()). \
+                    paginate(page, num, error_out=False)
+    total = records.total
+    pages = records.pages
+    records = add_timestamp(records.items)
     return return_result(result=dict(total=total, pages=pages, records=records))
 
 

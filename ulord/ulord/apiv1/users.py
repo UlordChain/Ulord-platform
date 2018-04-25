@@ -23,11 +23,13 @@ def reg():
     role_id = request.json.get('role_id')
     # 与db存储相同的加密方式, 作为开发者钱包的支付密码
     pay_password = generate_password_hash(password)
-
+    print(pay_password)
     # 注册前, 先创建钱包
     server = get_jsonrpc_server()
     try:
-        if server.create(username, pay_password).get('success') is not True:
+        result=server.create(username, pay_password)
+        if result.get('success') is not True:
+            print(result)
             return return_result(20205)
     except Exception as e:
         print (e)
