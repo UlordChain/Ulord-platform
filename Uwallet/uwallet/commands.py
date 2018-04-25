@@ -104,7 +104,7 @@ def command(s):
             self = l_args.pop(0)
 
             # 不是rpc直接调用的命令, 或者是create命令
-            if not self.is_rpc_command or  name == 'create':
+            if not self.is_rpc_command or name == 'create':
                 return func(*args, **kwargs)
 
             self.is_rpc_command = False
@@ -129,7 +129,7 @@ def command(s):
                 res = func(*new_args, **kwargs)
                 return {
                     'success': True,
-                    'result:': res
+                    'result': res
                 }
             except ReturnError as err:
                 return {
@@ -2670,9 +2670,11 @@ class Commands(object):
         self.wallets[user] = wallet
 
         return {
-            'user': user,
-            'seed': seed,
-            # 'message': "Please keep seed in a safe place; if you lose it, you will not be able to restore your wallet."
+            'success': True,
+            'result': {
+                'user': user,
+                'seed': seed,
+            }
         }
 
     @command('u')
