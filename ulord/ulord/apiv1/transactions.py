@@ -222,6 +222,24 @@ def balance():
     return return_result(result=dict(total=total, confirmed=confirmed, unconfirmed=unconfirmed, unmatured=unmatured))
 
 
+@bpv1.route('/transactions/account/inout/<int:page>/<int:num>/', methods=['POST'])
+@appkey_check
+def account_inout(page, num):
+    appkey = g.appkey
+    username = request.json.get('username')
+    records = Content.query.with_entities(Content.claim_id, Content.author, Content.title, Consume.txid,
+                    Consume.customer, Consume.price, Consume.create_timed). \
+                    join(Consume, Content.claim_id == Consume.claim_id). \
+                    filter(Content.appkey==appkey). \
+                    filter((Content.author == username)|(Consume.customer==username)). \
+                    order_by(Consume.create_timed.desc()). \
+                    paginate(page, num, error_out=False)
+    total = records.total
+    pages = records.pages
+    records = consumeinouts_schema.dump(records.items).data
+
+    return return_result(result=dict(total=total, pages=pages, records=records))
+
 @bpv1.route('/transactions/account/in/<int:page>/<int:num>/', methods=['POST'])
 @appkey_check
 def account_in(page, num):

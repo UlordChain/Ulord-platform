@@ -77,3 +77,8 @@ class ContentHistory(db.Model):
     des = db.Column(db.String(1024), comment=u'资源描述')
     status = db.Column(db.Integer, nullable=False, index=True, default=1, comment=u'状态:1.新增 2.更新 3.删除')
     create_timed = db.Column(db.DateTime, server_default=db.func.now(), comment=u'资源创建时间, 默认为当前时间')
+
+# class Test(db.Model):
+#     __tablename__='test'
+#     id=db.Column(db.Integer,primary_key=True)
+#     timestamp=db.Column(db.TIMESTAMP(True),server_default=db.func.current_timestamp())
