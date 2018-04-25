@@ -6,10 +6,14 @@ import jsonrpclib
 from jsonrpclib.SimpleJSONRPCServer import SimpleJSONRPCRequestHandler, SimpleJSONRPCServer
 
 from uwallet.commands import Commands, known_commands
-from uwallet.util import DaemonThread
-import thread
+from uwallet.simple_config import SimpleConfig
+from uwallet.util import DaemonThread, json_decode
+from uwallet.wallet import Wallet, WalletStorage
+from uwallet.network import Network
 import time
-from multiprocessing import Process
+import multiprocessing
+import select
+import traceback
 
 def lockfile(config):
     return os.path.join(config.path, 'daemon')
@@ -47,7 +51,10 @@ class Daemon(DaemonThread):
         DaemonThread.__init__(self)
         self.config = config
         self.network = network
-        self.cmd_runner = Commands(self.config, self.network)
+
+        self.wallets ={}
+        self.load_wallet(config.get_wallet_path())
+        self.cmd_runner = Commands(self.config, self.wallets, self.network)
 
         host = config.get('rpchost', '0.0.0.0')
         port = config.get('rpcport', 8000)
@@ -89,34 +96,46 @@ class Daemon(DaemonThread):
 
 
     def run(self):
-        i = 0
+        cpus = multiprocessing.cpu_count()
+        pros = []
         while self.is_running():
-            # self.server.handle_request()
-            try:
-                thread.start_new_thread(self.server.handle_request, ())
-                time.sleep(0.01)
-                i = i+1
-            except Exception,ex:
-                i = 0
-                print ex
-                continue
-        os.unlink(lockfile(self.config))
+            fd_sets = _eintr_retry(select.select, [self.server], [], [], 0.1)
+            if not fd_sets[0]:
+                self.server.handle_timeout()
+                ll = pros.__len__()
+                if(ll>0):
+                    aliveCount = 0
+                    for idx in range(0, ll):
+                        if (pros[idx].is_alive()):
+                            aliveCount +=1
+                    print 'aliveThread:',aliveCount
 
-    def runProc(self):
-        i = 0
-        while True:
-            try:
-                p = Process(target=self.server.handle_request, args=((),))
-                p.start()
-                p.join()
-                i = i+1
-            except Exception,ex:
-                i = 0
-                print ex
                 continue
+            if(pros.__len__() < cpus):
+                currentP = multiprocessing.Process(target=self.server._handle_request_noblock)
+                currentP.start()
+                pros.append(currentP)
+            else:
+                for idx in range(0,cpus):
+                    if(pros[idx].is_alive() == False):
+
+                        currentP = multiprocessing.Process(target=self.server._handle_request_noblock)
+                        currentP.start()
+                        pros[idx] = currentP
+                        break
+
+        # ps aux | grep "python" | grep - v grep | cut - c 9 - 15 | xargs kill - 9
         os.unlink(lockfile(self.config))
 
     def stop(self):
         for k, wallet in self.wallets.items():
             wallet.stop_threads()
         DaemonThread.stop(self)
+
+def _eintr_retry(func, *args):
+    """restart a system call interrupted by EINTR"""
+    while True:
+        try:
+            return func(*args)
+        except (OSError, select.error) as e:
+                raise
