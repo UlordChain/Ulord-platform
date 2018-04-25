@@ -2732,7 +2732,7 @@ class Commands(object):
         :returns formatted claim result
         """
         wallet = self.wallets[self.user]
-        gl.flag_claim = True
+        # gl.flag_claim = True
         if skip_validate_schema and certificate_id:
             return {'success': False, 'reason': 'refusing to sign claim without validated schema'}
 
