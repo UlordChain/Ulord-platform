@@ -4,6 +4,7 @@
 # @Email   : httpservlet@yeah.net
 
 from ulord.extensions import db
+import time
 
 content_tag = db.Table('content_tag', db.Column('tag_name', db.String(32), db.ForeignKey('tag.name')),
                        db.Column('content_id', db.Integer, db.ForeignKey('content.id')),
@@ -30,6 +31,15 @@ class Consume(db.Model):
     price = db.Column(db.Numeric(20, 8), nullable=False, default=0, comment=u'消费价格')
     create_timed = db.Column(db.DateTime, server_default=db.func.now(), comment=u'资源消费时间, 默认为当前时间')
 
+    @property
+    def create_timed_str(self):
+        """输出日期字符串"""
+        return self.create_timed.strftime("%Y-%m-%d %H:%M:%S")
+
+    @property
+    def create_timed_timestamp(self):
+        """输出时间戳"""
+        return int(time.mktime(self.create_timed.timetuple()))
 
 class Content(db.Model):
     """ 发布资源内容表
@@ -60,6 +70,33 @@ class Content(db.Model):
     tags = db.relationship('Tag', secondary='content_tag', backref=db.backref('content', lazy='dynamic'))
     consumes = db.relationship('Consume', backref=db.backref('content'), lazy='dynamic')
 
+    @property
+    def create_timed_str(self):
+        """输出日期字符串"""
+        return self.create_timed.strftime("%Y-%m-%d %H:%M:%S")
+
+    @property
+    def create_timed_timestamp(self):
+        """输出时间戳"""
+        return int(time.mktime(self.create_timed.timetuple()))
+
+    @property
+    def update_timed_str(self):
+        """输出日期字符串"""
+        if self.update_timed:
+            return self.update_timed.strftime("%Y-%m-%d %H:%M:%S")
+        else:
+            return None
+
+    @property
+    def update_timed_timestamp(self):
+        """输出时间戳"""
+        if self.update_timed:
+            return int(time.mktime(self.update_timed.timetuple()))
+        else:
+            return None
+
+
 
 class ContentHistory(db.Model):
     """资源历史记录(新增/更新/删除)"""
@@ -78,7 +115,12 @@ class ContentHistory(db.Model):
     status = db.Column(db.Integer, nullable=False, index=True, default=1, comment=u'状态:1.新增 2.更新 3.删除')
     create_timed = db.Column(db.DateTime, server_default=db.func.now(), comment=u'资源创建时间, 默认为当前时间')
 
-# class Test(db.Model):
-#     __tablename__='test'
-#     id=db.Column(db.Integer,primary_key=True)
-#     timestamp=db.Column(db.TIMESTAMP(True),server_default=db.func.current_timestamp())
+    @property
+    def create_timed_str(self):
+        """输出日期字符串"""
+        return self.create_timed.strftime("%Y-%m-%d %H:%M:%S")
+
+    @property
+    def create_timed_timestamp(self):
+        """输出时间戳"""
+        return int(time.mktime(self.create_timed.timetuple()))
