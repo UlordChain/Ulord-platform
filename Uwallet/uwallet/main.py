@@ -82,8 +82,7 @@ def main():
             # options
             args += map(lambda x: config.get(x), cmd.options)
             # 标记此次调用为命令行调用
-            if cmdname != 'create':
-                args.insert(0, 'is_command')
+            args.insert(0, 'is_command')
             method = 'server.{}(*{})'.format(cmdname, tuple(args))
 
             result = eval(method)

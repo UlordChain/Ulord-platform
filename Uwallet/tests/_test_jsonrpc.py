@@ -33,7 +33,7 @@ def publish(user, password):
     currency = "ULD"
     amount = 1.54
     bid = 0.59
-    claim_name = 'het1ao'
+    claim_name = 'hetff1ao'
 
     return server.publish(user, password, claim_name, bid, metadata, contentType, sourceHash, currency, amount)
 
@@ -73,9 +73,9 @@ def pay(receive_user, amount):
 
 if __name__ == '__main__':
     t = time.time()
-    user = 'test_1804260905'
+    user = 'test_1804260951'
     password = '123'
-    claim_id = '3f819cb7b138fb6700fa9a887601be06f91b4a93'
+    claim_id = '67f619608030640b0c34d4038ba084574c3cd98c'
 
     # print create(user, password)  # 0.8
     # print pay(user, amount=10)

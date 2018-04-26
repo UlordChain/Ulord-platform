@@ -52,9 +52,7 @@ class Daemon(DaemonThread):
         self.config = config
         self.network = network
 
-        self.wallets ={}
-        self.load_wallet(config.get_wallet_path())
-        self.cmd_runner = Commands(self.config, self.wallets, self.network)
+        self.cmd_runner = Commands(self.config, self.network)
 
         host = config.get('rpchost', '0.0.0.0')
         port = config.get('rpcport', 8000)
