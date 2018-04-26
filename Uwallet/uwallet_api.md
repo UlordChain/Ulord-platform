@@ -62,15 +62,15 @@
 - **返回结果：**
 
   ```python
-  {
+  {'success': True,  # 是否成功
+    'result':{
       'fee': u'0.000359', # 手续费
-      'success': True,  # 是否成功
-      'tx':  '01000000026cd6a90cd9e7d486aa9e52261bf74969181ac7a691a398df243bfccb24daee7d000000006a47304402205c07adc5ab1f5ae4830f8c2a71355e10fa647bd598ba55ce95f2cb326c8d3f8e02205f524450cb52d35dd91cac39e2ff8cce66444bd9e21087c367a49ee234b715e0012102521dcd489d7740aac35616320091cad6656b127a86a7a84fbe7622557ad14be6ffffffff6cd6a90cd9e7d486aa9e52261bf74969181ac7a691a398df243bfccb24daee7d010000006b483045022100f1061ea1eef46c97c2e9d3d511523ddb1753687283848bc578d4301a90bc6d37022002dd3868ad8e5931000b7d9c8f6b109385dbc25e2c0c5dfb3b26442929acdf49012102521dcd489d7740aac35616320091cad6656b127a86a7a84fbe7622557ad14be6ffffffff023fc0650300000000fd3a01b70968657431616f31313114e190209f6b4e6d5d3ea17c191d75d7a5e01f97504cfd080110011af601080112bc01080410011a0d57686174206973204c4252593f223057686174206973204c4252593f20416e20696e74726f64756374696f6e207769746820416c6578205461626172726f6b2a0c53616d75656c20427279616e32084c42525920496e6338004224080110011a19824fe527d791ec681899527ab5902de65c247e84792da6ac4c259a99993f4a2f68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f66696c65732e6c6272792e696f2f6c6f676f2e706e6752005a0060021a33080110011a2212206c10c5cece33226e2cc5c56d999fd7874494a1bebf47be0416a09bf53b8954262209766964656f2f6d70346d6d76a9144fe527d791ec681899527ab5902de65c247e847988ac5871263f170000001976a9144fe527d791ec681899527ab5902de65c247e847988ac00000000', # 交易
       'txid': '325dbf4ed36ccc50f84118e322b1452aeb0f385d71f5accbd326ecd4df3df121',  # 交易id
-      'amount': '0.56999999', # 资源绑定的币的数量
       'claim_id': '50971fe0a5d7751d197ca13e5d6d4e6b9f2090e1',  # 资源id
       'nout': 0  # 是此次交易中的第几个
+    }
   }
+  
   ```
 
 ## 2. 消费资源 `consume`
@@ -105,7 +105,9 @@
   ```python
   {
       'success': True, # 是否成功
-      'txid':'3ecce656dbfeea5b38f385549ac51e550bfa6d70bba9d2042dacdd3c1def662a'   # 交易id
+      'result': {
+          'txid':'3ecce656dbfeea5b38f385549ac51e550bfa6d70bba9d2042dacdd3c1def662a'   # 交易id
+      }
   }
   ```
 
@@ -138,8 +140,12 @@ print res
 
 ```python
 {
-    'success': True, # 是否成功
-    'seed': u'faculty claim ghost cushion helmet sweet solution dirt night bottom gift trophy' # 用于恢复钱包
+      'success': True,
+      'result:': {
+          'txid':'3ecce656dbfeea5b38f385549ac51e550bfa6d70bba9d2042dacdd3c1def662a',   # 交易id
+          'user': user,
+      }
+  }
 ```
 
 ## 4. 查询余额 `getbalance`
@@ -171,10 +177,14 @@ print res
   ```python
   {
       'success': True, # 是否成功
-      'confirmed': '9999.99965899', # 已经确认的余额
-      'unconfirmed': '1.33',  # 未确认的余额
-      'unmatured': '9.2' # 未成熟的余额， 挖矿所得， 100个块才成熟
-      'total': '10010.32965899' # 总的余额
+      'result': {
+          # 这几个字段不一定都存在
+          'confirmed': '9999.99965899', # 已经确认的余额
+          'unconfirmed': '1.33',  # 未确认的余额
+          'unmatured': '9.2', # 未成熟的余额， 挖矿所得， 100个块才成熟
+          'total': '10010.32965899' # 总的余额
+    }
+      
   }
   ```
 
@@ -213,8 +223,7 @@ print res
   {
       'success': True,
       'result:': {
-          'txid':'3ecce656dbfeea5b38f385549ac51e550bfa6d70bba9d2042dacdd3c1def662a'   # 交易id
-        'user': user,
-    }
+          'txid':'3ecce656dbfeea5b38f385549ac51e550bfa6d70bba9d2042dacdd3c1def662a',   # 交易id
+      }
   }
   ```

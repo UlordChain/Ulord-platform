@@ -2768,7 +2768,6 @@ class Commands(object):
         self.load_wallet(receive_user)
         address = self.wallets[receive_user].addresses(False)[0]
         tx = self._mktx([(address, amount)], None, None, None, False, False)
-        # todo: 返回了数据不一定成功过
         res = self.network.synchronous_get(('blockchain.transaction.broadcast', [str(tx)]))
         if len(res) == 64:
             return {
