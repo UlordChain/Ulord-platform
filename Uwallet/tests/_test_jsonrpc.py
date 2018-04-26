@@ -79,8 +79,8 @@ if __name__ == '__main__':
 
     # print create(user, password)  # 0.8
     # print pay(user, amount=10)
-    print getbalance(user, password)
-    # print publish(user, password) # 1.88
+    # print getbalance(user, password)
+    print publish(user, password) # 1.88
     # print consume(claim_id)  # 1.4
     print '** time:',  time.time() - t
 

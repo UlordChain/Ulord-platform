@@ -1,6 +1,7 @@
-import base64, base58
+import base64
 from copy import deepcopy
 from unetschema.address import decode_address, encode_address
+from unetschema.base import b58decode, b58encode
 from unetschema.schema import CLAIM_TYPES, CLAIM_TYPE, STREAM_TYPE, CERTIFICATE_TYPE
 from unetschema.schema import SIGNATURE
 from unetschema.error import DecodeError, InvalidAddress
@@ -12,7 +13,7 @@ def encode_fields(claim_dictionary):
     claim_type = CLAIM_TYPES[claim_dictionary[CLAIM_TYPE]]
     claim_value = claim_dictionary[claim_type]
     if claim_type == CLAIM_TYPES[STREAM_TYPE]:
-        claim_value['source']['source'] = base58.b58encode(claim_value['source']['source'])
+        claim_value['source']['source'] = b58encode(claim_value['source']['source'])
         if 'fee' in claim_value['metadata']:
             try:
                 address = encode_address(claim_value['metadata']['fee']['address'])
@@ -37,7 +38,7 @@ def decode_fields(claim_dictionary):
     claim_type = CLAIM_TYPES[claim_dictionary[CLAIM_TYPE]]
     claim_value = claim_dictionary[claim_type]
     if claim_type == CLAIM_TYPES[STREAM_TYPE]:
-        claim_value['source']['source'] = base58.b58decode(claim_value['source']['source'])
+        claim_value['source']['source'] = b58decode(claim_value['source']['source'])
         if 'fee' in claim_value['metadata']:
             try:
                 address = decode_address(claim_value['metadata']['fee']['address'])
