@@ -105,7 +105,7 @@ def main():
                 network.start()
                 daemon = Daemon(config, network)
                 # daemon.runProc()
-                daemon.start()
+                # daemon.start()
                 daemon.server.serve_forever()
             else:
                 print "starting daemon (PID %d)" % p

@@ -3,7 +3,7 @@ import time
 
 from jsonrpclib import Server
 # server = Server('http://192.168.14.240:8000')
-server = Server('http://192.168.14.241:8000')
+server = Server('http://192.168.14.243:8000')
 
 
 def publish(user, password):
@@ -80,6 +80,7 @@ if __name__ == '__main__':
     # print create(user, password)  # 0.8
     # print pay(user, amount=10)
     # print getbalance(user, password)
+    # print server.getaddressbalance('uKET7G57uNouTTUkjq9RFXEHLerqCxzRnh')
     print publish(user, password) # 1.88
     # print consume(claim_id)  # 1.4
     print '** time:',  time.time() - t
