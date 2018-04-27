@@ -33,8 +33,8 @@
   claim_name = 'het1ao111'
 
   server = Server('http://127.0.0.1:8000')
-  res = server.publish(user, password, claim_name, bid, metadata,
-                       content_type, source_hash, currency, amount)
+  res = server.publish(user, password, claim_name, metadata,
+                       content_type, source_hash, currency, amount, bid,)
   print res
   ```
 
@@ -46,8 +46,6 @@
 
     `claim_name`：资源名
 
-    `bid`：发布这笔资源需要支付的费用
-
     `metadata`：资源元数据， 用户输入（dict）
 
     `content_type`：资源文件类型
@@ -57,7 +55,13 @@
     `currency`：观看这笔资源支付的数字货币的种类
 
     `amount`：观看这笔资源支付的数字货币的数量
-
+    
+    `bid`：发布这笔资源需要支付的费用, 默认为1
+    
+    `address`：这笔资源绑定的地址, 默认为钱包第一个地址
+    
+    `tx_fee`：支付的矿工费用, 默认系统默认值
+    
 
 - **返回结果：**
 

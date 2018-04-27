@@ -10,6 +10,7 @@ import logging
 import sys
 import time
 import os
+import traceback
 from decimal import Decimal
 from functools import wraps
 
@@ -1845,7 +1846,6 @@ class Commands(object):
         wallet = self.wallets[self.user]
         if skip_validate_schema and certificate_id:
             return {'success': False, 'reason': 'refusing to sign claim without validated schema'}
-
         parsed_claim = self.verify_request_to_make_claim(name, val, certificate_id)
         if 'error' in parsed_claim:
             return {'success': False, 'reason': parsed_claim['error']}
@@ -2357,6 +2357,7 @@ class Commands(object):
                     'reason': 'Cannot update a support, is_support_replace must be True'}
 
         inputs = [claim_utxo]
+        # todo: ??
         txout_value = claim_utxo['value']
 
         if not is_support_replace:
@@ -2526,6 +2527,165 @@ class Commands(object):
         return {'success': True, 'txid': tx.hash(), 'tx': str(tx),
                 'fee': str(Decimal(tx.get_fee()) / COIN)}
 
+    @command('unc')
+    def update(self, name, val, amount=None, certificate_id=None, claim_id=None, txid=None,
+               nout=None, broadcast=True, claim_addr=None, tx_fee=None, change_addr=None, raw=None,
+               skip_validate_schema=None):
+        """
+        Update a name claim
+
+        :param name: (str) name of claim being updated
+        :param val: (str) calim value to update to
+        :param amount: (float) amount to update, defaults to the amount in the
+            claim being updated minus tx fees
+        :param certificate_id: claim ID of the certificate associated with the claim
+        :param claim_id: claim ID of the claim being updated
+        :param txid: (str) txid of support transaction to update
+        :param nout: (int) nout of support transaction to update
+        :param broadcast: (bool) broadcast the transaction
+        :param claim_addr: (str) address to send support to
+        :param tx_fee: (float) tx fee
+        :param change_addr: (str) address to send change to
+        :param raw: (bool) default False. If True, val is byte encoded already
+            so do not decode from hex string
+        :param skip_validate_schema:default False. If True, skip validation of
+            claim schema in val, and skip claim signing. Cannot be True if
+            certificate_id is not None
+
+        :returns formatted claim result
+        """
+        wallet = self.wallets[self.user]
+        gl.flag_claim = True
+        if skip_validate_schema and certificate_id:
+            return {'success': False, 'reason': 'refusing to sign claim without validated schema'}
+
+        parsed_claim = self.verify_request_to_make_claim(name, val, certificate_id)
+        if 'error' in parsed_claim:
+            return {'success': False, 'reason': parsed_claim['error']}
+
+        parsed_uri = parse_unet_uri(name)
+        name = parsed_claim['name']
+        val = parsed_claim['val']
+        certificate_id = parsed_claim['certificate_id']
+
+        if not raw:
+            val = val.decode('hex')
+
+        if not skip_validate_schema:
+            try:
+                # claim_value可能==None
+                decoded_claim = smart_decode(val)
+            except DecodeError as err:
+                return {'success': False, 'reason': 'Decode error: %s' % err}
+        else:
+            decoded_claim = None
+        if claim_addr is None:
+            claim_addr = wallet.get_least_used_address()
+        if not base_decode(claim_addr, ADDRESS_LENGTH, 58):
+            return {'error': 'invalid claim address'}
+
+        if change_addr is None:
+            change_addr = wallet.get_least_used_address(for_change=True)
+        if not base_decode(change_addr, ADDRESS_LENGTH, 58):
+            return {'error': 'invalid change address'}
+        # 通过(claim_id, txid, nout)三者中的一个补全另外的
+        if claim_id is None or txid is None or nout is None:
+            claims = self.getnameclaims(skip_validate_signatures=True)
+            for claim in claims:
+                if claim['name'] == name and not claim['is_spent']:
+                    claim_id = claim['claim_id']
+                    txid = claim['txid']
+                    nout = claim['nout']
+                    break
+            if not claim_id:
+                return {'success': False, 'reason': 'No claim to update'}
+
+        if not skip_validate_schema:
+            try:
+                # claim_value不可能==None
+                claim_value = smart_decode(val)
+            except DecodeError as err:
+                return {'success': False,
+                        'reason': 'Decode error: %s' % err}
+
+            # pass
+            if not parsed_uri.is_channel and claim_value.is_certificate:
+                return {'success': False,
+                        'reason': 'Certificates must have URIs beginning with /"@/"'}
+
+            # pass
+            if claim_value.has_signature:
+                return {'success': False, 'reason': 'Claim value is already signed'}
+
+            # pass
+            if certificate_id is not None:
+                if not self.cansignwithcertificate(certificate_id):
+                    return {'success': False,
+                            'reason': 'Cannot sign for certificate %s' % certificate_id}
+
+            # pass  得到经过通道私钥签名的val
+            if certificate_id and claim_value:
+                signing_key = wallet.get_certificate_signing_key(certificate_id)
+                signed = claim_value.sign(signing_key, claim_addr, certificate_id, curve=SECP256k1)
+                val = signed.serialized
+            # pass
+            if certificate_id and decoded_claim:
+                signing_key = wallet.get_certificate_signing_key(certificate_id)
+                if signing_key:
+                    signed = decoded_claim.sign(signing_key,
+                                                claim_addr,
+                                                certificate_id,
+                                                curve=SECP256k1)
+                    val = signed.serialized
+                else:
+                    return {'success': False,
+                            'reason': "Cannot sign with certificate %s" % certificate_id}
+            # pass
+            elif not certificate_id and decoded_claim:
+                if decoded_claim.has_signature:
+                    certificate_id = decoded_claim.certificate_id
+                    signing_key = wallet.get_certificate_signing_key(certificate_id)
+                    if signing_key:
+                        claim = ClaimDict.deserialize(val)
+                        signed = claim.sign(signing_key,
+                                            claim_addr,
+                                            certificate_id,
+                                            curve=SECP256k1)
+                        val = signed.serialized
+                    else:
+                        return {'success': False,
+                                'reason': "Cannot sign with certificate %s" % certificate_id}
+
+        out = self._get_input_output_for_updates(name, val, amount, claim_id, txid, nout,
+                                                 claim_addr, change_addr, tx_fee)
+        if not out['success']:
+            return out
+        else:
+            inputs = out['inputs']
+            outputs = out['outputs']
+
+        tx = Transaction.from_io(inputs, outputs)
+        wallet.sign_transaction(tx, self._password)
+        if broadcast:
+            success, out = wallet.send_tx(tx)
+            if not success:
+                return ServerError('50000', out)
+
+        nout = None
+        amount = 0
+        for i, output in enumerate(tx._outputs):
+            if output[0] & TYPE_UPDATE:
+                nout = i
+                amount = output[2]
+
+        return {
+            "txid": tx.hash(),
+            "nout": nout,
+            "fee": str(Decimal(tx.get_fee()) / COIN),
+            "amount": str(Decimal(amount) / COIN),
+            "claim_id": claim_id
+        }
+
     # ========================================================================
     # ####################    my packaging interface   #######################
     # ========================================================================
@@ -2583,169 +2743,16 @@ class Commands(object):
         out['total'] = str(total)
         return out
 
-    @command('un')
-    def update(self, name, val, amount=None, certificate_id=None, claim_id=None, txid=None,
-               nout=None, broadcast=True, claim_addr=None, tx_fee=None, change_addr=None, raw=None,
-               skip_validate_schema=None):
-        """
-        Update a name claim
-
-        :param name: (str) name of claim being updated
-        :param val: (str) calim value to update to
-        :param amount: (float) amount to update, defaults to the amount in the
-            claim being updated minus tx fees
-        :param certificate_id: claim ID of the certificate associated with the claim
-        :param claim_id: claim ID of the claim being updated
-        :param txid: (str) txid of support transaction to update
-        :param nout: (int) nout of support transaction to update
-        :param broadcast: (bool) broadcast the transaction
-        :param claim_addr: (str) address to send support to
-        :param tx_fee: (float) tx fee
-        :param change_addr: (str) address to send change to
-        :param raw: (bool) default False. If True, val is byte encoded already
-            so do not decode from hex string
-        :param skip_validate_schema:default False. If True, skip validation of
-            claim schema in val, and skip claim signing. Cannot be True if
-            certificate_id is not None
-
-        :returns formatted claim result
-        """
-        wallet = self.wallets[self.user]
-        gl.flag_claim = True
-        if skip_validate_schema and certificate_id:
-            return {'success': False, 'reason': 'refusing to sign claim without validated schema'}
-
-        parsed_claim = self.verify_request_to_make_claim(name, val, certificate_id)
-        if 'error' in parsed_claim:
-            return {'success': False, 'reason': parsed_claim['error']}
-
-        parsed_uri = parse_unet_uri(name)
-        name = parsed_claim['name']
-        val = parsed_claim['val']
-        certificate_id = parsed_claim['certificate_id']
-
-        if not raw:
-            val = val.decode('hex')
-        if not skip_validate_schema:
-            try:
-                decoded_claim = smart_decode(val)
-            except DecodeError as err:
-                return {'success': False, 'reason': 'Decode error: %s' % err}
-        else:
-            decoded_claim = None
-        if claim_addr is None:
-            claim_addr = wallet.get_least_used_address()
-        if not base_decode(claim_addr, ADDRESS_LENGTH, 58):
-            return {'error': 'invalid claim address'}
-
-        if change_addr is None:
-            change_addr = wallet.get_least_used_address(for_change=True)
-        if not base_decode(change_addr, ADDRESS_LENGTH, 58):
-            return {'error': 'invalid change address'}
-        if claim_id is None or txid is None or nout is None:
-            claims = self.getnameclaims(skip_validate_signatures=True)
-            for claim in claims:
-                if claim['name'] == name and not claim['is_spent']:
-                    claim_id = claim['claim_id']
-                    txid = claim['txid']
-                    nout = claim['nout']
-                    break
-            if not claim_id:
-                return {'success': False, 'reason': 'No claim to update'}
-
-        if not skip_validate_schema:
-            try:
-                claim_value = smart_decode(val)
-            except DecodeError as err:
-                return {'success': False,
-                        'reason': 'Decode error: %s' % err}
-
-            if not parsed_uri.is_channel and claim_value.is_certificate:
-                return {'success': False,
-                        'reason': 'Certificates must have URIs beginning with /"@/"'}
-
-            if claim_value.has_signature:
-                return {'success': False, 'reason': 'Claim value is already signed'}
-
-            if certificate_id is not None:
-                if not self.cansignwithcertificate(certificate_id):
-                    return {'success': False,
-                            'reason': 'Cannot sign for certificate %s' % certificate_id}
-
-            if certificate_id and claim_value:
-                signing_key = wallet.get_certificate_signing_key(certificate_id)
-                signed = claim_value.sign(signing_key, claim_addr, certificate_id, curve=SECP256k1)
-                val = signed.serialized
-
-            if certificate_id and decoded_claim:
-                signing_key = wallet.get_certificate_signing_key(certificate_id)
-                if signing_key:
-                    signed = decoded_claim.sign(signing_key,
-                                                claim_addr,
-                                                certificate_id,
-                                                curve=SECP256k1)
-                    val = signed.serialized
-                else:
-                    return {'success': False,
-                            'reason': "Cannot sign with certificate %s" % certificate_id}
-
-            elif not certificate_id and decoded_claim:
-                if decoded_claim.has_signature:
-                    certificate_id = decoded_claim.certificate_id
-                    signing_key = wallet.get_certificate_signing_key(certificate_id)
-                    if signing_key:
-                        claim = ClaimDict.deserialize(val)
-                        signed = claim.sign(signing_key,
-                                            claim_addr,
-                                            certificate_id,
-                                            curve=SECP256k1)
-                        val = signed.serialized
-                    else:
-                        return {'success': False,
-                                'reason': "Cannot sign with certificate %s" % certificate_id}
-
-        out = self._get_input_output_for_updates(name, val, amount, claim_id, txid, nout,
-                                                 claim_addr, change_addr, tx_fee)
-        if not out['success']:
-            return out
-        else:
-            inputs = out['inputs']
-            outputs = out['outputs']
-
-        tx = Transaction.from_io(inputs, outputs)
-        wallet.sign_transaction(tx, self._password)
-        if broadcast:
-            success, out = wallet.send_tx(tx)
-            if not success:
-                return ServerError('50000', out)
-
-        nout = None
-        amount = 0
-        for i, output in enumerate(tx._outputs):
-            if output[0] & TYPE_UPDATE:
-                nout = i
-                amount = output[2]
-
-        return {
-            "txid": tx.hash(),
-            "nout": nout,
-            "fee": str(Decimal(tx.get_fee()) / COIN),
-            "amount": str(Decimal(amount) / COIN),
-            "claim_id": claim_id
-        }
-
-    @command('un')
-    def publish(self, name, bid, metadata, content_type, source_hash, currency, amount,
-                address=None, tx_fee=None, skip_update_check=None):
-
-        # 和余额的比较claim里面有
-        if bid < 0:
-            raise ValueError('the bid must > 0')
+    def __package_claim_and_verify_params(self, metadata, content_type, source_hash, currency,
+                                          amount, bid, address, tx_fee):
 
         if 'version' not in metadata:
             metadata['version'] = '_0_0_1'
         if address is None:
             address = self.wallets[self.user].addresses(False)[0]
+        if not base_decode(address, ADDRESS_LENGTH, 58):
+            # 基本不可能出现
+            raise DecryptionError('53001', address)
 
         metadata['fee'] = {
             "currency": currency,
@@ -2771,24 +2778,209 @@ class Commands(object):
 
         try:
             claim = ClaimDict.load_dict(claim_dict)
-        except DecodeError as err:
-            raise ValueError("invalid publish claim: %s" % err.message)
+        except DecodeError:
+            log.error(traceback.format_exc())
+            raise DecryptionError('53000')
+        val = claim.serialized
 
-        claim_serialized = claim.serialized
+        if bid < 0:
+            raise ParamsError('51007', bid)
+        amount = int(COIN * bid)
 
-        # 这里需要作异步优化
-        res = self.claim(name, claim_serialized, bid, raw=True, change_addr=address, claim_addr=address,
-                         tx_fee=tx_fee, skip_update_check=skip_update_check)
+        if tx_fee is not None:
+            tx_fee = int(COIN * tx_fee)
+            if tx_fee < 0:
+                raise ParamsError('51008', tx_fee)
 
-        log.info("Publish: %s", {
-            'name': name,
-            'bid': bid,
-            'claim_address': address,
-            'claim_dict': claim_dict,
-            'result': res
-        })
+        return val, address, amount, tx_fee
 
-        return res
+    def __sign_and_send_tx(self, tx):
+        """ 签名并发送一个交易 """
+        try:
+            self.wallets[self.user].sign_transaction(tx, self._password)
+        except:
+            log.error(traceback.format_exc())
+            raise ServerError('52006')
+
+        success, out = self.wallets[self.user].send_tx(tx)
+        if not success:
+            raise ServerError('52005', out)
+
+        nout = None
+        for i, output in enumerate(tx._outputs):
+            if output[0] & TYPE_CLAIM:
+                nout = i
+        if nout is None:
+            raise ServerError('52007')
+
+        claimid = encode_claim_id_hex(claim_id_hash(rev_hex(tx.hash()).decode('hex'), nout))
+        return {
+            "txid": tx.hash(),
+            "nout": nout,
+            "fee": str(Decimal(tx.get_fee()) / COIN),
+            "claim_id": claimid
+        }
+
+    @command('un')
+    def publish(self, name, metadata, content_type, source_hash, currency, amount,
+                bid=1, address=None, tx_fee=None, skip_update_check=False):
+        # todo: 虽然预计是去掉name这个参数, 但是去掉这个参数之后钱包就没法对检验这个资源是不是重复发送  --hetao
+
+        val, address, amount, tx_fee = self.__package_claim_and_verify_params(metadata, content_type, source_hash,
+                                                                              currency, amount, bid, address, tx_fee)
+
+        # res = self.claim(name, val, bid, claim_addr=address, change_addr=address, raw=True, tx_fee=tx_fee)
+        # return res
+
+        if not skip_update_check:
+            try:
+                my_claims = [claim
+                             for claim in self.getnameclaims(include_supports=False,
+                                                             skip_validate_signatures=True)
+                             if claim['name'] == name]
+            except AttributeError:
+                log.error(traceback.format_exc())
+                raise ServerError('52008')
+            if len(my_claims) > 1:
+                raise ServerError('52011', len(my_claims))
+            if my_claims:
+                my_claim = my_claims[0]
+                log.info("There is an unspent claim in your wallet for this name, updating it instead")
+                tx = self.__make_tx_for_update(name, my_claim['claim_id'], my_claim['txid'], my_claim['nout'], val, address, amount, tx_fee)
+                return self.__sign_and_send_tx(tx)
+
+        # try:   # 这里有验证的作用, 但是我们的val是现场生成的, 不需要这段
+        #     claim_value = smart_decode(val)
+        # except DecodeError:
+        #     log.error(traceback.format_exc())
+        #     raise DecryptionError('53000')
+
+        # commission : The amount paid to the platform.  --JustinQP
+        commission = amount - BINDING_FEE
+        outputs = [(TYPE_ADDRESS | TYPE_CLAIM, ((name, val), address), BINDING_FEE),
+                   (TYPE_ADDRESS, PLATFORM_ADDRESS, commission)]
+
+        # todo: get_spendable_coins 容易出现错误, 还没找出好的解决办法
+        try:
+            coins = self.wallets[self.user].get_spendable_coins()
+        except AttributeError:
+            raise ServerError('52008')
+        try:
+            tx = self.wallets[self.user].make_unsigned_transaction(coins, outputs,
+                                                                   self.config, tx_fee, address)
+        except NotEnoughFunds:
+            raise ServerError('52004')
+        return self.__sign_and_send_tx(tx)
+
+
+    def __make_tx_for_update(self, name, claim_id, txid, nout, val, address, amount, tx_fee):
+        try:
+            decoded_claim_id = decode_claim_id_hex(claim_id)
+        except:
+            raise ParamsError('51005', claim_id)
+
+        try:
+            # todo: is watting
+            claim_utxo = self.wallets[self.user].get_spendable_claimtrietx_coin(txid, nout)
+        except:
+            log.error(traceback.format_exc())
+            raise ServerError('52009')
+
+        inputs = [claim_utxo]
+        txout_value = claim_utxo['value']
+
+        claim_tuple = ((name, decoded_claim_id, val), address)
+        claim_type = TYPE_UPDATE
+
+        if amount >= txout_value:
+            additional_input_fee = 0
+            if tx_fee is None:
+                claim_input_size = Transaction.estimated_input_size(claim_utxo)
+                additional_input_fee = Transaction.fee_for_size(
+                    self.wallets[self.user].relayfee(),
+                    self.wallets[self.user].fee_per_kb(self.config),
+                    claim_input_size)
+
+            get_inputs_for_amount = amount - txout_value + additional_input_fee
+            # create a dummy tx for the extra amount in order to get the proper inputs to spend
+            dummy_outputs = [
+                (
+                    TYPE_ADDRESS | claim_type,
+                    claim_tuple,
+                    get_inputs_for_amount
+                )
+            ]
+            coins = self.wallets[self.user].get_spendable_coins()
+            try:
+                dummy_tx = self.wallets[self.user].make_unsigned_transaction(
+                    coins, dummy_outputs, self.config, tx_fee, address)
+            except NotEnoughFunds:
+                return ServerError('52004')
+
+            # add the unspents to input
+            for i in dummy_tx._inputs:
+                inputs.append(i)
+
+            outputs = [
+                (
+                    TYPE_ADDRESS | claim_type,
+                    claim_tuple,
+                    amount
+                )
+            ]
+            # add the change utxos to output
+            for output in dummy_tx._outputs:
+                if not output[0] & claim_type:
+                    outputs.append(output)
+
+        # amount is less than the original bid,
+        # we need to put remainder minus fees in a change address
+        else:
+
+            dummy_outputs = [
+                (
+                    TYPE_ADDRESS | claim_type,
+                    claim_tuple,
+                    amount
+                ),
+                (
+                    TYPE_ADDRESS,
+                    address,
+                    txout_value - amount
+                )
+            ]
+            fee = self._calculate_fee(inputs, dummy_outputs, tx_fee)
+            if fee > txout_value - amount:
+                return ServerError('52010', fee)
+
+            outputs = [
+                (
+                    TYPE_ADDRESS | claim_type,
+                    claim_tuple,
+                    amount
+                ),
+                (
+                    TYPE_ADDRESS,
+                    address,
+                    txout_value - amount - fee
+                )
+            ]
+
+        tx = Transaction.from_io(inputs, outputs)
+        return tx
+
+
+    @command('un')
+    def update_claim(self, name, claim_id, txid, nout, metadata, content_type, source_hash,
+                     currency, amount, bid=1, address=None, tx_fee=None):
+        # todo: what's this
+        gl.flag_claim = True
+
+        val, address, amount, tx_fee = self.__package_claim_and_verify_params(metadata, content_type, source_hash,
+                                                                              currency, amount, bid, address, tx_fee)
+
+        tx = self.__make_tx_for_update(name, claim_id, txid, nout, val, address, amount, tx_fee)
+        return self.__sign_and_send_tx(tx)
 
     @command('u')
     def pay(self, receive_user, amount):
@@ -2796,6 +2988,7 @@ class Commands(object):
         # todo: 优化这里获取地址的方法
         self.load_wallet(receive_user)
         address = self.wallets[receive_user].addresses(False)[0]
+        # todo: 这里需要加上找零地址, 避免地址的增多
         tx = self._mktx([(address, amount)], None, None, None, False, False)
         res = self.network.synchronous_get(('blockchain.transaction.broadcast', [str(tx)]))
         if len(res) == 64:
@@ -2916,7 +3109,8 @@ command_options = {
     'timeout': (None, '--timeout', 'timeout'),
     'include_tip_info': (None, "--include_tip_info", 'Include claim tip information'),
     # TODO: 修改这个描述
-    'address': (None, "--address", 'give address, to receive ULD')
+    'address': (None, "--address", 'give address, to receive ULD'),
+    'bid': (None, '--bid', 'the ULD that publish a resource to the platform')
 }
 
 

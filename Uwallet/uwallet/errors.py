@@ -39,7 +39,8 @@ class ParamsError(ReturnError):
         '51004': 'user already exists',
         '51005': 'invalid claim_id',
         '51006': "claim not find",
-
+        '51007': "the bid must > 0",
+        '51008': "the tx_fee must >= 0",
     }
 
 
@@ -50,17 +51,25 @@ class ServerError(ReturnError):
         '52002': "can't find fee in the claim.",  #  优化
         '52003': 'permission denied',
         '52004': 'Not enough funds',
-
+        '52005': 'broadcast transaction fail',
+        '52006': 'signature transaction fail',
+        '52007': 'nout is None',
+        '52008': 'operation is too frequent: it is necessary to wait for the transaction confirmation',
+        '52009': 'get UTXO fail',
+        '52010': 'No extra funds paid fee',
+        '52011': 'Dont know which claim to update, because the same name claim > 1',
     }
+
+
+class DecryptionError(ReturnError):
+    error_desc = {
+        '53000': 'Decode claim value error',
+        '53001': 'invalid claim address',
+    }
+
 
 
 class EncryptionError(ReturnError):
     error_desc = {
 
     }
-
-class DecryptionError(ReturnError):
-    error_desc = {
-        '53000': 'Decode claim value error',
-    }
-
