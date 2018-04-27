@@ -52,9 +52,7 @@ class Daemon(DaemonThread):
         self.config = config
         self.network = network
 
-        self.wallets ={}
-        self.load_wallet(config.get_wallet_path())
-        self.cmd_runner = Commands(self.config, self.wallets, self.network)
+        self.cmd_runner = Commands(self.config, self.network)
 
         host = config.get('rpchost', '0.0.0.0')
         port = config.get('rpcport', 8000)
@@ -94,38 +92,42 @@ class Daemon(DaemonThread):
             response = "Daemon stopped"
         return response
 
-
     def run(self):
-        cpus = multiprocessing.cpu_count()
-        pros = []
         while self.is_running():
-            fd_sets = _eintr_retry(select.select, [self.server], [], [], 0.1)
-            if not fd_sets[0]:
-                self.server.handle_timeout()
-                ll = pros.__len__()
-                if(ll>0):
-                    aliveCount = 0
-                    for idx in range(0, ll):
-                        if (pros[idx].is_alive()):
-                            aliveCount +=1
-                    print 'aliveThread:',aliveCount
-
-                continue
-            if(pros.__len__() < cpus):
-                currentP = multiprocessing.Process(target=self.server._handle_request_noblock)
-                currentP.start()
-                pros.append(currentP)
-            else:
-                for idx in range(0,cpus):
-                    if(pros[idx].is_alive() == False):
-
-                        currentP = multiprocessing.Process(target=self.server._handle_request_noblock)
-                        currentP.start()
-                        pros[idx] = currentP
-                        break
-
-        # ps aux | grep "python" | grep - v grep | cut - c 9 - 15 | xargs kill - 9
+            self.server.handle_request()
         os.unlink(lockfile(self.config))
+
+    # def run(self):
+    #     cpus = multiprocessing.cpu_count()
+    #     pros = []
+    #     while self.is_running():
+    #         fd_sets = _eintr_retry(select.select, [self.server], [], [], 0.1)
+    #         if not fd_sets[0]:
+    #             self.server.handle_timeout()
+    #             ll = pros.__len__()
+    #             if(ll>0):
+    #                 aliveCount = 0
+    #                 for idx in range(0, ll):
+    #                     if (pros[idx].is_alive()):
+    #                         aliveCount +=1
+    #                 print 'aliveThread:',aliveCount
+    #
+    #             continue
+    #         if(pros.__len__() < cpus):
+    #             currentP = multiprocessing.Process(target=self.server._handle_request_noblock)
+    #             currentP.start()
+    #             pros.append(currentP)
+    #         else:
+    #             for idx in range(0,cpus):
+    #                 if(pros[idx].is_alive() == False):
+    #
+    #                     currentP = multiprocessing.Process(target=self.server._handle_request_noblock)
+    #                     currentP.start()
+    #                     pros[idx] = currentP
+    #                     break
+    #
+    #     # ps aux | grep "python" | grep - v grep | cut - c 9 - 15 | xargs kill - 9
+    #     os.unlink(lockfile(self.config))
 
     def stop(self):
         for k, wallet in self.wallets.items():

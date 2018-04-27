@@ -2,8 +2,8 @@
 import time
 
 from jsonrpclib import Server
-server = Server('http://192.168.14.240:8000')
-# server = Server('http://127.0.0.1:8000')
+# server = Server('http://192.168.14.240:8000')
+server = Server('http://192.168.14.243:8000')
 
 
 def publish(user, password):
@@ -33,7 +33,7 @@ def publish(user, password):
     currency = "ULD"
     amount = 1.54
     bid = 0.59
-    claim_name = 'het1ao'
+    claim_name = 'hetff1ao'
 
     return server.publish(user, password, claim_name, bid, metadata, contentType, sourceHash, currency, amount)
 
@@ -73,13 +73,14 @@ def pay(receive_user, amount):
 
 if __name__ == '__main__':
     t = time.time()
-    user = 'shuxudong'
-    password = 'pbkdf2:sha256:50000$TuvgizYw$37c603e8e802145da79123862a80ac723fe774b5dc972d372ba2f6f39f95e4b2'
-    claim_id = 'b6d4bdf2df77c1d8f9cd7741853f30a00ecca637'
+    user = 'test_1804260951'
+    password = '123'
+    claim_id = '67f619608030640b0c34d4038ba084574c3cd98c'
 
     # print create(user, password)  # 0.8
-    # print pay(user, amount=1000)
+    # print pay(user, amount=10)
     # print getbalance(user, password)
+    # print server.getaddressbalance('uKET7G57uNouTTUkjq9RFXEHLerqCxzRnh')
     print publish(user, password) # 1.88
     # print consume(claim_id)  # 1.4
     print '** time:',  time.time() - t

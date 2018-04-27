@@ -872,7 +872,7 @@ class Abstract_Wallet(PrintError):
                     dd[addr].append((ser, v))
             # save
             self.transactions[tx_hash] = tx
-            log.info("Saved")
+            log.info("Saved transaction")
 
     def remove_transaction(self, tx_hash):
         with self.transaction_lock:

@@ -82,8 +82,7 @@ def main():
             # options
             args += map(lambda x: config.get(x), cmd.options)
             # 标记此次调用为命令行调用
-            if cmdname != 'create':
-                args.insert(0, 'is_command')
+            args.insert(0, 'is_command')
             method = 'server.{}(*{})'.format(cmdname, tuple(args))
 
             result = eval(method)
@@ -106,7 +105,7 @@ def main():
                 network.start()
                 daemon = Daemon(config, network)
                 # daemon.runProc()
-                daemon.start()
+                # daemon.start()
                 daemon.server.serve_forever()
             else:
                 print "starting daemon (PID %d)" % p
