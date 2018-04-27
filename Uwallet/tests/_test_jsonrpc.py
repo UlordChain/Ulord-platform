@@ -33,7 +33,7 @@ def publish(user, password, skip_update_check):
     currency = "ULD"
     amount = 1.56
     bid = 0.59
-    claim_name = 'hetao111'
+    claim_name = 'hetao11111'
 
     return server.publish(user, password, claim_name, metadata, contentType, sourceHash, currency, amount, bid, None, None, skip_update_check)
 

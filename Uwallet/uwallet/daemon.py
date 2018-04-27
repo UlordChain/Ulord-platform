@@ -6,10 +6,8 @@ import jsonrpclib
 from jsonrpclib.SimpleJSONRPCServer import SimpleJSONRPCRequestHandler, SimpleJSONRPCServer
 
 from uwallet.commands import Commands, known_commands
-from uwallet.simple_config import SimpleConfig
-from uwallet.util import DaemonThread, json_decode
-from uwallet.wallet import Wallet, WalletStorage
-from uwallet.network import Network
+from uwallet.util import DaemonThread
+import thread
 import time
 import multiprocessing
 import select
@@ -93,9 +91,20 @@ class Daemon(DaemonThread):
         return response
 
     def run(self):
+        i = 0
         while self.is_running():
-            self.server.handle_request()
+            # self.server.handle_request()
+            try:
+                thread.start_new_thread(self.server.handle_request, ())
+                time.sleep(0.01)
+                i = i+1
+            except Exception,ex:
+                i = 0
+                print ex
+                continue
         os.unlink(lockfile(self.config))
+
+
 
     # def run(self):
     #     cpus = multiprocessing.cpu_count()
