@@ -191,11 +191,6 @@ class Commands(object):
         args.insert(0, self)
         return tuple(args)
 
-    def getNet(self):
-        net = Network(self.config)
-        net.start()
-        return net
-
     def load_wallet(self, user):
         #
         storage = WalletStorage(user)
@@ -315,8 +310,7 @@ class Commands(object):
         """Return the transaction history of any address. Note: This is a
         walletless server query, results are not checked by SPV.
         """
-        net = self.getNet()
-        return net.synchronous_get(('blockchain.address.get_history', [address]))
+        return self.network.synchronous_get(('blockchain.address.get_history', [address]))
 
     @command('uc')
     def listunspent(self):
@@ -333,16 +327,14 @@ class Commands(object):
         """Returns the UTXO list of any address. Note: This
         is a walletless server query, results are not checked by SPV.
         """
-        net = self.getNet()
-        return net.synchronous_get(('blockchain.address.listunspent', [address]))
+        return self.network.synchronous_get(('blockchain.address.listunspent', [address]))
 
     @command('nc')
     def getutxoaddress(self, txid, pos):
         """Get the address of a UTXO. Note: This is a walletless server query, results are
         not checked by SPV.
         """
-        net = self.getNet()
-        r = net.synchronous_get(('blockchain.utxo.get_address', [txid, pos]))
+        r = self.network.synchronous_get(('blockchain.utxo.get_address', [txid, pos]))
         return {'address': r}
 
     @command('uc')
@@ -387,8 +379,7 @@ class Commands(object):
     def broadcast(self, tx):
         """Broadcast a transaction to the network. """
         t = Transaction(tx)
-        net = self.getNet()
-        return net.synchronous_get(('blockchain.transaction.broadcast', [str(t)]))
+        return self.network.synchronous_get(('blockchain.transaction.broadcast', [str(t)]))
 
     @command('c')
     def createmultisig(self, num, pubkeys):
@@ -446,8 +437,7 @@ class Commands(object):
         """Return the balance of any address. Note: This is a walletless
         server query, results are not checked by SPV.
         """
-        net = self.getNet()
-        out = net.synchronous_get(('blockchain.address.get_balance', [address]))
+        out = self.network.synchronous_get(('blockchain.address.get_balance', [address]))
         out["confirmed"] = str(Decimal(out["confirmed"]) / COIN)
         out["unconfirmed"] = str(Decimal(out["unconfirmed"]) / COIN)
         return out
@@ -455,8 +445,7 @@ class Commands(object):
     @command('nc')
     def getproof(self, address):
         """Get Merkle branch of an address in the UTXO set"""
-        net = self.getNet()
-        p = net.synchronous_get(('blockchain.address.get_proof', [address]))
+        p = self.network.synchronous_get(('blockchain.address.get_proof', [address]))
         out = []
         for i, s in p:
             out.append(i)
@@ -466,17 +455,15 @@ class Commands(object):
     def getmerkle(self, txid, height):
         """Get Merkle branch of a transaction included in a block. Electrum
         uses this to verify transactions (Simple Payment Verification)."""
-        net = self.getNet()
-        return net.synchronous_get(
+        return self.network.synchronous_get(
             ('blockchain.transaction.get_merkle', [txid, int(height)]))
 
     @command('nc')
     def getservers(self):
         """Return the list of available servers"""
-        net = self.getNet()
-        while not net.is_up_to_date():
+        while not self.network.is_up_to_date():
             time.sleep(0.1)
-        return net.get_servers()
+        return self.network.get_servers()
 
     @command('c')
     def version(self):
@@ -529,7 +516,6 @@ class Commands(object):
         if tx_fee is None:
             tx_fee = 0.0001
         fee = int(Decimal(tx_fee) * COIN)
-        net = self.getNet()
         return Transaction.sweep(privkeys, net, dest, fee)
 
     @command('uc')
@@ -629,8 +615,7 @@ class Commands(object):
         """Create and broadcast transaction. """
         domain = [from_addr] if from_addr else None
         tx = self._mktx([(destination, amount)], tx_fee, change_addr, domain, nocheck, unsigned, self.user)
-        net = self.getNet()
-        return net.synchronous_get(('blockchain.transaction.broadcast', [str(tx)]))
+        return self.network.synchronous_get(('blockchain.transaction.broadcast', [str(tx)]))
 
     @command('uc')
     def waitfortxinwallet(self, txid, timeout=30):
@@ -685,8 +670,7 @@ class Commands(object):
         """Create and broadcast a multi-output transaction. """
         domain = [from_addr] if from_addr else None
         tx = self._mktx(outputs, tx_fee, change_addr, domain, nocheck, unsigned)
-        net = self.getNet()
-        return net.synchronous_get(('blockchain.transaction.broadcast', [str(tx)]))
+        return self.network.synchronous_get(('blockchain.transaction.broadcast', [str(tx)]))
 
     @command('uc')
     def claimhistory(self):
@@ -889,9 +873,8 @@ class Commands(object):
     def gettransaction(self, txid):
         """Retrieve a transaction in deserialized json format"""
         tx = self.wallets[self.user].transactions.get(txid) if self.wallets[self.user] else None
-        net = self.getNet()
         if tx is None and net:
-            raw = net.synchronous_get(('blockchain.transaction.get', [txid]))
+            raw = self.network.synchronous_get(('blockchain.transaction.get', [txid]))
             if raw:
                 tx = Transaction(raw)
             else:
@@ -923,8 +906,7 @@ class Commands(object):
             except BaseException as e:
                 log.error(str(e))
 
-        net = self.getNet()
-        net.send([('blockchain.address.subscribe', [address])], callback)
+        self.network.send([('blockchain.address.subscribe', [address])], callback)
         return True
 
     def validate_claim_signature_and_get_channel_name(self, claim, certificate_claim,
@@ -1149,23 +1131,21 @@ class Commands(object):
         if not name:
             return {'error': 'no name to request'}
         log.info('Requesting value for name: %s, blockhash: %s', name, blockhash)
-        net = self.getNet()
-        return net.synchronous_get(('blockchain.claimtrie.getvalue', [name, blockhash]))
+        return self.network.synchronous_get(('blockchain.claimtrie.getvalue', [name, blockhash]))
 
     @command('nc')
     def getvalueforname(self, name, raw=False):
         """
         Request value of name from uwallet server and verify its proof
         """
-        net = self.getNet()
-        height = net.get_local_height() - RECOMMENDED_CLAIMTRIE_HASH_CONFIRMS + 1
-        block_header = net.blockchain.read_header(height)
-        block_hash = net.blockchain.hash_header(block_header)
+        height = self.network.get_local_height() - RECOMMENDED_CLAIMTRIE_HASH_CONFIRMS + 1
+        block_header = self.network.blockchain.read_header(height)
+        block_hash = self.network.blockchain.hash_header(block_header)
         response = self.requestvalueforname(name, block_hash)
         height, depth = None, None
         if response and 'height' in response:
             height = response['height']
-            depth = net.get_server_height() - height
+            depth = self.network.get_server_height() - height
         result = Commands._verify_proof(name, block_header['claim_trie_root'], response,
                                         height, depth)
         return self.parse_and_validate_claim_result(result, raw=raw)
@@ -1238,9 +1218,8 @@ class Commands(object):
         # TODO: fix ^ in unetschema
 
         def iter_validate_channel_claims():
-            net = self.getNet()
             for claim_ids in queries:
-                batch_result = net.synchronous_get(
+                batch_result = self.network.synchronous_get(
                     ("blockchain.claimtrie.getclaimsbyids", claim_ids))
                 for claim_id in claim_ids:
                     claim = batch_result[claim_id]
@@ -1287,7 +1266,6 @@ class Commands(object):
     def _handle_resolve_uri_response(self, parsed_uri, block_header, raw, resolution, page=0,
                                      page_size=10):
         result = {}
-        net = self.getNet()
         # parse an included certificate
         if 'certificate' in resolution:
             certificate_response = resolution['certificate']['result']
@@ -1295,7 +1273,7 @@ class Commands(object):
             if certificate_resolution_type == "winning" and certificate_response:
                 if 'height' in certificate_response:
                     height = certificate_response['height']
-                    depth = net.get_server_height() - height
+                    depth = self.network.get_server_height() - height
                     certificate_result = Commands._verify_proof(parsed_uri.name,
                                                                 block_header['claim_trie_root'],
                                                                 certificate_response,
@@ -1333,7 +1311,7 @@ class Commands(object):
             if claim_resolution_type == "winning" and claim_response:
                 if 'height' in claim_response:
                     height = claim_response['height']
-                    depth = net.get_server_height() - height
+                    depth = self.network.get_server_height() - height
                     claim_result = Commands._verify_proof(parsed_uri.name,
                                                           block_header['claim_trie_root'],
                                                           claim_response,
@@ -1400,7 +1378,6 @@ class Commands(object):
         """
         Resolve a ULD URI
         """
-        net = self.getNet()
         page = int(page)
         page_size = int(page_size)
         uris_to_send = ()
@@ -1412,10 +1389,10 @@ class Commands(object):
             except URIParseError as err:
                 return {'error': err.message}
 
-        height = net.get_local_height() - RECOMMENDED_CLAIMTRIE_HASH_CONFIRMS + 1
-        block_header = net.blockchain.read_header(height)
-        block_hash = net.blockchain.hash_header(block_header)
-        response = net.synchronous_get(('blockchain.claimtrie.getvaluesforuris',
+        height = self.network.get_local_height() - RECOMMENDED_CLAIMTRIE_HASH_CONFIRMS + 1
+        block_header = self.network.blockchain.read_header(height)
+        block_hash = self.network.blockchain.hash_header(block_header)
+        response = self.network.synchronous_get(('blockchain.claimtrie.getvaluesforuris',
                                         (block_hash,) + uris_to_send))
         result = {}
         for uri in response:
@@ -1462,8 +1439,7 @@ class Commands(object):
         """
         Return the claims which are in a transaction
         """
-        net = self.getNet()
-        result = net.synchronous_get(('blockchain.claimtrie.getclaimsintx', [txid]))
+        result = self.network.synchronous_get(('blockchain.claimtrie.getclaimsintx', [txid]))
         return self.parse_and_validate_claim_result(result, raw=raw)
 
     @command('nc')
@@ -1473,8 +1449,7 @@ class Commands(object):
         If no claim exists at outpoint, or outpoint not found, return
         dictionary where 'success' is False and 'error' is 'claim not found'
         """
-        net = self.getNet()
-        claims = net.synchronous_get(('blockchain.claimtrie.getclaimsintx', [txid]))
+        claims = self.network.synchronous_get(('blockchain.claimtrie.getclaimsintx', [txid]))
         claim_not_found_out = {'success': False, 'error': 'claim not found',
                                'outpoint': '%s:%i' % (txid, nout)}
         if claims is None:
@@ -1489,8 +1464,7 @@ class Commands(object):
         """
         Return all claims and supports for a name
         """
-        net = self.getNet()
-        result = net.synchronous_get(('blockchain.claimtrie.getclaimsforname', [name]))
+        result = self.network.synchronous_get(('blockchain.claimtrie.getclaimsforname', [name]))
         claims_for_return = []
         for claim in result['claims']:
             claims_for_return.append(self.parse_and_validate_claim_result(claim, raw=raw))
@@ -1502,8 +1476,7 @@ class Commands(object):
         """
         Request claims signed by a given certificate
         """
-        net = self.getNet()
-        result = net.synchronous_get(('blockchain.claimtrie.getclaimssignedbyid',
+        result = self.network.synchronous_get(('blockchain.claimtrie.getclaimssignedbyid',
                                       [claim_id]))
         return [self.parse_and_validate_claim_result(claim, raw=raw) for claim in result]
 
@@ -1512,19 +1485,18 @@ class Commands(object):
         """
         Get claims in a channel for a uri
         """
-        net = self.getNet()
         parsed = parse_unet_uri(uri)
         if not parsed.is_channel:
             return {'error': 'not a channel uri'}
         elif parsed.claim_sequence is not None:
-            claims = net.synchronous_get(
+            claims = self.network.synchronous_get(
                 ('blockchain.claimtrie.getclaimssignedbynthtoname',
                  [parsed.name, parsed.claim_sequence]))
         elif parsed.claim_id is not None:
-            claims = net.synchronous_get(('blockchain.claimtrie.getclaimssignedbyid',
+            claims = self.network.synchronous_get(('blockchain.claimtrie.getclaimssignedbyid',
                                           [parsed.claim_id]))
         else:
-            claims = net.synchronous_get(('blockchain.claimtrie.getclaimssignedby',
+            claims = self.network.synchronous_get(('blockchain.claimtrie.getclaimssignedby',
                                           [parsed.name]))
         if claims:
             return [self.parse_and_validate_claim_result(claim, raw=raw) for claim in claims]
@@ -1535,38 +1507,34 @@ class Commands(object):
         """
         Return a block matching the given blockhash
         """
-        net = self.getNet()
-        return net.synchronous_get(('blockchain.block.get_block', [blockhash]))
+        return self.network.synchronous_get(('blockchain.block.get_block', [blockhash]))
 
         return self.network.synchronous_get(('blockchain.block.get_block', [blockhash]))
 
     @command('nc')
     def getbestblockhash(self):
-        net = self.getNet()
-        height = net.get_local_height()
+        height = self.network.get_local_height()
         if height < 0:
             return None
-        header = net.blockchain.read_header(height)
-        return net.blockchain.hash_header(header)
+        header = self.network.blockchain.read_header(height)
+        return self.network.blockchain.hash_header(header)
 
     @command('nc')
     def getmostrecentblocktime(self):
-        net = self.getNet()
-        height = net.get_local_height()
+        height = self.network.get_local_height()
         if height < 0:
             return None
-        header = net.get_header(net.get_local_height())
+        header = self.network.get_header(self.network.get_local_height())
         return header['timestamp']
 
     @command('nc')
     def getnetworkstatus(self):
-        net = self.getNet()
-        out = {'is_connecting': net.is_connecting(),
-               'is_connected': net.is_connected(),
-               'local_height': net.get_local_height(),
-               'server_height': net.get_server_height(),
-               'blocks_behind': net.get_blocks_behind(),
-               'retrieving_headers': net.blockchain.retrieving_headers}
+        out = {'is_connecting': self.network.is_connecting(),
+               'is_connected': self.network.is_connected(),
+               'local_height': self.network.get_local_height(),
+               'server_height': self.network.get_server_height(),
+               'blocks_behind': self.network.get_blocks_behind(),
+               'retrieving_headers': self.network.blockchain.retrieving_headers}
         return out
 
     @command('nc')
@@ -1574,9 +1542,6 @@ class Commands(object):
         """
         Return the entire claim trie
         """
-        net = self.getNet()
-        return net.synchronous_get(('blockchain.claimtrie.get', []))
-
         return self.network.synchronous_get(('blockchain.claimtrie.get', []))
 
     @command('nc')
@@ -1584,8 +1549,7 @@ class Commands(object):
         """
         Get claim by claim id
         """
-        net = self.getNet()
-        result = net.synchronous_get(('blockchain.claimtrie.getclaimbyid', [claim_id]))
+        result = self.network.synchronous_get(('blockchain.claimtrie.getclaimbyid', [claim_id]))
         return self.parse_and_validate_claim_result(result, raw=raw)
 
     @command('nc')
@@ -1593,7 +1557,6 @@ class Commands(object):
         """
         Get a dictionary of claim results keyed by claim id for a list of claim ids
         """
-        net = self.getNet()
 
         def iter_certificate_ids(claim_results):
             for claim_id, claim_result in claim_results.iteritems():
@@ -1611,11 +1574,11 @@ class Commands(object):
                                                                              raw)
 
         def iter_resolve_and_parse(to_query):
-            claim_results = net.synchronous_get(("blockchain.claimtrie.getclaimsbyids",
+            claim_results = self.network.synchronous_get(("blockchain.claimtrie.getclaimsbyids",
                                                  to_query))
             certificate_infos = dict(iter_certificate_ids(claim_results))
 
-            cert_results = net.synchronous_get(("blockchain.claimtrie.getclaimsbyids",
+            cert_results = self.network.synchronous_get(("blockchain.claimtrie.getclaimsbyids",
                                                 certificate_infos.values()))
             certificates = dict(iter_certificate_claims(cert_results))
 
@@ -1642,8 +1605,7 @@ class Commands(object):
         """
         Get the last update to the nth claim to a name
         """
-        net = self.getNet()
-        result = net.synchronous_get(('blockchain.claimtrie.getnthclaimforname',
+        result = self.network.synchronous_get(('blockchain.claimtrie.getnthclaimforname',
                                       [name, n]))
         return self.parse_and_validate_claim_result(result, raw=raw)
 
