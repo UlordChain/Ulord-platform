@@ -2,11 +2,15 @@
 import ast
 import os
 
+import chardet
 import jsonrpclib
+import pymongo
 from jsonrpclib.SimpleJSONRPCServer import SimpleJSONRPCRequestHandler, SimpleJSONRPCServer
 
 from uwallet.commands import Commands, known_commands
-from uwallet.util import DaemonThread
+from uwallet.simple_config import SimpleConfig
+from uwallet.util import DaemonThread, json_decode
+from uwallet.wallet import Wallet, WalletStorage
 import thread
 import time
 import multiprocessing
@@ -49,8 +53,9 @@ class Daemon(DaemonThread):
         DaemonThread.__init__(self)
         self.config = config
         self.network = network
-
-        self.cmd_runner = Commands(self.config, self.network)
+        self.wallets = {}
+        self.load_wallet()
+        self.cmd_runner = Commands(self.config, self.wallets, self.network)
 
         host = config.get('rpchost', '0.0.0.0')
         port = config.get('rpcport', 8000)
@@ -89,6 +94,49 @@ class Daemon(DaemonThread):
             self.stop()
             response = "Daemon stopped"
         return response
+
+    def load_wallet(self):
+        mongo = pymongo.MongoClient('192.168.14.240')
+        db = mongo.uwallet_user
+        for col_name in db.list_collection_names():
+            col = db.get_collection(col_name)
+
+            for user_name in col.find({}, {'_id':1}):
+
+                user = '_'.join([col_name, user_name['_id']])
+                storage = WalletStorage(user)
+
+                wallet = Wallet(storage)
+                # automatically generate wallet for ulord
+                if not storage.file_exists:
+                    seed = wallet.make_seed()
+                    wallet.add_seed(seed, None)
+                    wallet.create_master_keys(None)
+                    wallet.create_main_account()
+                    wallet.synchronize()
+
+                wallet.start_threads(self.network)
+                if wallet:
+                    self.wallets[user] = wallet
+
+    def run_cmdline(self, config_options):
+        config = SimpleConfig(config_options)
+        cmdname = config.get('cmd')
+        cmd = known_commands[cmdname]
+        # wallet = self.load_wallet(path) if cmd.requires_wallet else None
+        # arguments passed to function
+        args = map(lambda x: config.get(x), cmd.params)
+        # decode json arguments
+        args = map(json_decode, args)
+        # options
+        args += map(lambda x: config.get(x), cmd.options)
+        cmd_runner = Commands(config, self.wallets, self.network,
+                              password=config_options.get('password'),
+                              new_password=config_options.get('new_password'))
+        func = getattr(cmd_runner, cmd.name)
+        result = func(*args)
+        return result
+
 
     def run(self):
         i = 0

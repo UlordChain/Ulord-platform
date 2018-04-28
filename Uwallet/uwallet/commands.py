@@ -158,11 +158,11 @@ def command(s):
 
 
 class Commands(object):
-    def __init__(self, config, network, password=None):
+    def __init__(self, config, wallets, network, callback=None, password=None, new_password=None):
         self.config = config
-        self.wallets = {}
+        self.wallets = wallets
         self.network = network
-        # self._callback = callback
+        self._callback = callback
         self._password = password
         self.is_rpc_command = True
         self.user = None
@@ -180,7 +180,7 @@ class Commands(object):
         except:
             raise ParamsError('51001', "the password can't conversion into str: %s" % password)
 
-        self.load_wallet(self.user)
+        # self.load_wallet(self.user)
         # check password
         try:
             seed = self.wallets[self.user].check_password(password)
@@ -2756,7 +2756,7 @@ class Commands(object):
 
         return val, address, amount, tx_fee
 
-    def __sign_and_send_tx(self, tx):
+    def __sign_and_send_tx(self, tx, is_update=False):
         """ 签名并发送一个交易 """
         try:
             self.wallets[self.user].sign_transaction(tx, self._password)
@@ -2768,29 +2768,11 @@ class Commands(object):
         if not success:
             raise ServerError('52005', out)
 
-        nout = None
-        for i, output in enumerate(tx._outputs):
-            if output[0] & TYPE_CLAIM:
-                nout = i
-        if nout is None:
-            raise ServerError('52007')
-
-        claimid = encode_claim_id_hex(claim_id_hash(rev_hex(tx.hash()).decode('hex'), nout))
-        return {
-            "txid": tx.hash(),
-            "nout": nout,
-            "fee": str(Decimal(tx.get_fee()) / COIN),
-            "claim_id": claimid
-        }
 
     @command('un')
     def publish(self, name, metadata, content_type, source_hash, currency, amount,
                 bid=1, address=None, tx_fee=None, skip_update_check=False):
         # todo: 虽然预计是去掉name这个参数, 但是去掉这个参数之后钱包就没法对检验这个资源是不是重复发送  --hetao
-
-        val, address, amount, tx_fee = self.__package_claim_and_verify_params(metadata, content_type, source_hash,
-                                                                              currency, amount, bid, address, tx_fee)
-
         # res = self.claim(name, val, bid, claim_addr=address, change_addr=address, raw=True, tx_fee=tx_fee)
         # return res
 
@@ -2808,14 +2790,18 @@ class Commands(object):
             if my_claims:
                 my_claim = my_claims[0]
                 log.info("There is an unspent claim in your wallet for this name, updating it instead")
-                tx = self.__make_tx_for_update(name, my_claim['claim_id'], my_claim['txid'], my_claim['nout'], val, address, amount, tx_fee)
-                return self.__sign_and_send_tx(tx)
+                return self.update_claim(name, my_claim['claim_id'], my_claim['txid'], my_claim['nout'], metadata, content_type, source_hash,
+                     currency, amount, bid=bid, address=address, tx_fee=tx_fee)
+
 
         # try:   # 这里有验证的作用, 但是我们的val是现场生成的, 不需要这段
         #     claim_value = smart_decode(val)
         # except DecodeError:
         #     log.error(traceback.format_exc())
         #     raise DecryptionError('53000')
+
+        val, address, amount, tx_fee = self.__package_claim_and_verify_params(metadata, content_type, source_hash,
+                                                                              currency, amount, bid, address, tx_fee)
 
         # commission : The amount paid to the platform.  --JustinQP
         commission = amount - BINDING_FEE
@@ -2832,7 +2818,23 @@ class Commands(object):
                                                                    self.config, tx_fee, address)
         except NotEnoughFunds:
             raise ServerError('52004')
-        return self.__sign_and_send_tx(tx)
+
+        self.__sign_and_send_tx(tx)
+
+        nout = None
+        for i, output in enumerate(tx._outputs):
+            if output[0] & TYPE_CLAIM:
+                nout = i
+        if nout is None:
+            raise ServerError('52007')
+
+        claimid = encode_claim_id_hex(claim_id_hash(rev_hex(tx.hash()).decode('hex'), nout))
+        return {
+            "txid": tx.hash(),
+            "nout": nout,
+            "fee": str(Decimal(tx.get_fee()) / COIN),
+            "claim_id": claimid
+        }
 
 
     def __make_tx_for_update(self, name, claim_id, txid, nout, val, address, amount, tx_fee):
@@ -2938,11 +2940,26 @@ class Commands(object):
         # todo: what's this
         gl.flag_claim = True
 
-        val, address, amount, tx_fee = self.__package_claim_and_verify_params(metadata, content_type, source_hash,
-                                                                              currency, amount, bid, address, tx_fee)
+        val, address, amount, tx_fee = self.__package_claim_and_verify_params(
+        metadata, content_type, source_hash, currency, amount, bid, address, tx_fee)
 
         tx = self.__make_tx_for_update(name, claim_id, txid, nout, val, address, amount, tx_fee)
-        return self.__sign_and_send_tx(tx)
+        self.__sign_and_send_tx(tx)
+
+        nout = None
+        amount = 0
+        for i, output in enumerate(tx._outputs):
+            if output[0] & TYPE_UPDATE:
+                nout = i
+                amount = output[2]
+
+        return {
+            "txid": tx.hash(),
+            "nout": nout,
+            "fee": str(Decimal(tx.get_fee()) / COIN),
+            "bid": str(Decimal(amount) / COIN),
+            "claim_id": claim_id
+        }
 
     @command('u')
     def pay(self, receive_user, amount):
