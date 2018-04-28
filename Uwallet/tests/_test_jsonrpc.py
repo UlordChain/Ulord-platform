@@ -100,20 +100,20 @@ def update_claim(user, password, claim_name, claim_id, txid):
 
 if __name__ == '__main__':
     t = time.time()
-    user = 'test_18042711723'
+    user = 'test_201804281435'
     password = '123'
 
-    claim_name = 'hetao11'
-    claim_id = '7790c7c9514267c6e49f4dad82efcf99ee3ebee3'
-    txid = '424d9db0903a59f614549f05fde8c3c5f2a8b4947bf0bb64086fb80395f82df5'
+    claim_name = 'test_201804281429'
+    claim_id = '8858d3d9bac26fc44896b465fe54acdde595135f'
+    txid = '91b028d6ba803f1a021e44f91391491beea091871c5a75d6c0621cae3bdc5622'
 
     # print create(user, password)  # 0.8
     # print pay(user, amount=10)
     # print getbalance(user, password)
-    # print publish(user, password, claim_name, False) # 3.67
+    print publish(user, password, claim_name, False) # 3.67
     # print publish(user, password, claim_name, True) # 2.68
     # print consume(claim_id)  # 1.4
-    print update_claim(user, password, claim_name, claim_id, txid)  # 1.56 amount
+    # print update_claim(user, password, claim_name, claim_id, txid)  # 1.56 amount
 
     print '** time:',  time.time() - t
 

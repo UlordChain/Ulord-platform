@@ -119,24 +119,6 @@ class Daemon(DaemonThread):
                 if wallet:
                     self.wallets[user] = wallet
 
-    def run_cmdline(self, config_options):
-        config = SimpleConfig(config_options)
-        cmdname = config.get('cmd')
-        cmd = known_commands[cmdname]
-        # wallet = self.load_wallet(path) if cmd.requires_wallet else None
-        # arguments passed to function
-        args = map(lambda x: config.get(x), cmd.params)
-        # decode json arguments
-        args = map(json_decode, args)
-        # options
-        args += map(lambda x: config.get(x), cmd.options)
-        cmd_runner = Commands(config, self.wallets, self.network,
-                              password=config_options.get('password'),
-                              new_password=config_options.get('new_password'))
-        func = getattr(cmd_runner, cmd.name)
-        result = func(*args)
-        return result
-
 
     def run(self):
         i = 0
@@ -191,10 +173,10 @@ class Daemon(DaemonThread):
             wallet.stop_threads()
         DaemonThread.stop(self)
 
-def _eintr_retry(func, *args):
-    """restart a system call interrupted by EINTR"""
-    while True:
-        try:
-            return func(*args)
-        except (OSError, select.error) as e:
-                raise
+# def _eintr_retry(func, *args):
+#     """restart a system call interrupted by EINTR"""
+#     while True:
+#         try:
+#             return func(*args)
+#         except (OSError, select.error) as e:
+#                 raise

@@ -150,6 +150,8 @@ def command(s):
             finally:
                 self.is_rpc_command = True
                 self.user = None
+                self._password = None
+                # self.wallets.clear()
                 # todo: 是否要把钱包数据写回数据库， 钱包数据的多进程该怎么处理 --hetao
 
         return func_wrapper
@@ -158,12 +160,11 @@ def command(s):
 
 
 class Commands(object):
-    def __init__(self, config, wallets, network, callback=None, password=None, new_password=None):
+    def __init__(self, config, wallets, network):
         self.config = config
         self.wallets = wallets
         self.network = network
-        self._callback = callback
-        self._password = password
+        self._password = None
         self.is_rpc_command = True
         self.user = None
         self.contacts = Contacts(self.config)
@@ -180,7 +181,7 @@ class Commands(object):
         except:
             raise ParamsError('51001', "the password can't conversion into str: %s" % password)
 
-        # self.load_wallet(self.user)
+        # self.daemon.load_wallet(self.user)
         # check password
         try:
             seed = self.wallets[self.user].check_password(password)
@@ -191,17 +192,17 @@ class Commands(object):
         args.insert(0, self)
         return tuple(args)
 
-    def load_wallet(self, user):
-        #
-        storage = WalletStorage(user)
-        wallet = Wallet(storage)
-        # automatically generate wallet for ulord
-        if not storage.file_exists:
-            raise ParamsError('51003', user)
-
-        wallet.start_threads(self.network)
-        if wallet:
-            self.wallets[user] = wallet
+    # def load_wallet(self, user):
+    #     #
+    #     storage = WalletStorage(user)
+    #     wallet = Wallet(storage)
+    #     # automatically generate wallet for ulord
+    #     if not storage.file_exists:
+    #         raise ParamsError('51003', user)
+    #
+    #     wallet.start_threads(self.network)
+    #     if wallet:
+    #         self.wallets[user] = wallet
 
     # def _run(self, method, args, password_getter):
     #     # todo: 什么时候进入这里
