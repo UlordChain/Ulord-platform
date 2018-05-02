@@ -76,6 +76,10 @@ class WalletStorage(PrintError):
         res = self.executeMongodb.update_one_doc({'_id': self.user_name}, {operate: {key: value}})
         return res
 
+    def del_wallet(self):
+        res = self.executeMongodb.del_doc({'_id': self.user_name})
+        return res
+
 
 class Abstract_Wallet(PrintError):
     """

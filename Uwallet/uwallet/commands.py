@@ -185,7 +185,7 @@ class Commands(object):
         # check password
         try:
             seed = self.wallets[self.user].check_password(password)
-        except InvalidPassword:
+        except (InvalidPassword, KeyError):
             raise ParamsError('51001', password)
 
         self._password = password
@@ -2679,6 +2679,13 @@ class Commands(object):
             'user': user,
             'seed': seed,
         }
+
+    @command('u')
+    def delete(self):
+        self.wallets[self.user].storage.del_wallet()
+        del self.wallets[self.user]
+        return '%s deleted successfully' % self.user
+
 
     @command('u')
     def password(self, new_password):

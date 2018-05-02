@@ -131,7 +131,7 @@ class Network(DaemonThread):
     the connection succeeds or fails.
 
     这个network类 管理一个由连接到远程远程钱包服务器的链接组成的元组，
-    每个socket连接由Interface对象操作
+    每个socket连接由一个Interface对象操作
     Connections 通过一个一旦成功或失败就结束的Connection线程创建
 
     Our external API:

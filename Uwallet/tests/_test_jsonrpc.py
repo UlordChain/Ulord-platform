@@ -97,10 +97,13 @@ def update_claim(user, password, claim_name, claim_id, txid):
     return server.update_claim(user, password, claim_name, claim_id, txid, nout, metadata,
                          content_type, source_hash, currency, amount, bid, address, tx_fee)
 
+def delete(user, password):
+    return server.delete(user, password)
+
 
 if __name__ == '__main__':
     t = time.time()
-    user = 'test_201805021052'
+    user = 'test_201805021053'
     password = '123'
 
     claim_name = 'test_201805021110'
@@ -109,11 +112,12 @@ if __name__ == '__main__':
 
     # print create(user, password)  # 0.8
     # print pay(user, amount=10)
-    # print getbalance(user, password)
+    print getbalance(user, password)
     # print publish(user, password, claim_name, False) # 3.67
     # print publish(user, password, claim_name, True) # 2.68
-    print consume(claim_id)  # 1.4
+    # print consume(claim_id)  # 1.4
     # print update_claim(user, password, claim_name, claim_id, txid)  # 1.56 amount
+    # print delete(user, password)
 
     print '** time:',  time.time() - t
 
