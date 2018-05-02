@@ -42,10 +42,7 @@ IMPORTED_ACCOUNT = '/x'
 
 class WalletStorage(PrintError):
     def __init__(self, user):
-        if '_' in user:
-            self.app_key, self.user_name = tuple(user.split('_'))
-        else:
-            self.app_key, self.user_name = 'ulord', user
+        self.app_key, self.user_name = tuple(user.split('_'))
 
         self.executeMongodb = ExecuteMongodb('uwallet_user', self.app_key)
 

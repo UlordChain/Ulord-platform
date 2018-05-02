@@ -2,8 +2,8 @@
 import time
 
 from jsonrpclib import Server
-server = Server('http://192.168.14.240:8000')
-# server = Server('http://192.168.14.241:8000')
+# server = Server('http://192.168.14.240:8000')
+server = Server('http://192.168.14.241:8000')
 
 
 def publish(user, password, claim_name,  skip_update_check):
@@ -100,15 +100,15 @@ def update_claim(user, password, claim_name, claim_id, txid):
 
 if __name__ == '__main__':
     t = time.time()
-    user = 'shuxudong'
-    password = 'pbkdf2:sha256:50000$TuvgizYw$37c603e8e802145da79123862a80ac723fe774b5dc972d372ba2f6f39f95e4b2'
+    user = 'test_201805021052'
+    password = '123'
 
-    claim_name = 'test_201805021019'
-    claim_id = 'af8492c68020fdc8dca658c396d26381093058e0'
-    txid = '9d560fb87544b571773f7d85c064876e15e2dbfcb116637ac456a3390737e124'
+    claim_name = 'test_201805021110'
+    claim_id = '02b8effb3916538dc1781f2c424c1a0d2246b2db'
+    txid = '54f184fd7983241b94bcb363c1c8621bb9e7529ef71f761900021fe702c29764'
 
     # print create(user, password)  # 0.8
-    # print pay(user, amount=10000)
+    # print pay(user, amount=10)
     # print getbalance(user, password)
     # print publish(user, password, claim_name, False) # 3.67
     # print publish(user, password, claim_name, True) # 2.68

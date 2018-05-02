@@ -152,7 +152,6 @@ def command(s):
                 self.user = None
                 self._password = None
                 # self.wallets.clear()
-                # todo: 是否要把钱包数据写回数据库， 钱包数据的多进程该怎么处理 --hetao
 
         return func_wrapper
 
@@ -172,7 +171,8 @@ class Commands(object):
     def load_user(self, args):
         # warning: 此处顺序不能乱
         password = args.pop(1)
-        self.user = args.pop(0)
+        user = args.pop(0)
+        self.user = user if '_' in user else 'ulord_' + user
 
         if not password:
             raise ParamsError('51002')
@@ -534,6 +534,9 @@ class Commands(object):
               claim_val=None,
               abandon_txid=None, claim_id=None):
         self.nocheck = nocheck
+        # 确定找零地址
+        if change_addr is None:
+            change_addr = self.wallets[self.user].addresses(False)[0]
         change_addr = self._resolver(change_addr)
         domain = None if domain is None else map(self._resolver, domain)
         fee = None if fee is None else int(COIN * Decimal(fee))
@@ -2963,7 +2966,6 @@ class Commands(object):
         # todo: 优化这里获取地址的方法
         # self.load_wallet(receive_user)
         address = self.wallets[receive_user].addresses(False)[0]
-        # todo: 这里需要加上找零地址, 避免地址的增多
         tx = self._mktx([(address, amount)], None, None, None, False, False)
         res = self.network.synchronous_get(('blockchain.transaction.broadcast', [str(tx)]))
         if len(res) == 64:
@@ -3083,8 +3085,7 @@ command_options = {
     'val': (None, '--value', 'claim value'),
     'timeout': (None, '--timeout', 'timeout'),
     'include_tip_info': (None, "--include_tip_info", 'Include claim tip information'),
-    # TODO: 修改这个描述
-    'address': (None, "--address", 'give address, to receive ULD'),
+    'address': (None, "--address", 'a address, to receive ULD'),
     'bid': (None, '--bid', 'the ULD that publish a resource to the platform')
 }
 
