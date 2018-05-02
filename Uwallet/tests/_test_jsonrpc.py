@@ -2,8 +2,8 @@
 import time
 
 from jsonrpclib import Server
-# server = Server('http://192.168.14.240:8000')
-server = Server('http://192.168.14.241:8000')
+server = Server('http://192.168.14.240:8000')
+# server = Server('http://192.168.14.241:8000')
 
 
 def publish(user, password, claim_name,  skip_update_check):
@@ -41,7 +41,7 @@ def consume(claim_id):
 
     :return: {u'success': True, u'tx': u'3ecce656dbfeea5b38f385549ac51e550bfa6d70bba9d2042dacdd3c1def662a'}
     """
-    user = 'test_hetao'
+    user = 'hetao'
     password = '123'
     return server.consume(user, password, claim_id)
 
@@ -66,7 +66,7 @@ def pay(receive_user, amount):
     :param password:
     :return: {u'success': True, u'txid': u'b6b921500444b575b48745e33a8808c692a5bbe3c6ecfae4714c264d81696daf'}
     """
-    send_user = 'test_hetao'
+    send_user = 'hetao'
     password = '123'
     return server.pay(send_user, password, receive_user, amount)
 
@@ -100,21 +100,21 @@ def update_claim(user, password, claim_name, claim_id, txid):
 
 if __name__ == '__main__':
     t = time.time()
-    user = 'test_201804281435'
-    password = '123'
+    user = 'shuxudong'
+    password = 'pbkdf2:sha256:50000$TuvgizYw$37c603e8e802145da79123862a80ac723fe774b5dc972d372ba2f6f39f95e4b2'
 
-    claim_name = 'test_201804281429'
-    claim_id = '8858d3d9bac26fc44896b465fe54acdde595135f'
-    txid = '91b028d6ba803f1a021e44f91391491beea091871c5a75d6c0621cae3bdc5622'
+    claim_name = 'test_201805021019'
+    claim_id = 'af8492c68020fdc8dca658c396d26381093058e0'
+    txid = '9d560fb87544b571773f7d85c064876e15e2dbfcb116637ac456a3390737e124'
 
     # print create(user, password)  # 0.8
-    # print pay(user, amount=10)
+    # print pay(user, amount=10000)
     # print getbalance(user, password)
-    print publish(user, password, claim_name, False) # 3.67
+    # print publish(user, password, claim_name, False) # 3.67
     # print publish(user, password, claim_name, True) # 2.68
-    # print consume(claim_id)  # 1.4
+    print consume(claim_id)  # 1.4
     # print update_claim(user, password, claim_name, claim_id, txid)  # 1.56 amount
 
     print '** time:',  time.time() - t
 
-    # print server.commands()
+    # print server.listaddresses()

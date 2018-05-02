@@ -246,7 +246,6 @@ class Commands(object):
         #     msg = "Recovery successful" if wallet.is_found() else "Found no history for this wallet"
         # else:
         #     msg = "This wallet was restored offline. It may contain more addresses than displayed."
-        # wallet.storage.write()
         # log.info(msg)
 
     @command('uc')
@@ -274,7 +273,6 @@ class Commands(object):
         #         print "Done."
         #     else:
         #         print "Action canceled."
-        # wallet.storage.write()
 
     # todo: 考虑去掉这个方法
     @command('c')
@@ -2672,7 +2670,6 @@ class Commands(object):
         wallet.create_main_account()
         wallet.synchronize()
         wallet.start_threads(self.network)
-        wallet.storage.write()
         self.wallets[user] = wallet
 
         return {
@@ -2684,8 +2681,6 @@ class Commands(object):
     def password(self, new_password):
         """Change wallet password. """
         self.wallets[self.user].update_password(self._password, str(new_password))
-        # todo: 修改
-        self.wallets[self.user].storage.write()
         return self.wallets[self.user].use_encryption
 
     @command('u')
@@ -2966,7 +2961,7 @@ class Commands(object):
     def pay(self, receive_user, amount):
         """ Create and broadcast transaction. """
         # todo: 优化这里获取地址的方法
-        self.load_wallet(receive_user)
+        # self.load_wallet(receive_user)
         address = self.wallets[receive_user].addresses(False)[0]
         # todo: 这里需要加上找零地址, 避免地址的增多
         tx = self._mktx([(address, amount)], None, None, None, False, False)

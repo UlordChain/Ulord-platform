@@ -59,6 +59,7 @@ class ServerError(ReturnError):
         '52009': 'get UTXO fail',
         '52010': 'No extra funds paid fee',
         '52011': 'Dont know which claim to update, because the same name claim > 1',
+        '52012': 'cannot save field',
     }
 
 
