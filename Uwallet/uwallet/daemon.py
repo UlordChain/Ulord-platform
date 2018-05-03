@@ -1,33 +1,17 @@
 #-*- coding: UTF-8 -*-
-import ast
-import os
-
-import chardet
 import jsonrpclib
 import pymongo
 from jsonrpclib.SimpleJSONRPCServer import SimpleJSONRPCRequestHandler, SimpleJSONRPCServer
 
 from uwallet.commands import Commands, known_commands
-from uwallet.simple_config import SimpleConfig
 from uwallet.util import DaemonThread, json_decode
 from uwallet.wallet import Wallet, WalletStorage
 import thread
 import time
-import multiprocessing
-import select
-import traceback
-
-def lockfile(config):
-    return os.path.join(config.path, 'daemon')
 
 
 def get_daemon(config):
-    try:
-        with open(lockfile(config)) as f:
-            host, port = ast.literal_eval(f.read())
-    except:
-        return
-    server = jsonrpclib.Server('http://%s:%d' % (host, port))
+    server = jsonrpclib.Server('http://%s:%d' % ('localhost', config.get('rpc_port')))
     # check if daemon is running
     try:
         server.ping()
@@ -57,12 +41,9 @@ class Daemon(DaemonThread):
         self.load_wallet()
         self.cmd_runner = Commands(self.config, self.wallets, self.network)
 
-        host = config.get('rpchost', '0.0.0.0')
-        port = config.get('rpcport', 8000)
-        self.server = SimpleJSONRPCServer((host, port), requestHandler=RequestHandler,
+        self.server = SimpleJSONRPCServer(('0.0.0.0', config.get('rpc_port')),
+                                          requestHandler=RequestHandler,
                                           logRequests=False)
-        with open(lockfile(config), 'w') as f:
-            f.write(repr(self.server.socket.getsockname()))
         self.server.timeout = 0.1
         for cmdname in known_commands:
             # rpc直接调用命令 --hetao
@@ -132,7 +113,6 @@ class Daemon(DaemonThread):
                 i = 0
                 print ex
                 continue
-        os.unlink(lockfile(self.config))
 
 
 

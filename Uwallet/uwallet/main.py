@@ -142,6 +142,7 @@ if __name__ == '__main__':
     sys.argv.append('daemon')
     sys.argv.append('start')
     sys.argv.append('-v')
+    sys.argv.append('-P 8001')
 
     print sys.argv
     rs = main()
