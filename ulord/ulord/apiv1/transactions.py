@@ -6,7 +6,7 @@ from . import bpv1,appkey_check, get_jsonrpc_server
 from ulord.utils import return_result
 from ulord.utils.formatter import add_timestamp
 from flask import request, g,current_app
-from ulord.models import Content, Tag, ContentHistory, Consume, AppUser
+from ulord.models import Content, Tag, ContentHistory, Consume, AppUser,User
 from ulord.extensions import db
 from ulord.utils.generate import generate_appkey
 
@@ -20,8 +20,9 @@ def create_address():
     username_wallet = get_wallet_name(username)
     pay_password = request.json.get('pay_password')
 
-    server = get_jsonrpc_server()
     try:
+        server = get_jsonrpc_server()
+        print(username_wallet,pay_password)
         result = server.create(username_wallet, pay_password)
         print(result)
         if result.get('success') is not True:
@@ -55,8 +56,8 @@ def pay_to_user():
     recv_wallet_username = get_wallet_name(request.json.get('recv_user'))
     amount = request.json.get('amount')
 
-    server = get_jsonrpc_server()
     try:
+        server = get_jsonrpc_server()
         result = server.pay(send_user_wallet, pay_password, recv_wallet_username, amount)
         print(result)
         if result.get('success') is not True:
@@ -74,13 +75,15 @@ def balance():
     """Check balances"""
     is_developer = request.json.get('is_developer')
     if is_developer:
-        username_wallet = request.json.get('username')
+        username_wallet = g.user.username
+        pay_password=g.user.password_hash
     else:
         username_wallet = get_wallet_name(request.json.get('username'))
-    pay_password = request.json.get('pay_password')
+        pay_password = request.json.get('pay_password')
 
-    server = get_jsonrpc_server()
+
     try:
+        server = get_jsonrpc_server()
         result = server.getbalance(username_wallet, pay_password)
         if result.get('success') is not True:
             print(result)
@@ -120,8 +123,9 @@ def publish():
                     description='', language='en',
                     license='', licenseUrl='', nsfw=False, preview='', thumbnail='', )
 
-    server = get_jsonrpc_server()
+
     try:
+        server = get_jsonrpc_server()
         # print(username_wallet, pay_password, sourcename, bid, metadata, content_type, udfs_hash, currency, price)
         result = server.publish(username_wallet, pay_password, sourcename,metadata,
                                 content_type, udfs_hash, currency, price,bid,None,None,True)
@@ -196,8 +200,8 @@ def consume():
     if content.author != customer and content.price != 0:  # Non-free resources
         consume = Consume.query.filter_by(claim_id=claim_id, customer=customer, appkey=appkey).first()
         if not consume:
-            server = get_jsonrpc_server()
             try:
+                server = get_jsonrpc_server()
                 if price >= 0:  # Normal
                     result = server.consume(wallet_username,customer_pay_password,claim_id)
                 else:  # Ad
