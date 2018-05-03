@@ -67,6 +67,10 @@ class User(db.Model):
     def password(self):
         raise AttributeError("Password don't allow read.")
 
+    @password.setter
+    def password(self,password):
+        self.password_hash=password
+
     def __repr__(self):
         return '<User {}>'.format(self.username)
 

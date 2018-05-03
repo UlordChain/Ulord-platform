@@ -9,7 +9,7 @@ from flask import Flask, Response, jsonify, abort,request
 from .extensions import db,ma
 from config import dconfig
 from .utils import return_result
-from ulord.apiv1 import bpv1
+from .apiv1 import bpv1
 
 
 class JSONResponse(Response):
@@ -38,10 +38,7 @@ def config_app(app, config_name):
     @app.before_request
     def before():
         if request.method=='POST' and not request.json:
-            return return_result(20102)
-
-    # @app.after_request  # def after_request(response):  #     try:  #         db.session.commit()  #     except Exception as e:  #         db.session.rollback()  #         print (e)  #         abort(500)  #     return response
-
+            return return_result(20101)
 
 def dispatch_apps(app):
     app.register_blueprint(bpv1)

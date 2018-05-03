@@ -55,7 +55,6 @@ def get_jsonrpc_server():
         'http://{}:{}'.format(current_app.config['WALLET_JSONRPC_HOST'], current_app.config['WALLET_JSONRPC_PORT']))
     return server
 
-
-# args1: 蓝图名(端点的一部分, 加上视图那部分端点才完整)
 bpv1 = Blueprint('apiv1', __name__, url_prefix='/v1')
 from . import app_type, role, transactions, users, uapp, content
+
