@@ -26,7 +26,7 @@ from uwallet.mnemonic import Mnemonic
 from uwallet.synchronizer import Synchronizer
 from uwallet.transaction import Transaction
 from uwallet.util import PrintError, profiler, rev_hex
-from uwallet.errors import NotEnoughFunds, InvalidPassword
+from uwallet.errors import NotEnoughFunds, InvalidPassword, ServerError
 from uwallet.verifier import SPV
 from uwallet.version import NEW_SEED_VERSION
 from uwallet.ulord import regenerate_key, is_address, is_compressed, pw_encode, pw_decode
@@ -42,22 +42,12 @@ IMPORTED_ACCOUNT = '/x'
 
 class WalletStorage(PrintError):
     def __init__(self, user):
-        # todo: 现在钱包的数据操作都是依赖于内存中的self.data， 需要将他重构为直接和数据库的交互
-        if '_' in user:
-            self.app_key, self.user_name = tuple(user.split('_'))
-        else:
-            self.app_key, self.user_name = 'ulord', user
+        self.app_key, self.user_name = tuple(user.split('_'))
 
         self.executeMongodb = ExecuteMongodb('uwallet_user', self.app_key)
 
-        data = self.read()
-        # todo: 这属性是否有用, 没用的话可以去掉
-        self.data = {} if data is None else data
-        self.file_exists = False if data is None else True
-
-        self.path = user
-        self.modified = False
-        self.lock = threading.RLock()
+        self.user = user
+        self.file_exists = False if self.read() is None else True
 
 
     def read(self):
@@ -66,59 +56,28 @@ class WalletStorage(PrintError):
 
 
     def get(self, key, default=None):
-        # res = self.executeMongodb.find_one_doc({'_id': self.user_name}, {'_id': 0, key: 1})
-        # if res:
-        #     return res[key]
-        # else:
-        #     return default
-
-        with self.lock:
-            v = self.data.get(key)
-            if v is None:
-                v = default
-            else:
-                v = copy.deepcopy(v)
-        return v
+        res = self.executeMongodb.find_one_doc({'_id': self.user_name}, {'_id': 0, key: 1})
+        if res:
+            return res[key]
+        else:
+            return default
 
     def put(self, key, value):
-        # try:
-        #     json.dumps(key)
-        #     json.dumps(value)
-        # except:
-        #     self.print_error("json error: cannot save", key)
-        #     return
-        # if value is not None:
-        #     operate = '$set'
-        # else:
-        #     operate = '$unset'
-        # res = self.executeMongodb.update_one_doc({'_id': self.user_name}, {operate: {key: value}})
-        # return res
-
         try:
             json.dumps(key)
             json.dumps(value)
         except:
             self.print_error("json error: cannot save", key)
-            return
-        with self.lock:
-            if value is not None:
-                if self.data.get(key) != value:
-                    self.modified = True
-                    self.data[key] = copy.deepcopy(value)
-            elif key in self.data:
-                self.modified = True
-                self.data.pop(key)
+            raise ServerError('52012', key)
+        if value is not None:
+            operate = '$set'
+        else:
+            operate = '$unset'
+        res = self.executeMongodb.update_one_doc({'_id': self.user_name}, {operate: {key: value}})
+        return res
 
-
-    def write(self):
-        """ 将内存数据写入数据库， 备用
-        - 因为数据在改动的时候直接写入数据库， 所以这一步我认为没有必要， 暂时作为过度
-        """
-        if not self.modified:
-            return
-
-        res = self.executeMongodb.update_one_doc({'_id': self.user_name}, {'$set': self.data})
-        self.modified = False
+    def del_wallet(self):
+        res = self.executeMongodb.del_doc({'_id': self.user_name})
         return res
 
 
@@ -230,22 +189,16 @@ class Abstract_Wallet(PrintError):
             self.storage.put('pruned_txo', self.pruned_txo)
             self.storage.put('addr_history', self.history)
             self.storage.put('claimtrie_transactions', self.claimtrie_transactions)
-            if write:
-                self.storage.write()
 
     def save_certificate(self, claim_id, private_key, write=True):
         certificate_keys = self.storage.get('claim_certificates') or {}
         certificate_keys[claim_id] = private_key
         self.storage.put('claim_certificates', certificate_keys)
-        if write:
-            self.storage.write()
 
     def set_default_certificate(self, claim_id, overwrite_existing=True, write=False):
         if self.default_certificate_claim is not None and overwrite_existing or not \
                 self.default_certificate_claim:
             self.storage.put('default_certificate_claim', claim_id)
-            if write:
-                self.storage.write()
             self.default_certificate_claim = claim_id
 
     def get_certificate_signing_key(self, claim_id):
@@ -300,7 +253,7 @@ class Abstract_Wallet(PrintError):
         pass
 
     def basename(self):
-        return os.path.basename(self.storage.path)
+        return self.storage.user
 
     def convert_imported_keys(self, password):
         for k, v in self.imported_keys.items():
@@ -1320,7 +1273,6 @@ class Abstract_Wallet(PrintError):
             # Now no references to the syncronizer or verifier
             # remain so they will be GC-ed
             self.storage.put('stored_height', self.get_local_height())
-        self.storage.write()
 
     def wait_until_synchronized(self, callback=None):
         def wait_for_wallet():
@@ -1603,7 +1555,6 @@ class Deterministic_Wallet(Abstract_Wallet):
                 account = self.default_account()
             address = account.create_new_address(for_change)
             self.add_address(address)
-            self.storage.write()
         log.info("created address %s", address)
         return address
 
@@ -2160,3 +2111,12 @@ class Wallet(object):
         else:
             raise BaseException('Invalid seedphrase or key')
         return wallet
+
+if __name__ == '__main__':
+    import time
+    t = time.time()
+    user = 'test_201804281429'
+    storage = WalletStorage(user)
+    wallet = Wallet(storage)
+    print dir(wallet)
+    print '**', time.time() - t

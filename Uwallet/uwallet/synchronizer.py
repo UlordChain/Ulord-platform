@@ -17,6 +17,10 @@ class Synchronizer(ThreadJob):
     we don't have the full history of, and requests binary transaction
     data of any transactions the wallet doesn't have.
 
+    同步器保持钱包的交易和地址处于最新状态。 它通过network订阅钱包地址，
+    在必要时获取钱包以生成新地址，请求任何我们没有完整历史记录的地址的交易历史记录，
+    并请求钱包没有的任何交易的二进制交易数据。
+
     External interface: __init__() and add() member functions.
     '''
 

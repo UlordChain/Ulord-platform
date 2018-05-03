@@ -2,14 +2,16 @@
 import ast
 import os
 
+import chardet
 import jsonrpclib
+import pymongo
 from jsonrpclib.SimpleJSONRPCServer import SimpleJSONRPCRequestHandler, SimpleJSONRPCServer
 
 from uwallet.commands import Commands, known_commands
 from uwallet.simple_config import SimpleConfig
 from uwallet.util import DaemonThread, json_decode
 from uwallet.wallet import Wallet, WalletStorage
-from uwallet.network import Network
+import thread
 import time
 import multiprocessing
 import select
@@ -51,8 +53,9 @@ class Daemon(DaemonThread):
         DaemonThread.__init__(self)
         self.config = config
         self.network = network
-
-        self.cmd_runner = Commands(self.config, self.network)
+        self.wallets = {}
+        self.load_wallet()
+        self.cmd_runner = Commands(self.config, self.wallets, self.network)
 
         host = config.get('rpchost', '0.0.0.0')
         port = config.get('rpcport', 8000)
@@ -92,10 +95,46 @@ class Daemon(DaemonThread):
             response = "Daemon stopped"
         return response
 
+    def load_wallet(self):
+        mongo = pymongo.MongoClient('192.168.14.240')
+        db = mongo.uwallet_user
+        for col_name in db.list_collection_names():
+            col = db.get_collection(col_name)
+
+            for user_name in col.find({}, {'_id':1}):
+
+                user = '_'.join([col_name, user_name['_id']])
+                storage = WalletStorage(user)
+
+                wallet = Wallet(storage)
+                # automatically generate wallet for ulord
+                if not storage.file_exists:
+                    seed = wallet.make_seed()
+                    wallet.add_seed(seed, None)
+                    wallet.create_master_keys(None)
+                    wallet.create_main_account()
+                    wallet.synchronize()
+
+                wallet.start_threads(self.network)
+                if wallet:
+                    self.wallets[user] = wallet
+
+
     def run(self):
+        i = 0
         while self.is_running():
-            self.server.handle_request()
+            # self.server.handle_request()
+            try:
+                thread.start_new_thread(self.server.handle_request, ())
+                time.sleep(0.01)
+                i = i+1
+            except Exception,ex:
+                i = 0
+                print ex
+                continue
         os.unlink(lockfile(self.config))
+
+
 
     # def run(self):
     #     cpus = multiprocessing.cpu_count()
@@ -134,10 +173,10 @@ class Daemon(DaemonThread):
             wallet.stop_threads()
         DaemonThread.stop(self)
 
-def _eintr_retry(func, *args):
-    """restart a system call interrupted by EINTR"""
-    while True:
-        try:
-            return func(*args)
-        except (OSError, select.error) as e:
-                raise
+# def _eintr_retry(func, *args):
+#     """restart a system call interrupted by EINTR"""
+#     while True:
+#         try:
+#             return func(*args)
+#         except (OSError, select.error) as e:
+#                 raise

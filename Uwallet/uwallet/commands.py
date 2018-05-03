@@ -10,6 +10,7 @@ import logging
 import sys
 import time
 import os
+import traceback
 from decimal import Decimal
 from functools import wraps
 
@@ -149,7 +150,8 @@ def command(s):
             finally:
                 self.is_rpc_command = True
                 self.user = None
-                # todo: 是否要把钱包数据写回数据库， 钱包数据的多进程该怎么处理 --hetao
+                self._password = None
+                # self.wallets.clear()
 
         return func_wrapper
 
@@ -157,12 +159,11 @@ def command(s):
 
 
 class Commands(object):
-    def __init__(self, config, network, password=None):
+    def __init__(self, config, wallets, network):
         self.config = config
-        self.wallets = {}
+        self.wallets = wallets
         self.network = network
-        # self._callback = callback
-        self._password = password
+        self._password = None
         self.is_rpc_command = True
         self.user = None
         self.contacts = Contacts(self.config)
@@ -170,7 +171,8 @@ class Commands(object):
     def load_user(self, args):
         # warning: 此处顺序不能乱
         password = args.pop(1)
-        self.user = args.pop(0)
+        user = args.pop(0)
+        self.user = user if '_' in user else 'ulord_' + user
 
         if not password:
             raise ParamsError('51002')
@@ -179,28 +181,28 @@ class Commands(object):
         except:
             raise ParamsError('51001', "the password can't conversion into str: %s" % password)
 
-        self.load_wallet(self.user)
+        # self.daemon.load_wallet(self.user)
         # check password
         try:
             seed = self.wallets[self.user].check_password(password)
-        except InvalidPassword:
+        except (InvalidPassword, KeyError):
             raise ParamsError('51001', password)
 
         self._password = password
         args.insert(0, self)
         return tuple(args)
 
-    def load_wallet(self, user):
-        #
-        storage = WalletStorage(user)
-        wallet = Wallet(storage)
-        # automatically generate wallet for ulord
-        if not storage.file_exists:
-            raise ParamsError('51003', user)
-
-        wallet.start_threads(self.network)
-        if wallet:
-            self.wallets[user] = wallet
+    # def load_wallet(self, user):
+    #     #
+    #     storage = WalletStorage(user)
+    #     wallet = Wallet(storage)
+    #     # automatically generate wallet for ulord
+    #     if not storage.file_exists:
+    #         raise ParamsError('51003', user)
+    #
+    #     wallet.start_threads(self.network)
+    #     if wallet:
+    #         self.wallets[user] = wallet
 
     # def _run(self, method, args, password_getter):
     #     # todo: 什么时候进入这里
@@ -244,7 +246,6 @@ class Commands(object):
         #     msg = "Recovery successful" if wallet.is_found() else "Found no history for this wallet"
         # else:
         #     msg = "This wallet was restored offline. It may contain more addresses than displayed."
-        # wallet.storage.write()
         # log.info(msg)
 
     @command('uc')
@@ -272,7 +273,6 @@ class Commands(object):
         #         print "Done."
         #     else:
         #         print "Action canceled."
-        # wallet.storage.write()
 
     # todo: 考虑去掉这个方法
     @command('c')
@@ -534,6 +534,9 @@ class Commands(object):
               claim_val=None,
               abandon_txid=None, claim_id=None):
         self.nocheck = nocheck
+        # 确定找零地址
+        if change_addr is None:
+            change_addr = self.wallets[self.user].addresses(False)[0]
         change_addr = self._resolver(change_addr)
         domain = None if domain is None else map(self._resolver, domain)
         fee = None if fee is None else int(COIN * Decimal(fee))
@@ -1807,7 +1810,6 @@ class Commands(object):
         wallet = self.wallets[self.user]
         if skip_validate_schema and certificate_id:
             return {'success': False, 'reason': 'refusing to sign claim without validated schema'}
-
         parsed_claim = self.verify_request_to_make_claim(name, val, certificate_id)
         if 'error' in parsed_claim:
             return {'success': False, 'reason': parsed_claim['error']}
@@ -2319,6 +2321,7 @@ class Commands(object):
                     'reason': 'Cannot update a support, is_support_replace must be True'}
 
         inputs = [claim_utxo]
+        # todo: ??
         txout_value = claim_utxo['value']
 
         if not is_support_replace:
@@ -2488,64 +2491,7 @@ class Commands(object):
         return {'success': True, 'txid': tx.hash(), 'tx': str(tx),
                 'fee': str(Decimal(tx.get_fee()) / COIN)}
 
-    # ========================================================================
-    # ####################    my packaging interface   #######################
-    # ========================================================================
-    @command('n')  # 这里不能加u标记
-    def create(self, user, password):
-        """Create a new wallet"""
-        if not password:
-            raise ParamsError('51002')
-        try:
-            password = str(password)
-        except:
-            raise ParamsError('51001', "the password can't conversion into str: %s" % password)
-
-        storage = WalletStorage(user)
-        if storage.file_exists:
-            raise ParamsError('51004', 'user')
-        wallet = Wallet(storage)
-        seed = wallet.make_seed()
-        wallet.add_seed(seed, password)
-        wallet.create_master_keys(password)
-        wallet.create_main_account()
-        wallet.synchronize()
-        wallet.start_threads(self.network)
-        wallet.storage.write()
-        self.wallets[user] = wallet
-
-        return {
-            'user': user,
-            'seed': seed,
-        }
-
-    @command('u')
-    def password(self, new_password):
-        """Change wallet password. """
-        self.wallets[self.user].update_password(self._password, str(new_password))
-        # todo: 修改
-        self.wallets[self.user].storage.write()
-        return self.wallets[self.user].use_encryption
-
-    @command('u')
-    def getbalance(self, account=None, exclude_claimtrietx=False):
-        """Return the balance of your wallet. """
-        if account is None:
-            c, u, x = self.wallets[self.user].get_balance(exclude_claimtrietx=exclude_claimtrietx)
-        else:
-            c, u, x = self.wallets[self.user].get_account_balance(account, exclude_claimtrietx)
-        out = {"confirmed": str(Decimal(c) / COIN)}
-        total = (Decimal(c) / COIN)
-        if u:
-            out["unconfirmed"] = str(Decimal(u) / COIN)
-            total = total + (Decimal(u) / COIN)
-        if x:
-            out["unmatured"] = str(Decimal(x) / COIN)
-            total = total + (Decimal(x) / COIN)
-        out['total'] = str(total)
-        return out
-
-    @command('un')
+    @command('unc')
     def update(self, name, val, amount=None, certificate_id=None, claim_id=None, txid=None,
                nout=None, broadcast=True, claim_addr=None, tx_fee=None, change_addr=None, raw=None,
                skip_validate_schema=None):
@@ -2588,8 +2534,10 @@ class Commands(object):
 
         if not raw:
             val = val.decode('hex')
+
         if not skip_validate_schema:
             try:
+                # claim_value可能==None
                 decoded_claim = smart_decode(val)
             except DecodeError as err:
                 return {'success': False, 'reason': 'Decode error: %s' % err}
@@ -2604,6 +2552,7 @@ class Commands(object):
             change_addr = wallet.get_least_used_address(for_change=True)
         if not base_decode(change_addr, ADDRESS_LENGTH, 58):
             return {'error': 'invalid change address'}
+        # 通过(claim_id, txid, nout)三者中的一个补全另外的
         if claim_id is None or txid is None or nout is None:
             claims = self.getnameclaims(skip_validate_signatures=True)
             for claim in claims:
@@ -2617,28 +2566,33 @@ class Commands(object):
 
         if not skip_validate_schema:
             try:
+                # claim_value不可能==None
                 claim_value = smart_decode(val)
             except DecodeError as err:
                 return {'success': False,
                         'reason': 'Decode error: %s' % err}
 
+            # pass
             if not parsed_uri.is_channel and claim_value.is_certificate:
                 return {'success': False,
                         'reason': 'Certificates must have URIs beginning with /"@/"'}
 
+            # pass
             if claim_value.has_signature:
                 return {'success': False, 'reason': 'Claim value is already signed'}
 
+            # pass
             if certificate_id is not None:
                 if not self.cansignwithcertificate(certificate_id):
                     return {'success': False,
                             'reason': 'Cannot sign for certificate %s' % certificate_id}
 
+            # pass  得到经过通道私钥签名的val
             if certificate_id and claim_value:
                 signing_key = wallet.get_certificate_signing_key(certificate_id)
                 signed = claim_value.sign(signing_key, claim_addr, certificate_id, curve=SECP256k1)
                 val = signed.serialized
-
+            # pass
             if certificate_id and decoded_claim:
                 signing_key = wallet.get_certificate_signing_key(certificate_id)
                 if signing_key:
@@ -2650,7 +2604,7 @@ class Commands(object):
                 else:
                     return {'success': False,
                             'reason': "Cannot sign with certificate %s" % certificate_id}
-
+            # pass
             elif not certificate_id and decoded_claim:
                 if decoded_claim.has_signature:
                     certificate_id = decoded_claim.certificate_id
@@ -2696,18 +2650,77 @@ class Commands(object):
             "claim_id": claim_id
         }
 
-    @command('un')
-    def publish(self, name, bid, metadata, content_type, source_hash, currency, amount,
-                address=None, tx_fee=None, skip_update_check=None):
+    # ========================================================================
+    # ####################    my packaging interface   #######################
+    # ========================================================================
+    @command('n')  # 这里不能加u标记
+    def create(self, user, password):
+        """Create a new wallet"""
+        if not password:
+            raise ParamsError('51002')
+        try:
+            password = str(password)
+        except:
+            raise ParamsError('51001', "the password can't conversion into str: %s" % password)
 
-        # 和余额的比较claim里面有
-        if bid < 0:
-            raise ValueError('the bid must > 0')
+        storage = WalletStorage(user)
+        if storage.file_exists:
+            raise ParamsError('51004', 'user')
+        wallet = Wallet(storage)
+        seed = wallet.make_seed()
+        wallet.add_seed(seed, password)
+        wallet.create_master_keys(password)
+        wallet.create_main_account()
+        wallet.synchronize()
+        wallet.start_threads(self.network)
+        self.wallets[user] = wallet
+
+        return {
+            'user': user,
+            'seed': seed,
+        }
+
+    @command('u')
+    def delete(self):
+        self.wallets[self.user].storage.del_wallet()
+        del self.wallets[self.user]
+        return '%s deleted successfully' % self.user
+
+
+    @command('u')
+    def password(self, new_password):
+        """Change wallet password. """
+        self.wallets[self.user].update_password(self._password, str(new_password))
+        return self.wallets[self.user].use_encryption
+
+    @command('u')
+    def getbalance(self, account=None, exclude_claimtrietx=False):
+        """Return the balance of your wallet. """
+        if account is None:
+            c, u, x = self.wallets[self.user].get_balance(exclude_claimtrietx=exclude_claimtrietx)
+        else:
+            c, u, x = self.wallets[self.user].get_account_balance(account, exclude_claimtrietx)
+        out = {"confirmed": str(Decimal(c) / COIN)}
+        total = (Decimal(c) / COIN)
+        if u:
+            out["unconfirmed"] = str(Decimal(u) / COIN)
+            total = total + (Decimal(u) / COIN)
+        if x:
+            out["unmatured"] = str(Decimal(x) / COIN)
+            total = total + (Decimal(x) / COIN)
+        out['total'] = str(total)
+        return out
+
+    def __package_claim_and_verify_params(self, metadata, content_type, source_hash, currency,
+                                          amount, bid, address, tx_fee):
 
         if 'version' not in metadata:
             metadata['version'] = '_0_0_1'
         if address is None:
             address = self.wallets[self.user].addresses(False)[0]
+        if not base_decode(address, ADDRESS_LENGTH, 58):
+            # 基本不可能出现
+            raise DecryptionError('53001', address)
 
         metadata['fee'] = {
             "currency": currency,
@@ -2733,30 +2746,232 @@ class Commands(object):
 
         try:
             claim = ClaimDict.load_dict(claim_dict)
-        except DecodeError as err:
-            raise ValueError("invalid publish claim: %s" % err.message)
+        except DecodeError:
+            log.error(traceback.format_exc())
+            raise DecryptionError('53000')
+        val = claim.serialized
 
-        claim_serialized = claim.serialized
+        if bid < 0:
+            raise ParamsError('51007', bid)
+        amount = int(COIN * bid)
 
-        # 这里需要作异步优化
-        res = self.claim(name, claim_serialized, bid, raw=True, change_addr=address, claim_addr=address,
-                         tx_fee=tx_fee, skip_update_check=skip_update_check)
+        if tx_fee is not None:
+            tx_fee = int(COIN * tx_fee)
+            if tx_fee < 0:
+                raise ParamsError('51008', tx_fee)
 
-        log.info("Publish: %s", {
-            'name': name,
-            'bid': bid,
-            'claim_address': address,
-            'claim_dict': claim_dict,
-            'result': res
-        })
+        return val, address, amount, tx_fee
 
-        return res
+    def __sign_and_send_tx(self, tx, is_update=False):
+        """ 签名并发送一个交易 """
+        try:
+            self.wallets[self.user].sign_transaction(tx, self._password)
+        except:
+            log.error(traceback.format_exc())
+            raise ServerError('52006')
+
+        success, out = self.wallets[self.user].send_tx(tx)
+        if not success:
+            raise ServerError('52005', out)
+
+
+    @command('un')
+    def publish(self, name, metadata, content_type, source_hash, currency, amount,
+                bid=1, address=None, tx_fee=None, skip_update_check=False):
+        # todo: 虽然预计是去掉name这个参数, 但是去掉这个参数之后钱包就没法对检验这个资源是不是重复发送  --hetao
+        # res = self.claim(name, val, bid, claim_addr=address, change_addr=address, raw=True, tx_fee=tx_fee)
+        # return res
+
+        if not skip_update_check:
+            try:
+                my_claims = [claim
+                             for claim in self.getnameclaims(include_supports=False,
+                                                             skip_validate_signatures=True)
+                             if claim['name'] == name]
+            except AttributeError:
+                log.error(traceback.format_exc())
+                raise ServerError('52008')
+            if len(my_claims) > 1:
+                raise ServerError('52011', len(my_claims))
+            if my_claims:
+                my_claim = my_claims[0]
+                log.info("There is an unspent claim in your wallet for this name, updating it instead")
+                return self.update_claim(name, my_claim['claim_id'], my_claim['txid'], my_claim['nout'], metadata, content_type, source_hash,
+                     currency, amount, bid=bid, address=address, tx_fee=tx_fee)
+
+
+        # try:   # 这里有验证的作用, 但是我们的val是现场生成的, 不需要这段
+        #     claim_value = smart_decode(val)
+        # except DecodeError:
+        #     log.error(traceback.format_exc())
+        #     raise DecryptionError('53000')
+
+        val, address, amount, tx_fee = self.__package_claim_and_verify_params(metadata, content_type, source_hash,
+                                                                              currency, amount, bid, address, tx_fee)
+
+        # commission : The amount paid to the platform.  --JustinQP
+        commission = amount - BINDING_FEE
+        outputs = [(TYPE_ADDRESS | TYPE_CLAIM, ((name, val), address), BINDING_FEE),
+                   (TYPE_ADDRESS, PLATFORM_ADDRESS, commission)]
+
+        # todo: get_spendable_coins 容易出现错误, 还没找出好的解决办法
+        try:
+            coins = self.wallets[self.user].get_spendable_coins()
+        except AttributeError:
+            raise ServerError('52008')
+        try:
+            tx = self.wallets[self.user].make_unsigned_transaction(coins, outputs,
+                                                                   self.config, tx_fee, address)
+        except NotEnoughFunds:
+            raise ServerError('52004')
+
+        self.__sign_and_send_tx(tx)
+
+        nout = None
+        for i, output in enumerate(tx._outputs):
+            if output[0] & TYPE_CLAIM:
+                nout = i
+        if nout is None:
+            raise ServerError('52007')
+
+        claimid = encode_claim_id_hex(claim_id_hash(rev_hex(tx.hash()).decode('hex'), nout))
+        return {
+            "txid": tx.hash(),
+            "nout": nout,
+            "fee": str(Decimal(tx.get_fee()) / COIN),
+            "claim_id": claimid
+        }
+
+
+    def __make_tx_for_update(self, name, claim_id, txid, nout, val, address, amount, tx_fee):
+        try:
+            decoded_claim_id = decode_claim_id_hex(claim_id)
+        except:
+            raise ParamsError('51005', claim_id)
+
+        try:
+            # todo: is watting
+            claim_utxo = self.wallets[self.user].get_spendable_claimtrietx_coin(txid, nout)
+        except:
+            log.error(traceback.format_exc())
+            raise ServerError('52009')
+
+        inputs = [claim_utxo]
+        txout_value = claim_utxo['value']
+
+        claim_tuple = ((name, decoded_claim_id, val), address)
+        claim_type = TYPE_UPDATE
+
+        if amount >= txout_value:
+            additional_input_fee = 0
+            if tx_fee is None:
+                claim_input_size = Transaction.estimated_input_size(claim_utxo)
+                additional_input_fee = Transaction.fee_for_size(
+                    self.wallets[self.user].relayfee(),
+                    self.wallets[self.user].fee_per_kb(self.config),
+                    claim_input_size)
+
+            get_inputs_for_amount = amount - txout_value + additional_input_fee
+            # create a dummy tx for the extra amount in order to get the proper inputs to spend
+            dummy_outputs = [
+                (
+                    TYPE_ADDRESS | claim_type,
+                    claim_tuple,
+                    get_inputs_for_amount
+                )
+            ]
+            coins = self.wallets[self.user].get_spendable_coins()
+            try:
+                dummy_tx = self.wallets[self.user].make_unsigned_transaction(
+                    coins, dummy_outputs, self.config, tx_fee, address)
+            except NotEnoughFunds:
+                return ServerError('52004')
+
+            # add the unspents to input
+            for i in dummy_tx._inputs:
+                inputs.append(i)
+
+            outputs = [
+                (
+                    TYPE_ADDRESS | claim_type,
+                    claim_tuple,
+                    amount
+                )
+            ]
+            # add the change utxos to output
+            for output in dummy_tx._outputs:
+                if not output[0] & claim_type:
+                    outputs.append(output)
+
+        # amount is less than the original bid,
+        # we need to put remainder minus fees in a change address
+        else:
+
+            dummy_outputs = [
+                (
+                    TYPE_ADDRESS | claim_type,
+                    claim_tuple,
+                    amount
+                ),
+                (
+                    TYPE_ADDRESS,
+                    address,
+                    txout_value - amount
+                )
+            ]
+            fee = self._calculate_fee(inputs, dummy_outputs, tx_fee)
+            if fee > txout_value - amount:
+                return ServerError('52010', fee)
+
+            outputs = [
+                (
+                    TYPE_ADDRESS | claim_type,
+                    claim_tuple,
+                    amount
+                ),
+                (
+                    TYPE_ADDRESS,
+                    address,
+                    txout_value - amount - fee
+                )
+            ]
+
+        tx = Transaction.from_io(inputs, outputs)
+        return tx
+
+
+    @command('un')
+    def update_claim(self, name, claim_id, txid, nout, metadata, content_type, source_hash,
+                     currency, amount, bid=1, address=None, tx_fee=None):
+        # todo: what's this
+        gl.flag_claim = True
+
+        val, address, amount, tx_fee = self.__package_claim_and_verify_params(
+        metadata, content_type, source_hash, currency, amount, bid, address, tx_fee)
+
+        tx = self.__make_tx_for_update(name, claim_id, txid, nout, val, address, amount, tx_fee)
+        self.__sign_and_send_tx(tx)
+
+        nout = None
+        amount = 0
+        for i, output in enumerate(tx._outputs):
+            if output[0] & TYPE_UPDATE:
+                nout = i
+                amount = output[2]
+
+        return {
+            "txid": tx.hash(),
+            "nout": nout,
+            "fee": str(Decimal(tx.get_fee()) / COIN),
+            "bid": str(Decimal(amount) / COIN),
+            "claim_id": claim_id
+        }
 
     @command('u')
     def pay(self, receive_user, amount):
         """ Create and broadcast transaction. """
         # todo: 优化这里获取地址的方法
-        self.load_wallet(receive_user)
+        # self.load_wallet(receive_user)
         address = self.wallets[receive_user].addresses(False)[0]
         tx = self._mktx([(address, amount)], None, None, None, False, False)
         res = self.network.synchronous_get(('blockchain.transaction.broadcast', [str(tx)]))
@@ -2877,8 +3092,8 @@ command_options = {
     'val': (None, '--value', 'claim value'),
     'timeout': (None, '--timeout', 'timeout'),
     'include_tip_info': (None, "--include_tip_info", 'Include claim tip information'),
-    # TODO: 修改这个描述
-    'address': (None, "--address", 'give address, to receive ULD')
+    'address': (None, "--address", 'a address, to receive ULD'),
+    'bid': (None, '--bid', 'the ULD that publish a resource to the platform')
 }
 
 

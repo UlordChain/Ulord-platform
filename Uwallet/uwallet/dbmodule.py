@@ -98,6 +98,12 @@ class ExecuteMongodb(Connection):
         rs = self._col.find(filter, *args, **kwargs)
         return rs
 
+    def del_doc(self, filter=None, *args, **kwargs):
+        if filter is not None:
+            rs = self._col.delete_one(filter, *args, **kwargs)
+            return rs
+
+
     def get_con(self):
         return self.mongo_con()
 
