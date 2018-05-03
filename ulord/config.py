@@ -7,11 +7,12 @@
 class Config(object):
     SECRET_KEY = 'bb649c83dd1ea5c9d9dec9a18df0ffe9'
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
-    FLASKY_MAIL_SUBJECT_PREFIX = '[Flasky]'
-    FLASKY_MAIL_SENDER = 'shuxudong@ulord.net'
-    FLASKY_ADMIN = 'ulord'
-    WALLET_JSONRPC_HOST = '192.168.14.244'  # 自定义
-    WALLET_JSONRPC_PORT = '8000'  # 自定义
+    FLASKY_MAIL_SUBJECT_PREFIX = '[Ulord]'
+    FLASKY_MAIL_SENDER = 'Ulord Admin <shuxudong@ulord.net>'
+    FLASKY_ADMIN = 'Shuxudong'
+    WALLET_JSONRPC_HOST = '192.168.14.240'
+    WALLET_JSONRPC_PORT = '8000'
+    PUBLISH_BID=0.01  # Amount paid to Ulord Platform
 
     @staticmethod
     def init_app(app):
@@ -20,9 +21,10 @@ class Config(object):
 
 class DevelopmentConfig(Config):
     DEBUG = True
+    WTF_CSRF_ENABLED=False # 是否打开CSRF保护
     SQLALCHEMY_DATABASE_URI = "postgres://postgres:123@127.0.0.1:5432/ulord_development"
     SQLALCHEMY_TRACK_MODIFICATIONS = True
-    SQLALCHEMY_ECHO=True
+    SQLALCHEMY_ECHO=False  # 显示SQL
 
 
 class TestingConfig(Config):

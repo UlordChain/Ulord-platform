@@ -28,7 +28,7 @@ def runserver():
     config_app(app, 'development')
     dispatch_handlers(app)
     dispatch_apps(app)
-    print(app.url_map)
+    # print(app.url_map)
     app.run(host='0.0.0.0')
 
 

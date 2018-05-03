@@ -6,7 +6,7 @@
 from ulord.extensions import ma
 from ulord.models import Content, Consume, Tag
 
-_all__ = ['content_schema', 'contents_schema', 'consumeinout_schema', 'consumeinouts_schema', ]
+_all__ = ['content_schema', 'contents_schema']
 
 
 class TagSchema(ma.ModelSchema):
@@ -20,7 +20,7 @@ class ContentSchema(ma.ModelSchema):
         fields = (
             'id', 'claim_id', 'author', 'title', 'price', 'content_type', 'currency', 'des', 'status', 'create_timed',
             'update_timed', 'views', 'tags', 'create_timed_timestamp', 'update_timed_timestamp')
-        # exclude=('txid','enabled','consumes','ipfs_hash','appkey')
+        # exclude=('txid','enabled','consumes','udfs_hash','appkey')
     # 参考 http://marshmallow.readthedocs.io/en/latest/nesting.html?highlight=Nested
     # 如果是使用model,就不需要nested了, 内部实现应该做了处理
     tags = ma.Nested(TagSchema, many=True, only='name')

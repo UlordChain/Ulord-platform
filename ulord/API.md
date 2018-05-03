@@ -393,9 +393,6 @@
 {
     "errcode": 0,
     "reason": "success",
-    "result": {
-            "id": "justin",
-        },
 }
 ```
 
@@ -427,7 +424,7 @@
 
 {
         'username':消费者用户名,
-        'pay_password':支付密码(在创建用户时指定),
+        'pay_password':支付密码(在创建用户时指定的),
 }
 
 # 返回值:
@@ -451,12 +448,12 @@
 
 {
         'author': 发布者用户名,
+        'pay_password': 支付密码,
         'title': 资源标题,
         'tag': 标签列表,
-        'ipfs_hash': 星际文件系统哈希,
+        'udfs_hash': Ulord文件系统哈希,
         'price': 定价,
         'content_type': 资源类型(文件后缀名),
-        'pay_password': 支付密码,
         'description':资源描述
 }
 
@@ -480,12 +477,9 @@
 {
         "username":"user2",
         "claim_ids":[
-        	"ec3c93680884d8b1aee25242f64f79f8bd847c57",
-        	"a5b899fe01d633b6f0b809c4af2312524c081576",
         	"25e48b12694b4704aeff32ba0a568c21ad8dd5d6",
-        	"e1b98bcc018950ac4684c663d0ea4fa9fc19543d",
-        	"e1b98bcc018950ac4684c663d0ea4fa9fc19543f",
-        	"2d4bbaf369464feeb90ac957af72a641f9a1bc9c"
+        	"2d4bbaf369464feeb90ac957af72a641f9a1bc9c",
+        	"e1b98bcc018950ac4684c663d0ea4fa9fc19543d"
     	]
 }
 
@@ -498,10 +492,7 @@
     "result": {
         "25e48b12694b4704aeff32ba0a568c21ad8dd5d6": "QmUH2NbKrURA6hAmJnhfP4VTDtkjUs3fVCN2L7DoE3JLmm",
         "2d4bbaf369464feeb90ac957af72a641f9a1bc9c": false,  # 未付费
-        "a5b899fe01d633b6f0b809c4af2312524c081576": "QmUH2NbKrURA6hAmJnhfP4VTDtkjUs3fVCN2L7DoE3JLmm",
         "e1b98bcc018950ac4684c663d0ea4fa9fc19543d": null,  # 没有此记录
-        "e1b98bcc018950ac4684c663d0ea4fa9fc19543f": false,
-        "ec3c93680884d8b1aee25242f64f79f8bd847c57": "QmUH2NbKrURA6hAmJnhfP4VTDtkjUs3fVCN2L7DoE3JLmm"
     }
 }
 ```
@@ -524,7 +515,7 @@
     "errcode": 0,
     "reason": "success",
     "result":{
-        "ipfs_hash":ipfs_hash,
+        "udfs_hash":ulord文件系统hash值,
     }
 }
 ```
@@ -533,7 +524,7 @@
 ```
 # 请求参数:
 {
-    'username':719355782  # 用户
+    'username':用户名
 }
 
 # 返回值:
@@ -702,7 +693,7 @@
 }
 ```
 
-##### 11. 资源总数  `POST`    `/v1/transactions/publish/count/`
+##### 11. 发布资源总数  `POST`    `/v1/transactions/publish/count/`
 ```
 # 请求参数:
 {
@@ -748,8 +739,9 @@
                 "claim_id": "45cdb43d78bd12ee3acfa9be7c56ae02d6c88d3e",
                 "content_type": ".txt",
                 "create_timed": "2018-04-12T15:47:34.446858+00:00",
+                "create_timed_timestamp": 1525312874,
                 "currency": "ULD",
-                "des": "这是使用IPFS和区块链生成的第2篇博客的描述信息",
+                "des": "这是使用UDFS和区块链生成的第2篇博客的描述信息",
                 "id": 5,
                 "price": 1.3,
                 "status": 1,
@@ -760,6 +752,8 @@
                 ],
                 "title": "第2篇技术博客",
                 "update_timed": null
+                "update_timed_timestamp": null,
+                "views": 0
             }
         ]
     }
@@ -787,6 +781,7 @@
                 "author": 资源发布者,
                 "claim_id": 资源在链上的claim_id,
                 "create_timed": 消费时间,
+                "create_timed_timestamp": 1525313348,
                 "enabled": 资源是否删除,
                 "id": 资源在DB中id,
                 "price": 0.5, # 价格为正时, 是消费者的支出
@@ -804,7 +799,8 @@
 # 请求参数:
 {
     'author':消费者,
-    'category':条件查询 # 0: 资源收入 1: 广告支出 其他:all
+    '
+    "create_timed_timestamp": 1525313348,':条件查询 # 0: 资源收入 1: 广告支出 其他:all
 }
 
 # 返回值:
@@ -818,6 +814,7 @@
             {
                 "claim_id": 资源的claim_id,
                 "create_timed": 此条消费的时间,
+                "create_timed_timestamp": 1525313348,
                 "customer": 消费者,
                 "enabled": 资源是否删除,
                 "id": 资源在DB中的id,
@@ -855,10 +852,11 @@
 ```
 {
     # 正常
-    0:{'errcode':0,'reason':'success'},  # 可以重写reason与result内容
+    0:{'errcode':0,'reason':'success'},
 
     # HTTP协议错误码
     400:{'errcode':400,'reason':'Bad Request.'},
+    401:{'errcode':401,'reason':'Authentication Required.'},
     403:{'errcode':403,'reason':'Forbidden.'},
     404:{'errcode':404,'reason':'Not found.'},
     405:{'errcode':405,'reason':'Method Not Allowed.'},
@@ -892,9 +890,8 @@
     20008:{'errcode':20008,'reason':'资源需付费.'},
 
     # 2. 请求参数验证相关
-    20100:{'errcode':20100,'reason':'缺少参数.'},
-    20101:{'errcode':20101,'reason':'参数长度不符.'},
-    20102:{'errcode':20102,'reason':'参数必须为json格式.'},
+    20100:{'errcode':20100,'reason':'参数错误.'},
+    20101:{'errcode':20101,'reason':'参数必须为json格式.'},
     # 3. 钱包相关接口调用
     20200:{'errcode':20200,'reason':'调用钱包接口失败.'},
     20201:{'errcode':20201,'reason':'资源发布失败.'},

@@ -3,14 +3,29 @@
 # @Author  : Shu
 # @Email   : httpservlet@yeah.net
 
-from flask_wtf import Form
-from wtforms import StringField,PasswordField,IntegerField
-from wtforms.validators import Email,DataRequired,Length
+from flask_wtf import FlaskForm
+from wtforms import StringField, IntegerField
+from wtforms.validators import Email, DataRequired, Length, Optional
+from .validators import Unique
+from ulord.models import User
 
-class RegForm(Form):
-    username=StringField('username',validators=[
-        DataRequired(message=1),
-    ])
+__all__ = ['RegForm','LoginForm']
 
-    def __init__(self,*args,**kwargs):
-        super(RegForm,self).__init__(*args,**kwargs)
+
+class RegForm(FlaskForm):
+    """
+    The solution to the StringField default value of "" not None.
+    https://stackoverflow.com/questions/21831216/get-none-from-a-fields-data-in-instead-of-an-empty-string
+    """
+    username = StringField('username', validators=[DataRequired(), Length(3, 32), Unique(User, User.username)])
+    password = StringField('username', validators=[DataRequired(), Length(6, 128)])
+    # Telephone Numbers vary from country to country.
+    telphone = StringField('telphone', validators=[Optional(), Unique(User, User.telphone), ],
+                           filters=[lambda x: x or None])
+    email = StringField('email', validators=[Optional(), Email(), Unique(User, User.email)],
+                        filters=[lambda x: x or None])
+    role_id = IntegerField('role_id', validators=[DataRequired()])
+
+class LoginForm(FlaskForm):
+    username = StringField('username', validators=[DataRequired(), Length(3, 32)])
+    password = StringField('username', validators=[DataRequired(), Length(3, 128)])

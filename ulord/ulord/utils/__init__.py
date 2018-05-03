@@ -16,6 +16,7 @@ _errcodes={
 
     # HTTP协议错误码
     400:{'errcode':400,'reason':'Bad Request.'},
+    401:{'errcode':401,'reason':'Authentication Required.'},
     403:{'errcode':403,'reason':'Forbidden.'},
     404:{'errcode':404,'reason':'Not found.'},
     405:{'errcode':405,'reason':'Method Not Allowed.'},
@@ -49,9 +50,8 @@ _errcodes={
     20008:{'errcode':20008,'reason':'资源需付费.'},
 
     # 2. 请求参数验证相关
-    20100:{'errcode':20100,'reason':'缺少参数.'},
-    20101:{'errcode':20101,'reason':'参数长度不符.'},
-    20102:{'errcode':20102,'reason':'参数必须为json格式.'},
+    20100:{'errcode':20100,'reason':'参数错误.'},
+    20101:{'errcode':20101,'reason':'参数必须为json格式.'},
     # 3. 钱包相关接口调用
     20200:{'errcode':20200,'reason':'调用钱包接口失败.'},
     20201:{'errcode':20201,'reason':'资源发布失败.'},
