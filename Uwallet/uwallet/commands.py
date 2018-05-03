@@ -2663,6 +2663,7 @@ class Commands(object):
         except:
             raise ParamsError('51001', "the password can't conversion into str: %s" % password)
 
+        user = user if '_' in user else 'ulord_' + user
         storage = WalletStorage(user)
         if storage.file_exists:
             raise ParamsError('51004', 'user')
@@ -3002,7 +3003,7 @@ class Commands(object):
             amount = claim_value.source_fee.amount
 
             res = self.paytoandsend(address, amount)
-            return res
+            return {'txid': res}
         else:
             raise ServerError('52002')
 
@@ -3176,15 +3177,12 @@ def get_parser():
     group = parent_parser.add_argument_group('global options')
     group.add_argument("-v", "--verbose", action="store_true", dest="verbose", default=False,
                        help="Show debugging information")
-    group.add_argument("--client", action="store_true", dest="client", default=False,
-                       help="Is it a Qt Gui client")
-    group.add_argument("-P", "--portable", action="store_true", dest="portable", default=False,
-                       help="Use local 'electrum_data' directory")
-    group.add_argument("-w", "--wallet", dest="wallet_path", help="wallet path")
-    group.add_argument("-D", "--dir", dest="uwallet_path", help="electrum directory")
-    group.add_argument("--guipassword", dest="guipassword", help="The password of uwallet for Qt gui client")
-    group.add_argument("--user", dest="user", help="The name of uwallet")
-    group.add_argument("--guinewpassword", dest="guinewpassword", help="The new password of uwallet for Qt gui client")
+    group.add_argument("-P", "--rpcport", action="store", dest="rpc_port",
+                       default=8000, type=int, help="Use local 'electrum_data' directory")
+    # 不确定这个参数有什么用, 待删除
+    # group.add_argument("-P", "--portable", action="store_true", dest="portable", default=False,
+    #                    help="Use local 'electrum_data' directory")
+
     # create main parser
     parser = argparse.ArgumentParser(
         parents=[parent_parser],
