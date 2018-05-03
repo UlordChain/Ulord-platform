@@ -179,14 +179,14 @@ class Commands(object):
         try:
             password = str(password)
         except:
-            raise ParamsError('51001', "the password can't conversion into str: %s" % password)
+            raise ParamsError('51001', "the password can't conversion into str")
 
         # self.daemon.load_wallet(self.user)
         # check password
         try:
             seed = self.wallets[self.user].check_password(password)
         except (InvalidPassword, KeyError):
-            raise ParamsError('51001', password)
+            raise ParamsError('51001')
 
         self._password = password
         args.insert(0, self)
@@ -2661,7 +2661,7 @@ class Commands(object):
         try:
             password = str(password)
         except:
-            raise ParamsError('51001', "the password can't conversion into str: %s" % password)
+            raise ParamsError('51001', "the password can't conversion into str")
 
         user = user if '_' in user else 'ulord_' + user
         storage = WalletStorage(user)
