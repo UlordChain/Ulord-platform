@@ -1,8 +1,13 @@
 #-*- coding: UTF-8 -*-
+import multiprocessing
+import select
+import sys
+
 import jsonrpclib
 import pymongo
 from jsonrpclib.SimpleJSONRPCServer import SimpleJSONRPCRequestHandler, SimpleJSONRPCServer
 
+from uwallet import settings
 from uwallet.commands import Commands, known_commands
 from uwallet.util import DaemonThread, json_decode
 from uwallet.wallet import Wallet, WalletStorage
@@ -32,9 +37,8 @@ class RequestHandler(SimpleJSONRPCRequestHandler):
         SimpleJSONRPCRequestHandler.end_headers(self)
 
 
-class Daemon(DaemonThread):
+class Daemon():
     def __init__(self, config, network):
-        DaemonThread.__init__(self)
         self.config = config
         self.network = network
         self.wallets = {}
@@ -77,7 +81,7 @@ class Daemon(DaemonThread):
         return response
 
     def load_wallet(self):
-        mongo = pymongo.MongoClient('192.168.14.240')
+        mongo = pymongo.MongoClient(settings.DATABASE_HOST)
         db = mongo.uwallet_user
         for col_name in db.list_collection_names():
             col = db.get_collection(col_name)
@@ -100,26 +104,14 @@ class Daemon(DaemonThread):
                 if wallet:
                     self.wallets[user] = wallet
 
-
-    def run(self):
-        i = 0
-        while self.is_running():
-            # self.server.handle_request()
-            try:
-                thread.start_new_thread(self.server.handle_request, ())
-                time.sleep(0.01)
-                i = i+1
-            except Exception,ex:
-                i = 0
-                print ex
-                continue
-
-
+    # def run(self):
+    #     while self.is_running():
+    #         self.server.handle_request()
 
     # def run(self):
     #     cpus = multiprocessing.cpu_count()
     #     pros = []
-    #     while self.is_running():
+    #     while True:
     #         fd_sets = _eintr_retry(select.select, [self.server], [], [], 0.1)
     #         if not fd_sets[0]:
     #             self.server.handle_timeout()
@@ -144,19 +136,22 @@ class Daemon(DaemonThread):
     #                     currentP.start()
     #                     pros[idx] = currentP
     #                     break
-    #
-    #     # ps aux | grep "python" | grep - v grep | cut - c 9 - 15 | xargs kill - 9
-    #     os.unlink(lockfile(self.config))
+
+        # ps aux | grep "python" | grep - v grep | cut - c 9 - 15 | xargs kill - 9
 
     def stop(self):
         for k, wallet in self.wallets.items():
             wallet.stop_threads()
-        DaemonThread.stop(self)
+        sys.exit()
 
-# def _eintr_retry(func, *args):
-#     """restart a system call interrupted by EINTR"""
-#     while True:
-#         try:
-#             return func(*args)
-#         except (OSError, select.error) as e:
-#                 raise
+    def __del__(self):
+        print '西沟daemon', '='*60
+        self.stop()
+
+def _eintr_retry(func, *args):
+    """restart a system call interrupted by EINTR"""
+    while True:
+        try:
+            return func(*args)
+        except (OSError, select.error) as e:
+            raise

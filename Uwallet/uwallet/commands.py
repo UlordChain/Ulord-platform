@@ -108,15 +108,15 @@ def command(s):
 
         @wraps(func)
         def func_wrapper(*args, **kwargs):
+
+            s = traceback.extract_stack()
+            # 不是rpc直接调用的命令
+            if s[-2][2] != '_dispatch':
+                return func(*args, **kwargs)
+            print '*' * 60
             l_args = list(args)
             self = l_args.pop(0)
 
-            # 不是rpc直接调用的命令, 或者是create命令
-            # if not self.is_rpc_command or name == 'create':
-            if not self.is_rpc_command:
-                return func(*args, **kwargs)
-
-            self.is_rpc_command = False
             # 这里的name都是注册过的, 不用异常处理
             cmd = known_commands.get(name)
 
@@ -137,7 +137,7 @@ def command(s):
                     new_args = tuple([self] + l_args)
                 res = func(*new_args, **kwargs)
                 return {
-                    'success': True,
+                    'success': self.config.get('rpc_port'),
                     'result': res
                 }
             except ReturnError as err:
@@ -148,7 +148,6 @@ def command(s):
                 }
 
             finally:
-                self.is_rpc_command = True
                 self.user = None
                 self._password = None
                 # self.wallets.clear()
@@ -164,7 +163,6 @@ class Commands(object):
         self.wallets = wallets
         self.network = network
         self._password = None
-        self.is_rpc_command = True
         self.user = None
         self.contacts = Contacts(self.config)
 
