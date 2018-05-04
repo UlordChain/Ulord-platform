@@ -3,28 +3,13 @@
 # @Author  : Shu
 # @Email   : httpservlet@yeah.net
 from ulord.utils import return_result
-from flask import request, g
+from flask import request, g, current_app
 from ulord.models import User
-from ulord.extensions import db,auth
+from ulord.extensions import db, auth
 from werkzeug.security import generate_password_hash
 from . import bpv1, get_jsonrpc_server
-from ulord.forms import RegForm, LoginForm
-from ulord.forms import validate_form
+from ulord.forms import validate_form, RegForm, LoginForm, EditForm, ChangePasswordForm
 
-
-@auth.verify_password
-def get_password(username,password):
-    from werkzeug.security import check_password_hash
-    p = "pbkdf2:sha256:50000$TuvgizYw$37c603e8e802145da79123862a80ac723fe774b5dc972d372ba2f6f39f95e4b2"
-    print('password:%s'%password)
-    if check_password_hash(p,password):
-        return True
-
-
-@bpv1.route('/index/')
-@auth.login_required
-def index():
-    return "Hello, %s"%auth.username()
 
 @bpv1.route('/users/reg/', methods=['POST'])
 @validate_form(form_class=RegForm)
@@ -38,6 +23,7 @@ def reg():
 
     try:
         server = get_jsonrpc_server()
+        # print(form.username.data, pay_password)
         result = server.create(form.username.data, pay_password)
         if result.get('success') is not True:
             print(result)
@@ -64,24 +50,38 @@ def login():
     if not user.check_password(password):
         return return_result(20004)
 
-    return return_result(reason='success', result=dict(token='token'))
+    token = user.generate_auth_token(expiration=current_app.config['EXPIRATION'])
+    return return_result(result=dict(token=token))
 
 
 @bpv1.route('/users/edit/', methods=['POST'])
+@validate_form(form_class=EditForm)
+@auth.login_required
 def edit():
-    """ 修改密码, 同时更新appkey
-    todo:同时需要修改钱包的密码
-    """
-    username = request.json.get('username')  # 正式环境需要获取已登录用户
-    password = request.json.get('password')
-    new_password = request.json.get('new_password')
+    """ Modify developer data."""
+    g.user.telphone = g.form.telphone.data
+    g.user.email = g.form.email.data
+    return return_result()
 
-    user = User.query.filter_by(username=username).first()
-    if not user:
-        return return_result(20003)
 
-    if not user.check_password(password):
+@bpv1.route('/users/changepassword/', methods=['POST'])
+@validate_form(form_class=ChangePasswordForm)
+@auth.login_required
+def change_password():
+    user = g.user
+    old_password_hash = user.password_hash
+    if not user.check_password(g.form.password.data):
         return return_result(20004)
 
-    user.set_password(new_password)
-    return return_result(reason='success.')
+    user.set_password(g.form.new_password.data)
+    try:
+        server = get_jsonrpc_server()
+        result = server.password(user.username, old_password_hash, user.password_hash)
+        print('result:', result)
+        if result.get('success') is True:
+            return return_result()
+    except Exception as e:
+        print(e)
+
+    db.session.rollback()
+    return return_result(20207)

@@ -9,14 +9,15 @@ from ulord import return_result
 from .users import *
 
 def validate_form(form_class):
-    def decorator(view_func):
-        @functools.wraps(view_func)
+    def decorator(f):
+        @functools.wraps(f)
         def inner(*args,**kwargs):
-            # FlaskForm类的wrap_formdata方法实现了从request.form和json中取值
+            # The method for wrap_formdata of the FlaskForm class
+            # implements the values from request.form and json.
             form=form_class()
             if not form.validate():
                 return return_result(errcode=20100, result=form.errors)
             g.form=form
-            return view_func(*args,**kwargs)
+            return f(*args,**kwargs)
         return inner
     return decorator

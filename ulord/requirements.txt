@@ -20,3 +20,4 @@ simplejson
 jsonrpclib-pelix
 werkzeug
 psycopg2
+itsdangerous
