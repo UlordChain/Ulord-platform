@@ -11,7 +11,7 @@ ENVIRONMENT = 0
 # 本地调试
 # ===========================================================
 # mongodb
-DATABASE_HOST = '192.168.14.240'
+DATABASE_HOST = '192.168.14.147'
 # redis
 REDIS_HOST = '192.168.14.240'
 
@@ -29,5 +29,6 @@ REDIS_NAME = 2
 REDIS_NAME_PRO = 1
 REDIS_PORT = 6379
 
-
+# 钱包的字段名称
+WALLET_FIELDS = ('seed')
 

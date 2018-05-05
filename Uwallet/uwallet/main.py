@@ -45,7 +45,7 @@ def main():
     args = parser.parse_args()
 
     if args.verbose:
-        logging.getLogger("uwallet").setLevel(logging.INFO)
+        logging.getLogger("uwallet").setLevel(logging.DEBUG)
     else:
         logging.getLogger("uwallet").setLevel(logging.ERROR)
     handler = logging.StreamHandler()
@@ -142,8 +142,7 @@ if __name__ == '__main__':
     sys.argv.append('daemon')
     sys.argv.append('start')
     sys.argv.append('-v')
-    sys.argv.append('-P')
-    sys.argv.append('8003')
+    sys.argv.append('-P 8003')
 
     print sys.argv
     rs = main()

@@ -153,6 +153,7 @@ class Synchronizer(ThreadJob):
 
     def run(self):
         '''Called from the network proxy thread main loop.'''
+
         # 1. Create new addresses
         self.wallet.synchronize()
 

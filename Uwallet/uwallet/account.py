@@ -71,19 +71,23 @@ class Account(object):
         addresses = self.get_addresses(False)
         return any(wallet.address_is_old(a, -1) for a in addresses)
 
+    # 根据我们的需求改这两个方法, 注释别删除
     def synchronize_sequence(self, wallet, for_change):
         limit = wallet.gap_limit_for_change if for_change else wallet.gap_limit
         while True:
-            addresses = self.get_addresses(for_change)
+            # addresses = self.get_addresses(for_change)
+            addresses = wallet.get_addresses(for_change)
             if len(addresses) < limit:
                 address = self.create_new_address(for_change)
-                wallet.add_address(address)
+                wallet.add_address(address, for_change)
                 continue
-            if map(lambda a: wallet.address_is_old(a), addresses[-limit:]) == limit * [False]:
-                break
-            else:
-                address = self.create_new_address(for_change)
-                wallet.add_address(address)
+            break
+            # if map(lambda a: wallet.address_is_old(a), addresses[-limit:]) == limit * [False]:
+            #     break
+            # else:
+            #     address = self.create_new_address(for_change)
+            #     wallet.add_address(address)
+
 
     def synchronize(self, wallet):
         self.synchronize_sequence(wallet, False)

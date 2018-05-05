@@ -2,8 +2,8 @@
 import time
 
 from jsonrpclib import Server
-server = Server('http://192.168.14.240:8080')
-# server = Server('http://192.168.14.241:8002')
+# server = Server('http://192.168.14.240:8080')
+server = Server('http://192.168.14.241:8003')
 
 
 def publish(user, password, claim_name,  skip_update_check):
@@ -41,7 +41,7 @@ def consume(claim_id):
 
     :return: {u'success': True, u'tx': u'3ecce656dbfeea5b38f385549ac51e550bfa6d70bba9d2042dacdd3c1def662a'}
     """
-    user = 'hetao'
+    user = 'test_2018050221'
     password = '123'
     return server.consume(user, password, claim_id)
 
@@ -103,16 +103,16 @@ def delete(user, password):
 
 if __name__ == '__main__':
     t = time.time()
-    user = 'test_201805021053'
+    user = 'test_2018050221'
     password = '123'
 
-    claim_name = 'test_201805021916'
+    claim_name = 'test_201805033'
     claim_id = '02b8effb3916538dc1781f2c424c1a0d2246b2db'
     txid = '54f184fd7983241b94bcb363c1c8621bb9e7529ef71f761900021fe702c29764'
 
     # print create(user, password)  # 0.8
-    # print pay(user, amount=100)
-    # print getbalance(user, password)
+    # print pay(user', amount=98)
+    print getbalance(user, password)
     # print publish(user, password, claim_name, False) # 3.67
     # print publish(user, password, claim_name, True) # 2.68
     # print consume(claim_id)  # 1.4

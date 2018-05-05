@@ -137,7 +137,7 @@ def command(s):
                     new_args = tuple([self] + l_args)
                 res = func(*new_args, **kwargs)
                 return {
-                    'success': self.config.get('rpc_port'),
+                    'success': True,
                     'result': res
                 }
             except ReturnError as err:
@@ -2664,13 +2664,13 @@ class Commands(object):
         user = user if '_' in user else 'ulord_' + user
         storage = WalletStorage(user)
         if storage.file_exists:
-            raise ParamsError('51004', 'user')
+            raise ParamsError('51004', user)
         wallet = Wallet(storage)
         seed = wallet.make_seed()
         wallet.add_seed(seed, password)
         wallet.create_master_keys(password)
         wallet.create_main_account()
-        wallet.synchronize()
+        wallet.synchronize()  # 生成地址
         wallet.start_threads(self.network)
         self.wallets[user] = wallet
 
@@ -2969,8 +2969,8 @@ class Commands(object):
     @command('u')
     def pay(self, receive_user, amount):
         """ Create and broadcast transaction. """
-        # todo: 优化这里获取地址的方法
         # self.load_wallet(receive_user)
+        receive_user = receive_user if '_' in receive_user else 'ulord_' + receive_user
         address = self.wallets[receive_user].addresses(False)[0]
         tx = self._mktx([(address, amount)], None, None, None, False, False)
         res = self.network.synchronous_get(('blockchain.transaction.broadcast', [str(tx)]))
