@@ -34,10 +34,11 @@ Authorization:Bearer token值
 }
 ```
 
-##### B. 角色列表  `GET`    `/v1/role/list/`
+##### B. 角色列表  `GET`    `/v1/role/list/<page>/<num>`
 ```
 # 请求参数:
-无
+page: 当前页
+num: 每页条数
 
 # 返回值:
 
@@ -45,23 +46,27 @@ Authorization:Bearer token值
 {
     "errcode": 0,
     "reason": "success",
-    "result": [
-        {
-            "des": "管理员",
-            "id": 4,
-            "name": "admin"
-        },
-        {
-            "des": "标准用户",
-            "id": 7,
-            "name": "normal"
-        },
-        {
-            "des": "封禁用户",
-            "id": 8,
-            "name": "blocked"
-        }
-    ]
+    "result": {
+        "pages": 1,
+        "records": [
+            {
+                "des": "管理员",
+                "id": 4,
+                "name": "admin"
+            },
+            {
+                "des": "标准用户",
+                "id": 7,
+                "name": "normal"
+            },
+            {
+                "des": "封禁用户",
+                "id": 8,
+                "name": "blocked"
+            }
+        ],
+        "total": 3
+    }
 }
 ```
 
@@ -181,7 +186,6 @@ Authorization:Bearer token值
 
 {
     "id":id值,
-    "name":类型名,
     "des":类型描述,
     "parent_id":父类id,
 }
@@ -226,7 +230,6 @@ Authorization:Bearer token值
     "password":帐号密码,
     "email":邮箱(可空),
     "telphone":电话(可空),
-    "role_id":角色id,
 }
 
 # 返回值:
@@ -275,7 +278,7 @@ Authorization:Bearer token值
 }
 ```
 
-##### C. 开发者密码修改(需要token)  `POST`    `/v1/users/changepassword/`
+##### C. 开发者密码修改  `POST`    `/v1/users/changepassword/`
 ```
 # 请求参数:
 
@@ -293,13 +296,31 @@ Authorization:Bearer token值
 }
 ```
 
-##### D. 开发者资料修改(需要token)  `POST`    `/v1/users/edit/`
+##### D. 开发者资料修改  `POST`    `/v1/users/edit/`
 ```
 # 请求参数:
 
 {
     "telphone":开发这帐号(选填),
     "email":帐号密码(选填),
+}
+
+# 返回值:
+
+成功
+{
+    "errcode": 0,
+    "reason": "success",
+}
+```
+
+##### E. 管理员修改用户角色  `POST`    `/v1/users/role/edit/`
+```
+# 请求参数:
+
+{
+    "id":要修改的用户id,
+    "role_id":角色id
 }
 
 # 返回值:
@@ -318,7 +339,6 @@ Authorization:Bearer token值
 # 请求参数:
 
 {
-    "user_id":用户id,
     "appname":应用名称,
     "apptype_id":应用类型id,
     "appdes":应用描述,
@@ -331,18 +351,17 @@ Authorization:Bearer token值
     "errcode": 0,
     "reason": "success",
     "result": {
-        "id": 应用id
+        "id": 12,
+        "appkey": "b4a5fe5e4f7411e8ad76f48e3889c8ab",
+        "secret": "b4a5fe5f4f7411e8a7fbf48e3889c8ab"
     }
 }
 ```
 
-##### B. 应用列表  `POST`    `/v1/app/list/`
+##### B. 应用列表  `GET`    `/v1/app/list/<page>/<num>/`
 ```
 # 请求参数:
-
-{
-    "user_id":登录用户id(以后可以在登录状态中获取,暂时传入),
-}
+无
 
 # 返回值:
 
@@ -350,28 +369,32 @@ Authorization:Bearer token值
 {
     "errcode": 0,
     "reason": "success",
-    "result": [
-        {
-            "appdes": null,
-            "appkey": "31f7e6703d5c11e893fcf48e3889c8ab",
-            "appname": "boke",
-            "create_timed": "2018-04-12T10:56:19.394662+00:00",
-            "id": 1,
-            "secret": "ba5fe8403dfe11e89f1bf48e3889c8ab",
-            "type": 7,
-            "update_timed": "2018-04-12T11:08:09.265021+00:00"
-        }
-    ]
+    "result": {
+        "pages": 1,
+        "total": 1,
+        "records": [
+            {
+                "appdes": "appdes",
+                "appkey": "b0d2a95e4f6b11e88c1ff48e3889c8ab",
+                "appname": "个人博客",
+                "create_timed": "2018-05-04 15:20:58",
+                "create_timed_timestamp": 1525418458,
+                "id": 11,
+                "secret": "b0d2a95f4f6b11e89b6bf48e3889c8ab",
+                "type": 2,
+                "update_timed": null
+            }
+        ]
+    }
 }
 ```
 
-##### C. 应用修改secret  `POST`    `/v1/app/edit/`
+##### C. 应用重新生成secret  `POST`    `/v1/app/rebuild/`
 ```
 # 请求参数:
 
 {
     "id":应用id,
-    "user_id":用户id,
 }
 
 # 返回值:
@@ -385,7 +408,26 @@ Authorization:Bearer token值
     }
 }
 ```
-##### D. 应用删除  `POST`    `/v1/app/remove/`
+
+##### D. 应用信息修改  `POST`    `/v1/app/edit/`
+```
+# 请求参数:
+
+{
+    "id":应用id,
+    "appdes":应用描述
+}
+
+# 返回值:
+
+成功
+{
+    "errcode": 0,
+    "reason": "success"
+}
+```
+
+##### E. 应用删除  `POST`    `/v1/app/remove/`
 ```
 # 请求参数:
 
@@ -749,7 +791,7 @@ Authorization:Bearer token值
 
 ### 资源相关
 
-##### 1. 资源列表查询  `GET`    `/v1/content/list/<page>/<num>`
+##### 1. 资源列表查询  `GET`    `/v1/content/list/<page>/<num>/`
 ```
 # 请求参数:
     page: 页码
@@ -766,7 +808,7 @@ Authorization:Bearer token值
     "result": {
         total:总条数,
         pages:总页数,
-        data:
+        records:
         [
             {
                 "author": "justin",
