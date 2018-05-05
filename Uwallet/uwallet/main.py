@@ -104,8 +104,8 @@ def main():
                 network = Network(config)
                 network.start()
                 daemon = Daemon(config, network)
-                # daemon.runProc()
-                daemon.start()
+                # daemon.start()
+                # daemon.run()
                 daemon.server.serve_forever()
             else:
                 print "starting daemon (PID %d)" % p
@@ -142,7 +142,8 @@ if __name__ == '__main__':
     sys.argv.append('daemon')
     sys.argv.append('start')
     sys.argv.append('-v')
-    sys.argv.append('-P 8001')
+    sys.argv.append('-P')
+    sys.argv.append('8003')
 
     print sys.argv
     rs = main()
