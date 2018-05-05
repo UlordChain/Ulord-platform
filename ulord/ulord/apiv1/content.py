@@ -26,7 +26,7 @@ def content_list(page, num):
     total = contents.total
     pages = contents.pages
     result = contents_schema.dump(contents.items).data
-    return return_result(result=dict(total=total, pages=pages, data=result))
+    return return_result(result=dict(total=total, pages=pages, records=result))
 
 
 @bpv1.route("/content/consume/list/<int:page>/<int:num>/", methods=['POST'])
@@ -49,8 +49,7 @@ def consumed(page, num):
     records = query.order_by(Consume.create_timed.desc()).paginate(page, num, error_out=False)
     total = records.total
     pages = records.pages
-    # 联表查询的结果是sqlalchemy.util._collections.result对象, 不是一个model对象
-    # 所以不能够想content_list接口那样格式化数据
+
     records=add_timestamp(records.items)
     return return_result(result=dict(total=total, pages=pages, records=records))
 

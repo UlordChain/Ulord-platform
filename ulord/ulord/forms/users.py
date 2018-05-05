@@ -25,7 +25,6 @@ class RegForm(FlaskForm):
     # The default value goes from '' to None.
     email = StringField('email', validators=[Optional(), Email(), Unique(User, User.email)],
                         filters=[lambda x: x or None])
-    role_id = IntegerField('role_id', validators=[DataRequired()])
 
 class LoginForm(FlaskForm):
     username = StringField('username', validators=[DataRequired(), Length(3, 32)])

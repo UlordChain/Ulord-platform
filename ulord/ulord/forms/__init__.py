@@ -7,6 +7,8 @@ from flask import g
 from ulord import return_result
 
 from .users import *
+from .role import *
+from .uapp import *
 
 def validate_form(form_class):
     def decorator(f):

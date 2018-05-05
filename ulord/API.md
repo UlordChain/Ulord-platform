@@ -1,6 +1,10 @@
 # 一. API平台管理界面相关接口(内部接口)
 
-#### 说明: 需要登录开发这帐号才能进行相关操作.
+#### 说明: 先登录获取token, 然后将其添加到请求headers中, 格式如下
+```
+Authorization:Bearer token值
+```
+
 
 ### 1. 开发者角色接口
 
@@ -235,6 +239,19 @@
         "id":1,
     }
 }
+失败
+{
+    "errcode": 20100,
+    "reason": "参数错误.",
+    "result": {
+        "password": [
+            "Field must be between 6 and 128 characters long."
+        ],
+        "username": [
+            "Field must be between 3 and 32 characters long."
+        ]
+    }
+}
 ```
 
 ##### B. 开发者登录  `POST`    `/v1/users/login/`
@@ -253,19 +270,36 @@
     "errcode": 0,
     "reason": "success",
     "result":{
-        "token":token(令牌认证暂时还未实现),
+        "token":token,
     }
 }
 ```
 
-##### C. 开发者密码修改  `POST`    `/v1/users/edit/`
+##### C. 开发者密码修改(需要token)  `POST`    `/v1/users/changepassword/`
 ```
 # 请求参数:
 
 {
-    "username":开发这帐号,
-    "password":帐号密码,
+    "password":原密码,
     "new_password":新密码,
+}
+
+# 返回值:
+
+成功
+{
+    "errcode": 0,
+    "reason": "success",
+}
+```
+
+##### D. 开发者资料修改(需要token)  `POST`    `/v1/users/edit/`
+```
+# 请求参数:
+
+{
+    "telphone":开发这帐号(选填),
+    "email":帐号密码(选填),
 }
 
 # 返回值:
@@ -850,6 +884,7 @@
 
 ### 附录A: 错误码对照表
 ```
+ulord平台错误码:
 {
     # 正常
     0:{'errcode':0,'reason':'success'},
@@ -900,6 +935,38 @@
     20204:{'errcode':20204,'reason':'创建钱包失败.'},
     20205:{'errcode':20205,'reason':'用户注册失败,因为没有成功创建ulord钱包.'},
     20206:{'errcode':20206,'reason':'支付失败.'},
+}
+
+ulord钱包错误码:
+{
+    # ServerError
+    '51000': 'command not found',
+    '51001': 'password error',
+    '51002': 'password cannot be empty',
+    '51003': 'user not exists',
+    '51004': 'user already exists',
+    '51005': 'invalid claim_id',
+    '51006': "claim not find",
+    '51007': "the bid must > 0",
+    '51008': "the tx_fee must >= 0",
+    '51009': "val and metadata can't both empty",
+    # ServerError
+    '50000': "Unknown Error",
+    '52001': 'payment Failed',
+    '52002': "can't find fee in the claim.",
+    '52003': 'permission denied',
+    '52004': 'Not enough funds',
+    '52005': 'broadcast transaction fail',
+    '52006': 'signature transaction fail',
+    '52007': 'nout is None',
+    '52008': 'operation is too frequent: it is necessary to wait for the transaction confirmation',
+    '52009': 'get UTXO fail',
+    '52010': 'No extra funds paid fee',
+    '52011': 'Dont know which claim to update, because the same name claim > 1',
+    '52012': 'cannot save field',
+    # DecryptionError
+    '53000': 'Decode claim value error',
+    '53001': 'invalid claim address',
 }
 ```
 ### 附录B: 数据库ER图

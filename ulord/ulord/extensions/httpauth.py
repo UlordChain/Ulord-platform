@@ -19,5 +19,6 @@ def verify_token(token):
     user=User.verify_auth_token(token)
     if isinstance(user,User):
         g.user=user
+        g.role=g.user.role.name
         return True
     return False

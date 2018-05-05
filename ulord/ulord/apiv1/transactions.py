@@ -122,8 +122,6 @@ def publish():
     metadata = dict(title=title, author=author, tag=['action'],
                     description='', language='en',
                     license='', licenseUrl='', nsfw=False, preview='', thumbnail='', )
-
-
     try:
         server = get_jsonrpc_server()
         # print(username_wallet, pay_password, sourcename, bid, metadata, content_type, udfs_hash, currency, price)
@@ -216,7 +214,7 @@ def consume():
             except Exception as e:
                 print(e)
                 return return_result(20202, result=dict(wallet_reason=str(e)))
-            print(result)
+            # print(result)
             result=result.get('result')
             txid = result.get('txid')
             c = Consume(txid=txid, claim_id=claim_id, customer=customer, appkey=appkey, price=price)

@@ -4,10 +4,10 @@
 # @Email   : httpservlet@yeah.net
 from ulord.utils import return_result
 from flask import request, g, current_app
-from ulord.models import User
+from ulord.models import User,Role
 from ulord.extensions import db, auth
 from werkzeug.security import generate_password_hash
-from . import bpv1, get_jsonrpc_server
+from . import bpv1, get_jsonrpc_server,admin_required,blocked_check
 from ulord.forms import validate_form, RegForm, LoginForm, EditForm, ChangePasswordForm
 
 
@@ -31,7 +31,10 @@ def reg():
     except Exception as e:
         print(e)
         return return_result(20205)
+
+    role=Role.query.filter_by(name='normal').first()
     user = User(**form.data)
+    user.role_id=role.id
     db.session.add(user)
     db.session.commit()
     return return_result(result=dict(id=user.id))
@@ -55,8 +58,9 @@ def login():
 
 
 @bpv1.route('/users/edit/', methods=['POST'])
-@validate_form(form_class=EditForm)
 @auth.login_required
+@blocked_check
+@validate_form(form_class=EditForm)
 def edit():
     """ Modify developer data."""
     g.user.telphone = g.form.telphone.data
@@ -65,23 +69,25 @@ def edit():
 
 
 @bpv1.route('/users/changepassword/', methods=['POST'])
-@validate_form(form_class=ChangePasswordForm)
 @auth.login_required
+@blocked_check
+@validate_form(form_class=ChangePasswordForm)
 def change_password():
     user = g.user
     old_password_hash = user.password_hash
     if not user.check_password(g.form.password.data):
         return return_result(20004)
 
-    user.set_password(g.form.new_password.data)
+    password_hash = generate_password_hash(g.form.new_password.data)
     try:
         server = get_jsonrpc_server()
-        result = server.password(user.username, old_password_hash, user.password_hash)
-        print('result:', result)
-        if result.get('success') is True:
-            return return_result()
+        result = server.password(user.username, old_password_hash, password_hash)
+        if result.get('success') is not True:
+            print(result)
+            return return_result(20207)
     except Exception as e:
         print(e)
+        return return_result(20207)
 
-    db.session.rollback()
-    return return_result(20207)
+    user.password=password_hash
+    return return_result()

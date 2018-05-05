@@ -15,7 +15,7 @@ def appkey_check(f):
         appkey = request.headers.get('appkey')
         if not appkey:
             return return_result(10012)
-        # 可以换成从redis中获取
+        # insert to redis
         uapp = Application.query.filter_by(appkey=appkey).first()
         if not uapp:
             return return_result(10001)
@@ -30,25 +30,22 @@ def appkey_check(f):
     return decorator
 
 
-def login_check(f):
+def admin_required(f):
     @wraps(f)
     def decorator(*args, **kwargs):
-        username = request.json.get('username')
-        password = request.json.get('password')
-        if not username or not password:
-            return return_result(10011)
-
-        user = User.query.filter_by(username=username).first()
-        if user is None:
-            return return_result(10011)
-
-        if not user.verify_password(password):
-            return return_result(10011)
-
+        # Need to be used with @auth.login_required
+        if g.role!='admin':
+            return return_result(10014)
         return f(*args, **kwargs)
-
     return decorator
 
+def blocked_check(f):
+    @wraps(f)
+    def decorator(*args,**kwargs):
+        if g.role=='blocked':
+            return return_result(10015)
+        return f(*args,**kwargs)
+    return decorator
 
 def get_jsonrpc_server():
     server = Server(

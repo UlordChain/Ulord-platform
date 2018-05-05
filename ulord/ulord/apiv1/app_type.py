@@ -3,10 +3,10 @@
 # @Author  : Shu
 # @Email   : httpservlet@yeah.net
 
-from . import bpv1
+from . import bpv1,admin_required,blocked_check
 from flask import request
 from ulord.models import Type
-from ulord.extensions import db
+from ulord.extensions import db,auth
 from . import return_result
 from ulord.models import Type
 from ulord.schema import types_schema
@@ -14,6 +14,9 @@ from ulord.utils.formatter import get_tree
 
 
 @bpv1.route('/type/add/', methods=['POST'])
+@auth.login_required
+@blocked_check
+@admin_required
 def type_add():
     """管理员权限"""
     parent_id = request.json.get('parent_id', None)
@@ -27,6 +30,8 @@ def type_add():
 
 
 @bpv1.route('/type/list/')
+@auth.login_required
+@blocked_check
 def type_list():
     tmodel_list = Type.query.all()
     tlist = types_schema.dump(tmodel_list).data
@@ -35,6 +40,9 @@ def type_list():
 
 
 @bpv1.route('/type/edit/', methods=['POST'])
+@auth.login_required
+@blocked_check
+@admin_required
 def type_edit():
     id = request.json.get('id')
     name = request.json.get('name')
@@ -52,6 +60,9 @@ def type_edit():
     return return_result()
 
 @bpv1.route('/type/remove/',methods=['POST'])
+@auth.login_required
+@blocked_check
+@admin_required
 def type_remove():
     _id =request.json.get('id')
     num=Type.query.filter_by(id=_id).delete()
