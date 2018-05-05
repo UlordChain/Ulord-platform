@@ -10,7 +10,7 @@ from ulord.extensions import db, auth
 from ulord.utils.generate import generate_appkey
 from ulord.utils.formatter import add_timestamp
 from ulord.schema import apps_schema
-from ulord.forms import validate_form, AddAppForm, RebuildAppForm, RemoveAppForm
+from ulord.forms import validate_form, AddAppForm, RebuildAppForm, RemoveAppForm,EditAppForm
 
 
 @bpv1.route("/app/add/", methods=['POST'])
@@ -44,8 +44,6 @@ def app_list(page, num):
 @validate_form(form_class=RebuildAppForm)
 def app_rebuild():
     """To regenerate the secret"""
-
-
     uapp=Application.query.filter_by(id=g.form.id.data, user_id=g.user.id).first()
     if not uapp:
         return return_result(20005)
@@ -54,13 +52,27 @@ def app_rebuild():
     return return_result(result=dict(secret=secret))
 
 
+@bpv1.route("/app/edit/", methods=['POST'])
+@auth.login_required
+@blocked_check
+@validate_form(form_class=EditAppForm)
+def app_edit():
+    """To regenerate the secret"""
+
+    uapp=Application.query.filter_by(id=g.form.id.data, user_id=g.user.id).first()
+    if not uapp:
+        return return_result(20005)
+
+    uapp.appdes=g.form.appdes.data
+    return return_result()
+
 
 @bpv1.route("/app/remove/", methods=['POST'])
 @auth.login_required
 @blocked_check
+@validate_form(form_class=RemoveAppForm)
 def app_remove():
-    _id = request.json.get('id')
-    num = Application.query.filter_by(id=_id).delete()
+    num = Application.query.filter_by(id=g.form.id.data,user_id=g.user.id).delete()
     return return_result(result=dict(num=num))
 
 

@@ -1,4 +1,4 @@
- # -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 # @Date    : 2018/3/29
 # @Author  : Shu
 # @Email   : httpservlet@yeah.net
@@ -11,7 +11,7 @@ from ulord.models import Application,Type
 from flask import g
 from . import return_result
 
-__all__ = ['AddAppForm','RebuildAppForm','RemoveAppForm']
+__all__ = ['AddAppForm','RebuildAppForm','RemoveAppForm','EditAppForm']
 
 
 class AddAppForm(FlaskForm):
@@ -28,6 +28,10 @@ class AddAppForm(FlaskForm):
 class RebuildAppForm(FlaskForm):
     id = IntegerField('id', validators=[DataRequired()])
 
+class EditAppForm(FlaskForm):
+    id = IntegerField('id', validators=[DataRequired()])
+    appdes = StringField('appdes', validators=[DataRequired(), Length(max=500)], filters=[lambda x: x or None])
+
 class RemoveAppForm(FlaskForm):
-    id = IntegerField('id', validators=[DataRequired(), Exists(Application, Application.id)])
+    id = IntegerField('id', validators=[DataRequired()])
 

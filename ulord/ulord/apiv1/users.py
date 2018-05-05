@@ -8,7 +8,7 @@ from ulord.models import User,Role
 from ulord.extensions import db, auth
 from werkzeug.security import generate_password_hash
 from . import bpv1, get_jsonrpc_server,admin_required,blocked_check
-from ulord.forms import validate_form, RegForm, LoginForm, EditForm, ChangePasswordForm
+from ulord.forms import validate_form, RegForm, LoginForm, EditForm, ChangePasswordForm,EditUserRoleForm
 
 
 @bpv1.route('/users/reg/', methods=['POST'])
@@ -90,4 +90,16 @@ def change_password():
         return return_result(20207)
 
     user.password=password_hash
+    return return_result()
+
+@bpv1.route('/users/role/edit/',methods=['POST'])
+@auth.login_required
+@admin_required
+@validate_form(form_class=EditUserRoleForm)
+def edit_user_role():
+    """The administrator changes the developer account role."""
+    user=User.query.get(g.form.id.data)
+    if not user:
+        return return_result(20003)
+    user.role_id=g.form.role_id.data
     return return_result()

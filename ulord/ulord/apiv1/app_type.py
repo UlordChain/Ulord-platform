@@ -4,26 +4,23 @@
 # @Email   : httpservlet@yeah.net
 
 from . import bpv1,admin_required,blocked_check
-from flask import request
+from flask import g
 from ulord.models import Type
 from ulord.extensions import db,auth
 from . import return_result
 from ulord.models import Type
 from ulord.schema import types_schema
 from ulord.utils.formatter import get_tree
+from ulord.forms import validate_form,AddTypeForm,EditTypeForm,RemoveTypeForm
 
 
 @bpv1.route('/type/add/', methods=['POST'])
 @auth.login_required
 @blocked_check
 @admin_required
+@validate_form(form_class=AddTypeForm)
 def type_add():
-    """管理员权限"""
-    parent_id = request.json.get('parent_id', None)
-    name = request.json.get('name')
-    des = request.json.get('des')
-
-    t = Type(parent_id=parent_id, name=name, des=des)
+    t = Type(**g.form.data)
     db.session.add(t)
     db.session.commit()
     return return_result(result=dict(id=t.id))
@@ -33,8 +30,8 @@ def type_add():
 @auth.login_required
 @blocked_check
 def type_list():
-    tmodel_list = Type.query.all()
-    tlist = types_schema.dump(tmodel_list).data
+    types = Type.query.all()
+    tlist = types_schema.dump(types).data
     result = get_tree(tlist, None)
     return return_result(result=result)
 
@@ -43,27 +40,18 @@ def type_list():
 @auth.login_required
 @blocked_check
 @admin_required
+@validate_form(form_class=EditTypeForm)
 def type_edit():
-    id = request.json.get('id')
-    name = request.json.get('name')
-    des = request.json.get('des')
-    parent_id = request.json.get('parent_id')
-
-    t=Type.query.get_or_404(id)
-    if name is not None:
-        t.name=name
-    if des is not None:
-        t.des=des
-    if parent_id is not None:
-        t.parent_id=parent_id
-    db.session.add(t)
+    t=Type.query.get_or_404(g.form.id.data)
+    t.des=g.form.des.data
+    t.parent_id=g.form.parent_id.data
     return return_result()
 
 @bpv1.route('/type/remove/',methods=['POST'])
 @auth.login_required
 @blocked_check
 @admin_required
+@validate_form(form_class=RemoveTypeForm)
 def type_remove():
-    _id =request.json.get('id')
-    num=Type.query.filter_by(id=_id).delete()
+    num=Type.query.filter_by(id=g.form.id.data).delete()
     return return_result(result=dict(num=num))
