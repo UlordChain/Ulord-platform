@@ -87,6 +87,7 @@ class DaemonThread(threading.Thread, PrintError):
         # itself, or other jobs.  This is useful protection against
         # malformed or malicious server responses
         with self.job_lock:
+            # print len(self.jobs), '$'*30, self.job_lock
             for job in self.jobs:
                 try:
                     job.run()

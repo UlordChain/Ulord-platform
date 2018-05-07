@@ -54,7 +54,7 @@
 
     `content_type`：资源文件类型
 
-    `source_hash`：资源的ipfs哈希地址
+    `source_hash`：资源的udfs哈希地址
 
     `currency`：观看这笔资源支付的数字货币的种类
 
@@ -298,7 +298,7 @@ print res
 
     `content_type`：资源文件类型
 
-    `source_hash`：资源的ipfs哈希地址
+    `source_hash`：资源的udfs哈希地址
 
     `currency`：观看这笔资源支付的数字货币的种类
 

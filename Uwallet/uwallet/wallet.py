@@ -39,11 +39,11 @@ IMPORTED_ACCOUNT = '/x'
 # 预计舍弃这个
 class WalletStorage(PrintError):
     def __init__(self, user):
-        self.app_key, self.user_name = tuple(user.split('_'))
+        self.user = user if '_' in user else 'ulord_' + user
+        self.app_key, self.user_name = tuple(self.user.split('_'))
 
         self.executeMongodb = ExecuteMongodb('uwallet_user', self.app_key)
 
-        self.user = user
         self.file_exists = False if self.read() is None else True
 
 
@@ -104,7 +104,6 @@ class Abstract_Wallet(PrintError):
         self.history = storage.get('addr_history', {})  # address -> list(txid, height)
 
         # This attribute is set when wallet.start_threads is called.
-        # todo: 这个属性有什么用
         self.synchronizer = None
 
         # imported_keys is deprecated. The GUI should call convert_imported_keys
@@ -295,6 +294,7 @@ class Abstract_Wallet(PrintError):
         return self.can_create_accounts()
 
     def set_up_to_date(self, up_to_date):
+        print '============in up to date', up_to_date
         with self.lock:
             self.up_to_date = up_to_date
         if up_to_date:
@@ -835,7 +835,11 @@ class Abstract_Wallet(PrintError):
                     dd[addr].append((ser, v))
             # save
             self.transactions[tx_hash] = tx
+            # todo: 需要把transactions的交互都改变为和数据库的交互
+            # self.storage.put('transactions.%s' % tx_hash, tx)
             log.info("Saved transaction")
+            print '$'*30, 'Saved transaction', tx_hash
+            print id(self.transactions)
 
     def remove_transaction(self, tx_hash):
         with self.transaction_lock:
@@ -956,6 +960,10 @@ class Abstract_Wallet(PrintError):
                 prevout_hash, prevout_n = txo.split(':')
 
                 tx = self.transactions.get(prevout_hash)
+                # todo: delete
+                if tx is None:
+                    print prevout_hash, '***', id(self.transactions)
+
                 tx.deserialize()
                 txout = tx.outputs()[int(prevout_n)]
                 if not include_abandoned and txo in txis:

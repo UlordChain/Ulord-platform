@@ -42,7 +42,6 @@ class Daemon():
         self.config = config
         self.network = network
         self.wallets = {}
-        self.load_wallet()
         self.cmd_runner = Commands(self.config, self.wallets, self.network)
 
         self.server = SimpleJSONRPCServer(('0.0.0.0', config.get('rpc_port')),
@@ -50,7 +49,6 @@ class Daemon():
                                           logRequests=False)
         self.server.timeout = 0.1
         for cmdname in known_commands:
-            # rpc直接调用命令 --hetao
             self.server.register_function(getattr(self.cmd_runner, cmdname), cmdname)
         self.server.register_function(self.ping, 'ping')
         self.server.register_function(self.run_daemon, 'daemon')
@@ -80,64 +78,6 @@ class Daemon():
             response = "Daemon stopped"
         return response
 
-    def load_wallet(self):
-        mongo = pymongo.MongoClient(settings.DATABASE_HOST)
-        db = mongo.uwallet_user
-        for col_name in db.list_collection_names():
-            col = db.get_collection(col_name)
-
-            for user_name in col.find({}, {'_id':1}):
-
-                user = '_'.join([col_name, user_name['_id']])
-                storage = WalletStorage(user)
-
-                wallet = Wallet(storage)
-                # automatically generate wallet for ulord
-                if not storage.file_exists:
-                    seed = wallet.make_seed()
-                    wallet.add_seed(seed, None)
-                    wallet.create_master_keys(None)
-                    wallet.create_main_account()
-                    wallet.synchronize()
-
-                wallet.start_threads(self.network)
-                if wallet:
-                    self.wallets[user] = wallet
-
-    # def run(self):
-    #     while self.is_running():
-    #         self.server.handle_request()
-
-    # def run(self):
-    #     cpus = multiprocessing.cpu_count()
-    #     pros = []
-    #     while True:
-    #         fd_sets = _eintr_retry(select.select, [self.server], [], [], 0.1)
-    #         if not fd_sets[0]:
-    #             self.server.handle_timeout()
-    #             ll = pros.__len__()
-    #             if(ll>0):
-    #                 aliveCount = 0
-    #                 for idx in range(0, ll):
-    #                     if (pros[idx].is_alive()):
-    #                         aliveCount +=1
-    #                 print 'aliveThread:',aliveCount
-    #
-    #             continue
-    #         if(pros.__len__() < cpus):
-    #             currentP = multiprocessing.Process(target=self.server._handle_request_noblock)
-    #             currentP.start()
-    #             pros.append(currentP)
-    #         else:
-    #             for idx in range(0,cpus):
-    #                 if(pros[idx].is_alive() == False):
-    #
-    #                     currentP = multiprocessing.Process(target=self.server._handle_request_noblock)
-    #                     currentP.start()
-    #                     pros[idx] = currentP
-    #                     break
-
-        # ps aux | grep "python" | grep - v grep | cut - c 9 - 15 | xargs kill - 9
 
     def stop(self):
         for k, wallet in self.wallets.items():
@@ -145,13 +85,5 @@ class Daemon():
         sys.exit()
 
     def __del__(self):
-        print '西沟daemon', '='*60
+        print '析构 daemon', '='*60
         self.stop()
-
-def _eintr_retry(func, *args):
-    """restart a system call interrupted by EINTR"""
-    while True:
-        try:
-            return func(*args)
-        except (OSError, select.error) as e:
-            raise

@@ -168,24 +168,3 @@ class Synchronizer(ThreadJob):
         if up_to_date != self.wallet.is_up_to_date():
             self.wallet.set_up_to_date(up_to_date)
             self.network.trigger_callback('updated')
-
-
-if __name__ == '__main__':
-    from uwallet.wallet import WalletStorage, Wallet
-    from uwallet.network import Network
-    from uwallet.simple_config import SimpleConfig
-    import time
-    t = time.time()
-    user = 'test_201805021052'
-    storage = WalletStorage(user)
-    wallet = Wallet(storage)
-    t1 = time.time()
-
-    config = SimpleConfig({})
-    network = Network(config)
-    network.start()
-
-    wallet.synchronizer = Synchronizer(wallet, network)
-    wallet.synchronizer.run()
-
-    print t1 - t , '###', time.time() - t

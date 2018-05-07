@@ -9,7 +9,6 @@ import json
 import logging
 import sys
 import time
-import os
 import traceback
 from decimal import Decimal
 from functools import wraps
@@ -47,8 +46,6 @@ from uwallet import gl
 from uwallet.wallet import Wallet, WalletStorage
 
 log = logging.getLogger(__name__)
-
-from multiprocessing import Process
 
 known_commands = {}
 ADDRESS_LENGTH = 25
@@ -114,6 +111,7 @@ def command(s):
             if s[-2][2] != '_dispatch':
                 return func(*args, **kwargs)
             print '*' * 60
+            t= time.time()
             l_args = list(args)
             self = l_args.pop(0)
 
@@ -148,9 +146,10 @@ def command(s):
                 }
 
             finally:
+                # self.unload_user()
                 self.user = None
                 self._password = None
-                # self.wallets.clear()
+                print "the %s runtime: %s" % (func.__name__, time.time() -t)
 
         return func_wrapper
 
@@ -169,8 +168,7 @@ class Commands(object):
     def load_user(self, args):
         # warning: 此处顺序不能乱
         password = args.pop(1)
-        user = args.pop(0)
-        self.user = user if '_' in user else 'ulord_' + user
+        self.user = args.pop(0)
 
         if not password:
             raise ParamsError('51002')
@@ -179,10 +177,14 @@ class Commands(object):
         except:
             raise ParamsError('51001', "the password can't conversion into str")
 
-        # self.daemon.load_wallet(self.user)
+        if self.user not in self.wallets:
+            print self.user
+            print self.wallets
+            print 'load ========================='
+            self.load_wallet(self.user)
         # check password
         try:
-            seed = self.wallets[self.user].check_password(password)
+            self.wallets[self.user].check_password(password)
         except (InvalidPassword, KeyError):
             raise ParamsError('51001')
 
@@ -190,17 +192,22 @@ class Commands(object):
         args.insert(0, self)
         return tuple(args)
 
-    # def load_wallet(self, user):
-    #     #
-    #     storage = WalletStorage(user)
-    #     wallet = Wallet(storage)
-    #     # automatically generate wallet for ulord
-    #     if not storage.file_exists:
-    #         raise ParamsError('51003', user)
-    #
-    #     wallet.start_threads(self.network)
-    #     if wallet:
-    #         self.wallets[user] = wallet
+    def unload_user(self):
+        self.wallets[self.user].stop_threads()
+        self.wallets.clear()
+
+
+    def load_wallet(self, user):
+        #
+        storage = WalletStorage(user)
+        wallet = Wallet(storage)
+        # automatically generate wallet for ulord
+        if not storage.file_exists:
+            raise ParamsError('51003', user)
+
+        wallet.start_threads(self.network)
+        if wallet:
+            self.wallets[user] = wallet
 
     # def _run(self, method, args, password_getter):
     #     # todo: 什么时候进入这里
@@ -2661,7 +2668,6 @@ class Commands(object):
         except:
             raise ParamsError('51001', "the password can't conversion into str")
 
-        user = user if '_' in user else 'ulord_' + user
         storage = WalletStorage(user)
         if storage.file_exists:
             raise ParamsError('51004', user)
@@ -2670,7 +2676,6 @@ class Commands(object):
         wallet.add_seed(seed, password)
         wallet.create_master_keys(password)
         wallet.create_main_account()
-        wallet.synchronize()  # 生成地址
         wallet.start_threads(self.network)
         self.wallets[user] = wallet
 
@@ -2969,9 +2974,8 @@ class Commands(object):
     @command('u')
     def pay(self, receive_user, amount):
         """ Create and broadcast transaction. """
-        # self.load_wallet(receive_user)
-        receive_user = receive_user if '_' in receive_user else 'ulord_' + receive_user
-        address = self.wallets[receive_user].addresses(False)[0]
+        # todo: address 的获取方法需要优化
+        address = WalletStorage(receive_user).get('addresses')[0]
         tx = self._mktx([(address, amount)], None, None, None, False, False)
         res = self.network.synchronous_get(('blockchain.transaction.broadcast', [str(tx)]))
         if len(res) == 64:

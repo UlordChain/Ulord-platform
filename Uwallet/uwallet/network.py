@@ -786,3 +786,15 @@ class Network(DaemonThread):
         if r.get('error'):
             raise BaseException(r.get('error'))
         return r.get('result')
+
+
+if __name__ == '__main__':
+    logging.getLogger(__name__).setLevel(logging.DEBUG)
+    handler = logging.StreamHandler()
+    handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)-8s "
+                                           "%(name)s:%(lineno)d: %(message)s"))
+    logging.getLogger(__name__).addHandler(handler)
+    network = Network()
+    network.start()
+    while 1:
+        time.sleep(100)

@@ -30,5 +30,5 @@ REDIS_NAME_PRO = 1
 REDIS_PORT = 6379
 
 # 钱包的字段名称
-WALLET_FIELDS = ('seed')
+WALLET_FIELDS = ('seed', 'transactions', 'txi', 'txo', 'pruned_txo', 'claimtrie_transactions', )
 
