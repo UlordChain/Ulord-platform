@@ -8,7 +8,7 @@ Authorization:Bearer token值
 
 ### 1. 开发者角色接口
 
-##### A. 角色添加  `POST`    `/v1/role/add/`
+##### A. 角色添加  `POST`    `/v1/role/add`
 ```
 # 请求参数:
 
@@ -70,7 +70,7 @@ num: 每页条数
 }
 ```
 
-##### C. 角色修改  `POST`    `/v1/role/edit/`
+##### C. 角色修改  `POST`    `/v1/role/edit`
 ```
 # 请求参数:
 
@@ -89,7 +89,7 @@ num: 每页条数
 }
 ```
 
-##### D. 角色删除  `POST`    `/v1/role/remove/`
+##### D. 角色删除  `POST`    `/v1/role/remove`
 ```
 # 请求参数:
 
@@ -114,7 +114,7 @@ num: 每页条数
 
 ### 2. 应用类型接口
 
-##### A. 类型添加  `POST`    `/v1/type/add/`
+##### A. 类型添加  `POST`    `/v1/type/add`
 ```
 # 请求参数:
 
@@ -136,7 +136,7 @@ num: 每页条数
 }
 ```
 
-##### B. 类型列表  `GET`    `/v1/type/list/`
+##### B. 类型列表  `GET`    `/v1/type/list`
 ```
 # 请求参数:
 
@@ -180,7 +180,7 @@ num: 每页条数
 }
 ```
 
-##### C. 类型修改  `POST`    `/v1/type/edit/`
+##### C. 类型修改  `POST`    `/v1/type/edit`
 ```
 # 请求参数:
 
@@ -199,7 +199,7 @@ num: 每页条数
 }
 ```
 
-##### D. 类型删除  `POST`    `/v1/type/remove/`
+##### D. 类型删除  `POST`    `/v1/type/remove`
 ```
 # 请求参数:
 
@@ -221,7 +221,7 @@ num: 每页条数
 
 ### 3. 开发者帐号接口
 
-##### A. 开发者注册  `POST`    `/v1/users/reg/`
+##### A. 开发者注册  `POST`    `/v1/users/reg`
 ```
 # 请求参数:
 
@@ -257,7 +257,7 @@ num: 每页条数
 }
 ```
 
-##### B. 开发者登录  `POST`    `/v1/users/login/`
+##### B. 开发者登录  `POST`    `/v1/users/login`
 ```
 # 请求参数:
 
@@ -278,7 +278,7 @@ num: 每页条数
 }
 ```
 
-##### C. 开发者密码修改  `POST`    `/v1/users/changepassword/`
+##### C. 开发者密码修改  `POST`    `/v1/users/changepassword`
 ```
 # 请求参数:
 
@@ -296,7 +296,7 @@ num: 每页条数
 }
 ```
 
-##### D. 开发者资料修改  `POST`    `/v1/users/edit/`
+##### D. 开发者资料修改  `POST`    `/v1/users/edit`
 ```
 # 请求参数:
 
@@ -314,7 +314,7 @@ num: 每页条数
 }
 ```
 
-##### E. 管理员修改用户角色  `POST`    `/v1/users/role/edit/`
+##### E. 管理员修改用户角色  `POST`    `/v1/users/role/edit`
 ```
 # 请求参数:
 
@@ -334,7 +334,7 @@ num: 每页条数
 
 ### 4. 应用接口
 
-##### A. 应用添加  `POST`    `/v1/app/add/`
+##### A. 应用添加  `POST`    `/v1/app/add`
 ```
 # 请求参数:
 
@@ -358,7 +358,7 @@ num: 每页条数
 }
 ```
 
-##### B. 应用列表  `GET`    `/v1/app/list/<page>/<num>/`
+##### B. 应用列表  `GET`    `/v1/app/list/<page>/<num>`
 ```
 # 请求参数:
 无
@@ -389,7 +389,7 @@ num: 每页条数
 }
 ```
 
-##### C. 应用重新生成secret  `POST`    `/v1/app/rebuild/`
+##### C. 应用重新生成secret  `POST`    `/v1/app/rebuild`
 ```
 # 请求参数:
 
@@ -409,7 +409,7 @@ num: 每页条数
 }
 ```
 
-##### D. 应用信息修改  `POST`    `/v1/app/edit/`
+##### D. 应用信息修改  `POST`    `/v1/app/edit`
 ```
 # 请求参数:
 
@@ -427,7 +427,7 @@ num: 每页条数
 }
 ```
 
-##### E. 应用删除  `POST`    `/v1/app/remove/`
+##### E. 应用删除  `POST`    `/v1/app/remove`
 ```
 # 请求参数:
 
@@ -454,7 +454,7 @@ num: 每页条数
 ​
 ### 交易相关
 
-##### 1. 创建钱包  `POST`    `/v1/transactions/createwallet/`
+##### 1. 创建钱包  `POST`    `/v1/transactions/createwallet`
 ```
 # 请求参数:
 
@@ -472,7 +472,7 @@ num: 每页条数
 }
 ```
 
-##### 2. 转账  `POST`    `/v1/transactions/paytouser/`
+##### 2. 转账  `POST`    `/v1/transactions/paytouser`
 ```
 # 请求参数:
 {
@@ -494,7 +494,7 @@ num: 每页条数
 ```
 
 
-##### 3. 查询余额  `POST`    `/v1/transactions/balance/`
+##### 3. 查询余额  `POST`    `/v1/transactions/balance`
 ```
 # 请求参数:
 
@@ -518,7 +518,7 @@ num: 每页条数
 }
 ```
 
-##### 4. 发布资源  `POST`    `/v1/transactions/publish/`
+##### 4. 发布资源  `POST`    `/v1/transactions/publish`
 ```
 # 请求参数:
 
@@ -546,7 +546,7 @@ num: 每页条数
 }
 ```
 
-##### 5. 检查是否付费  `POST`    `/v1/transactions/check/`
+##### 5. 检查是否付费  `POST`    `/v1/transactions/check`
 ```
 # 请求参数:
 
@@ -573,7 +573,7 @@ num: 每页条数
 }
 ```
 
-##### 6. 消费资源  `POST`    `/v1/transactions/consume/`
+##### 6. 消费资源  `POST`    `/v1/transactions/consume`
 ```
 # 请求参数:
 
@@ -596,7 +596,7 @@ num: 每页条数
 }
 ```
 
-##### 7. 收入账单  `POST`    `/v1/transactions/account/in/<page>/<num>/`
+##### 7. 收入账单  `POST`    `/v1/transactions/account/in/<page>/<num>`
 ```
 # 请求参数:
 {
@@ -637,7 +637,7 @@ num: 每页条数
 ```
 
 
-##### 8. 支出账单  `POST`    `/v1/transactions/account/out/<page>/<num>/`
+##### 8. 支出账单  `POST`    `/v1/transactions/account/out/<page>/<num>`
 ```
 # 请求参数:
 {
@@ -677,7 +677,7 @@ num: 每页条数
 }
 ```
 
-##### 9. 收支账单(上面两个接口2合1)  `POST`    `/v1/transactions/account/inout/<page>/<num>/`
+##### 9. 收支账单(上面两个接口2合1)  `POST`    `/v1/transactions/account/inout/<page>/<num>`
 ```
 # 请求参数:
 {
@@ -735,7 +735,7 @@ num: 每页条数
 }
 ```
 
-##### 10. 收支总额  `POST`    `/v1/transactions/account/`
+##### 10. 收支总额  `POST`    `/v1/transactions/account`
 ```
 # 请求参数:
 {
@@ -769,7 +769,7 @@ num: 每页条数
 }
 ```
 
-##### 11. 发布资源总数  `POST`    `/v1/transactions/publish/count/`
+##### 11. 发布资源总数  `POST`    `/v1/transactions/publish/count`
 ```
 # 请求参数:
 {
@@ -791,7 +791,7 @@ num: 每页条数
 
 ### 资源相关
 
-##### 1. 资源列表查询  `GET`    `/v1/content/list/<page>/<num>/`
+##### 1. 资源列表查询  `GET`    `/v1/content/list/<page>/<num>`
 ```
 # 请求参数:
     page: 页码
@@ -816,7 +816,7 @@ num: 每页条数
                 "content_type": ".txt",
                 "create_timed": "2018-04-12T15:47:34.446858+00:00",
                 "create_timed_timestamp": 1525312874,
-                "currency": "ULD",
+                "currency": "UT",
                 "des": "这是使用UDFS和区块链生成的第2篇博客的描述信息",
                 "id": 5,
                 "price": 1.3,
@@ -836,7 +836,7 @@ num: 每页条数
 }
 ```
 
-##### 2. 单用户已消费资源列表  `POST`    `/v1/content/consume/list/<page>/<num>/`
+##### 2. 单用户已消费资源列表  `POST`    `/v1/content/consume/list/<page>/<num>`
 ```
 # 请求参数:
 {
@@ -870,7 +870,7 @@ num: 每页条数
 }
 ```
 
-##### 3. 单用户已发布资源列表  `POST`    `/v1/content/publish/list/<page>/<num>/`
+##### 3. 单用户已发布资源列表  `POST`    `/v1/content/publish/list/<page>/<num>`
 ```
 # 请求参数:
 {
@@ -905,7 +905,7 @@ num: 每页条数
 }
 ```
 
-##### 4. 浏览量增加  `POST`    `/v1/content/view/`
+##### 4. 浏览量增加  `POST`    `/v1/content/view`
 ```
 # 请求参数:
 {

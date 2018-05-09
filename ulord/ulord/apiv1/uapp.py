@@ -13,7 +13,7 @@ from ulord.schema import apps_schema
 from ulord.forms import validate_form, AddAppForm, RebuildAppForm, RemoveAppForm,EditAppForm
 
 
-@bpv1.route("/app/add/", methods=['POST'])
+@bpv1.route("/app/add", methods=['POST'])
 @auth.login_required
 @blocked_check
 @validate_form(form_class=AddAppForm)
@@ -28,7 +28,7 @@ def app_add():
     return return_result(result={'id': uapp.id, 'appkey': uapp.appkey, 'secret': uapp.secret})
 
 
-@bpv1.route("/app/list/<int:page>/<int:num>/")
+@bpv1.route("/app/list/<int:page>/<int:num>")
 @auth.login_required
 @blocked_check
 def app_list(page, num):
@@ -38,7 +38,7 @@ def app_list(page, num):
     return return_result(result=dict(total=uapps.total,pages=uapps.pages,records=records))
 
 
-@bpv1.route("/app/rebuild/", methods=['POST'])
+@bpv1.route("/app/rebuild", methods=['POST'])
 @auth.login_required
 @blocked_check
 @validate_form(form_class=RebuildAppForm)
@@ -52,7 +52,7 @@ def app_rebuild():
     return return_result(result=dict(secret=secret))
 
 
-@bpv1.route("/app/edit/", methods=['POST'])
+@bpv1.route("/app/edit", methods=['POST'])
 @auth.login_required
 @blocked_check
 @validate_form(form_class=EditAppForm)
@@ -67,7 +67,7 @@ def app_edit():
     return return_result()
 
 
-@bpv1.route("/app/remove/", methods=['POST'])
+@bpv1.route("/app/remove", methods=['POST'])
 @auth.login_required
 @blocked_check
 @validate_form(form_class=RemoveAppForm)

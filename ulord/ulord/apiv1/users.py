@@ -11,7 +11,7 @@ from . import bpv1, get_jsonrpc_server,admin_required,blocked_check
 from ulord.forms import validate_form, RegForm, LoginForm, EditForm, ChangePasswordForm,EditUserRoleForm
 
 
-@bpv1.route('/users/reg/', methods=['POST'])
+@bpv1.route('/users/reg', methods=['POST'])
 @validate_form(form_class=RegForm)
 def reg():
     """User register"""
@@ -40,7 +40,7 @@ def reg():
     return return_result(result=dict(id=user.id))
 
 
-@bpv1.route('/users/login/', methods=['POST'])
+@bpv1.route('/users/login', methods=['POST'])
 @validate_form(form_class=LoginForm)
 def login():
     username = g.form.username.data
@@ -57,7 +57,7 @@ def login():
     return return_result(result=dict(token=token))
 
 
-@bpv1.route('/users/edit/', methods=['POST'])
+@bpv1.route('/users/edit', methods=['POST'])
 @auth.login_required
 @blocked_check
 @validate_form(form_class=EditForm)
@@ -68,7 +68,7 @@ def edit():
     return return_result()
 
 
-@bpv1.route('/users/changepassword/', methods=['POST'])
+@bpv1.route('/users/changepassword', methods=['POST'])
 @auth.login_required
 @blocked_check
 @validate_form(form_class=ChangePasswordForm)
@@ -92,7 +92,7 @@ def change_password():
     user.password=password_hash
     return return_result()
 
-@bpv1.route('/users/role/edit/',methods=['POST'])
+@bpv1.route('/users/role/edit',methods=['POST'])
 @auth.login_required
 @admin_required
 @validate_form(form_class=EditUserRoleForm)
