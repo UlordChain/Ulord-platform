@@ -14,7 +14,7 @@ from ulord.utils.formatter import get_tree
 from ulord.forms import validate_form,AddTypeForm,EditTypeForm,RemoveTypeForm
 
 
-@bpv1.route('/type/add/', methods=['POST'])
+@bpv1.route('/type/add', methods=['POST'])
 @auth.login_required
 @blocked_check
 @admin_required
@@ -26,7 +26,7 @@ def type_add():
     return return_result(result=dict(id=t.id))
 
 
-@bpv1.route('/type/list/')
+@bpv1.route('/type/list')
 @auth.login_required
 @blocked_check
 def type_list():
@@ -36,7 +36,7 @@ def type_list():
     return return_result(result=result)
 
 
-@bpv1.route('/type/edit/', methods=['POST'])
+@bpv1.route('/type/edit', methods=['POST'])
 @auth.login_required
 @blocked_check
 @admin_required

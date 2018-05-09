@@ -11,7 +11,7 @@ from ulord.schema import roles_schema
 from ulord.forms import validate_form,AddRoleForm,EditRoleForm,RemoveRoleForm
 
 
-@bpv1.route('/role/add/', methods=['POST'])
+@bpv1.route('/role/add', methods=['POST'])
 @auth.login_required
 @blocked_check
 @admin_required
@@ -24,7 +24,7 @@ def role_add():
     return return_result(result={'id': role.id})
 
 
-@bpv1.route('/role/list/<int:page>/<int:num>/')
+@bpv1.route('/role/list/<int:page>/<int:num>')
 @auth.login_required
 @blocked_check
 def role_list(page,num):
@@ -35,7 +35,7 @@ def role_list(page,num):
     return return_result(result=dict(total=total,pages=pages,records=result))
 
 
-@bpv1.route('/role/edit/', methods=['POST'])
+@bpv1.route('/role/edit', methods=['POST'])
 @auth.login_required
 @blocked_check
 @admin_required
@@ -48,7 +48,7 @@ def role_edit():
     return return_result()
 
 
-@bpv1.route('/role/remove/', methods=['POST'])
+@bpv1.route('/role/remove', methods=['POST'])
 @auth.login_required
 @blocked_check
 @admin_required
