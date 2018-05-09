@@ -1,16 +1,17 @@
-# Ulord Platform - The Most Powerful Infrastructure for Content Distribution Applications
+# Ulord OS(UOS) - The Most Powerful Infrastructure for Content Distribution Applications
 [中文](./README_zh.md)
 
-Welcome to the Ulord Platform source code repository! Ulord platform software enables developers to create and deploy high-performance, horizontally scalable, blockchain infrastructure upon which content distribution applications can be built.
+Welcome to the Ulord Platform(UOS) source code repository! Ulord platform software enables developers to create and deploy high-performance, horizontally scalable, blockchain infrastructure upon which content distribution applications can be built.
 
 This code is currently alpha-quality and under rapid development. 
 
 Ulord platform is decenterlize content distribution platform which can supply content repo, distribution and search ability. Ulord platform make enterprise development content distribution more effective.
 Ulord platform have:
-- decenterlize content storage service
+- decenterlize content storage service (UDFS)
 - content transaction service
 - content search service
 - content copyright detected service
+
 Ulord platform guarantee:
 - Content is belong to enterprise
 - Content copyright and audit is belong to enterprise 
