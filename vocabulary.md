@@ -1,7 +1,7 @@
 # vocabulary
 [中文](./vocabulary_zh.md)
 #### UDFS
-Inter Planetary File System
+Ulord Distribution File System, base on IPFS.
 
 #### TxID
 Transaction ID，a unique hash code which execute a transaction on ulord blockchain, you can get transaction detail from Ulord blockchain from transaction id.
