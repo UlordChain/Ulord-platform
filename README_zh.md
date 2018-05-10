@@ -1,7 +1,7 @@
 # Ulord Platform - The Most Powerfull Infrastructure for Content Distribution Applications
 [英文](./README.md)
 
-欢迎，这里是Ulord平台原代码仓库！Ulord平台软件可以让开发者有能力创建和部署高性能，可水平扩展，基于区块链的内容分发应用。
+欢迎，这里是Ulord平台(UPaaS)原代码仓库！Ulord平台软件可以让开发者有能力创建和部署高性能，可水平扩展，基于区块链的内容分发应用。
 目前代码仍在Alpah版本状态，并在快速开发中，欢迎加入！
 
 Ulord是一个去中心化的内容分发平台，平台提供内容存储，内容检索和分发功能。平台可以承载不同的企业应用，提供给企业用户内容分发服务。
@@ -32,10 +32,10 @@ Ulord钱包是用于保存用户资金，签名交易的工具。
 ## 源代码参考
 Ulord平台主要由Python开发，企业端SDK目前支持Python，未来会开发各主流语言的SDK。
 
-- ulord Ulord平台源代码
-- Uschema Ulord平台上链信息格式定义（ProtoBuff)
-- UCWallet Ulord平台托管钱包客户端源代码
-- UCWallet-server Ulord平台托管钱包服务端源代码
+- [ulord](./ulord) Ulord平台源代码
+- [Uschema](./Uschema) Ulord平台上链信息格式定义（ProtoBuff)
+- [UCWallet](./UCwallet) Ulord平台托管钱包客户端源代码
+- [UCWallet-server](./UCWallet-server) Ulord平台托管钱包服务端源代码
 
 ## 开始使用Ulord平台
 您可以查看Ulord平台的[百科](https://github.com/UlordChain/Ulord-platform/wiki)获得帮助和进化，或者参考[博客示例](https://github.com/UlordChain/ulord-blog-demo)开始使用Ulord。

@@ -1,7 +1,7 @@
-# Ulord OS(UOS) - The Most Powerful Infrastructure for Content Distribution Applications
+# Ulord Platform - The Most Powerful Infrastructure for Content Distribution Applications
 [中文](./README_zh.md)
 
-Welcome to the Ulord Platform(UOS) source code repository! Ulord platform software enables developers to create and deploy high-performance, horizontally scalable, blockchain infrastructure upon which content distribution applications can be built.
+Welcome to the Ulord Platform(UPaaS) source code repository! Ulord platform software enables developers to create and deploy high-performance, horizontally scalable, blockchain infrastructure upon which content distribution applications can be built.
 
 This code is currently alpha-quality and under rapid development. 
 
