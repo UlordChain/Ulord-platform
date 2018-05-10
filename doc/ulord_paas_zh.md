@@ -1,4 +1,6 @@
 # Ulord Platform
+[英文](./ulord_pass_en.md)
+
 Ulord平台，又名UPaaS，面向企业和个人，提供内容分发的区块链平台，同时也是一个内容服务平台。
 UPaaS基于Ulord公链和Ulord分布式文件系统（UDFS）构建，UlordChain和UDFS构成了UPaaS的内容存储子系统（Ulord Content Storage System, UCSS)。基于UlordChain，构建一个中心化托管钱包UCWallet，该钱包实现用户托管账户的交易，内容上链服务，是UPaaS的一个核心子系统，具有横向扩展能力，可以满足内容交易高并发要求。基于UCWallet和UDFS构建了一个内容和链的绑定服务（UBinding），实现链内容和区块链的绑定，并通过索引数据缓存（Index Data Cache）和关系型数据库（DB Cache）提供快速的查询服务。UPaaS基于UCWallet，UBinding，Index data cache和DB Cache构建，对外主要提供企业服务，版权确权服务，内容审计服务和内容分发服务。
 
@@ -7,7 +9,7 @@ UPaaS系统架构
 ![UPaaS](images/UPaaS.png)
 
 ## 内容存储子系统(UCSS)
-内容存储子系统主要用于保存文件内容到Ulord分布式文件系统（UDFS），同时把内容摘要写入Ulord区块链，一同构成的子系统叫做内容存储子系统(UCSS)。利用Ulord区块链和UDFS提供可靠的、去中心化的内容存储服务。
+内容存储子系统主要用于保存文件内容到Ulord分布式文件系统（UDFS），同时把内容摘要写入Ulord区块链，一同构成的子系统叫做内容存储子系统(UCSS)。UCSS组合Ulord区块链和UDFS提供可靠的、去中心化的内容存储服务。
 存储子系统充分利用区块链交易记录的不可篡改性，记录关键信息在链上，实现内容的归属和时序性，用户内容购买记录存证。UDFS中的内容通过链的摘要信息进行关联，任何人可以获得链上产生的资源和购买的资源。链上信息包含的公开信息包括内容标题，摘要和企业信息，由于链上的信息是基于货币地址，因而具有匿名性，同时，内容存储在UDFS上也是经过加密处理的，因此，只有拥有权限的人和企业才可以获得内容的相关信息。UDFS是基于P2P网络的存储系统，主要由Ulord的主节点（参见[白皮书](https://github.com/UlordChain/Document/blob/master/whitepaper_zh.pdf)）承当内容的存储和分发，每一个主节点就是相当于用户的云存储空间，随处可以获得想要的内容。
 
 ### Ulord区块链
@@ -36,7 +38,7 @@ UBinding通过调用UCWallet和UDFS的API实现交付，包括内容写入UDFS�
 
 
 ## Ulord Platform as a Service（UPaaS）
-Ulord操作系统其实并不是一般意义上的操作系统，而是借用操作系统提供数据和服务的概念的一个系统。UPaaS提供内容存储和分发服务，包括数据存储，数据处理和内容分发功能。UPaaS在UCSS之上构建，并结合企业服务，内容确权，内容审计和内容分发功能。
+Ulord操作系统其实并不是一般意义上的操作系统，而是借用操作系统提供数据和服务的概念的一个系统。UPaaS提供内容存储和分发服务，包括数据存储，数据处理和内容分发功能。UPaaS在UCSS之上构建，并结合企业服务（Eterprise service)，内容确权(Copyright Confirmation)，内容审计(Content Audit Service)和内容分发(Content Distribution)功能。
 
 ### 企业服务
 企业服务提供企业注册，企业权限，内容标签等管理，内容交易服务等。主要服务于企业用户的内容发布，分发，查询需求。未来可能增加更多新功能。
