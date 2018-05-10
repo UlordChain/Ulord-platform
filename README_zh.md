@@ -23,7 +23,7 @@ Ulord是一个去中心化的内容分发平台，平台提供内容存储，内
 ## Ulord平台（UPaaS）
 Ulord平台，又名UPaaS，面向企业和个人，提供内容分发的区块链平台，同时也是一个内容服务平台。
 UPaaS基于Ulord公链和Ulord分布式文件系统（UDFS）构建，UlordChain和UDFS构成了UPaaS的内容存储子系统（Ulord Content Storage System, UCSS)。基于UlordChain，构建一个中心化托管钱包UCWallet，该钱包实现用户托管账户的交易，内容上链服务，是UPaaS的一个核心子系统，具有横向扩展能力，可以满足内容交易高并发要求。基于UCWallet和UDFS构建了一个内容和链的绑定服务（UBinding），实现链内容和区块链的绑定，并通过索引数据缓存（Index Data Cache）和关系型数据库（DB Cache）提供快速的查询服务。UPaaS基于UCWallet，UBinding，Index data cache和DB Cache构建，对外主要提供企业服务，版权确权服务，内容审计服务和内容分发服务。
-详情请参考：[平台文档](doc/ulord_pass_zh.md)
+详情请参考：[平台文档](doc/ulord_paas_zh.md)
 
 ## Ulord钱包
 Ulord钱包是用于保存用户资金，签名交易的工具。

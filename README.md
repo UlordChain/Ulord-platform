@@ -25,7 +25,7 @@ Ulord platform guarantee:
 
 ## Ulord Platform（UPaaS）
 Ulord Platform(UPaaS), for enterprises and individuals, it provides a blockchain platform with content distribution, as well as a content distribution service platform. UPaaS is built on the Ulord blockchain and the Ulord distributed file system (UDFS). UlordChain and UDFS constitute the UPaaS's content storage subsystem (Ulord Content Storage System, UCSS). UPaaS has a central managed purse wallet, we called UCWallet, which submit the transaction of the user managed account and add some content abstract to Ulord blockchain. It is a core subsystem of the UPaaS, and it is a distributed software, which can horizentionally adjust node number to meet the high concurrency request of the content transaction. We build a binding service (UBinding) base UCWallet and UDFS, which can bind content that come from UDFS and chain that come from Ulord blockchain. UBinding provide fast query services through the index data cache (Index Data Cache) and the relational database (DB Cache). UPaaS is based on UCWallet, UBinding, Index data cache and DB Cache to provide business services, copyright confirmation services, content audit services and content distribution services.
-More detail please to see [Ulord platform documention](doc/ulord_pass_en.md)
+More detail please to see [Ulord platform documention](doc/ulord_paas_en.md)
 
 ## Ulord Wallet
 Ulord wallet is to protected your asset, and execute signuature transaction.
