@@ -19,6 +19,7 @@ Ulord是一个去中心化的内容分发平台，平台提供内容存储，内
 1. [Ulord官网](http://ulord.one)
 2. [文档](https://github.com/UlordChain/documentation)
 3. [Wiki](https://github.com/UlordChain/Ulord-platform/wiki)
+4. [Vocabulary](./doc/vocabulary_zh.md)
 
 ## Ulord平台（UPaaS）
 Ulord平台，又名UPaaS，面向企业和个人，提供内容分发的区块链平台，同时也是一个内容服务平台。

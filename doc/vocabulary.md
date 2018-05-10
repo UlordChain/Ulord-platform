@@ -1,5 +1,14 @@
 # vocabulary
 [中文](./vocabulary_zh.md)
+#### UPaaS
+Ulord Platform as a Service
+
+#### UCSS
+Ulord Content Storage System
+
+#### UCWallet
+Ulord Centerinalized Wallet
+
 #### UDFS
 Ulord Distribution File System, base on IPFS.
 

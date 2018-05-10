@@ -5,7 +5,7 @@ Ulord Platform(UPaaS), for enterprises and individuals, it provides a blockchain
 
 UPaaS System Architecture
 
-![UPaaS](images/UPaaS.png)
+![UPaaS](../images/UPaaS.png)
 
 ## Ulord Content Storage System(UCSS)
 Ulord content storage system mainly save file to Ulord distribute file system(UDFS), at same time write some abstract to ulord blockchain, we called Ulord Content Storage System(UCSS). 
@@ -45,6 +45,8 @@ Enterprise services provide enterprise registration, enterprise permissions, con
 ### Copyright confirmation service
 The true service of copyright is a service used to confirm whether the content of the user has been uploaded, which is composed of two parts, one is the confirmation of the copyright information, and the other is the content fingerprint extraction service. UPaaS is based on the principle of designing the system without the original content. The content of the system is owned by the enterprise. The copyright confirmation service is based on the content fingerprint information to confirm the copyright, avoid the loss of the content on the network, and ensure the security of the user's information. The content fingerprint extraction service runs on the enterprise side, requiring the enterprise terminal to pass the copyright confirmation link before accepting the chain of content, so as to avoid later disputes. The fingerprint extraction service needs to get the original text, so it runs in the controlled environment of the enterprise. The process of extracting fingerprint information is irreversible, which means that fingerprint information can not restore the original text and ensure the security of the original text. Fingerprint source code is open source and is available for inspection.
 The copyright confirmation service runs in the UPaaS system and accepts fingerprint information from different enterprise ends to ensure that the content does not flow between enterprises, affects the copyright of the original author, and solves the problem of copyright confirmation at the first time.
+
+![UPaaS Enterprise App](../images/UPaaS-Copyright-Confirmation.png)
 
 ### Content Audit Service
 Content review services are mainly filtering and early warning sensitive words to ensure that the content is distributed under a certain system.
