@@ -42,6 +42,7 @@ class ParamsError(ReturnError):
         '51007': "the bid must > 0",
         '51008': "the tx_fee must >= 0",
         '51009': "val and metadata can't both empty",
+        '51010': 'It cannot be converted to int'
     }
 
 
@@ -60,6 +61,7 @@ class ServerError(ReturnError):
         '52010': 'No extra funds paid fee',
         '52011': 'Dont know which claim to update, because the same name claim > 1',
         '52012': 'cannot save field',
+        '52013': 'Temporary dissupport',
     }
 
 

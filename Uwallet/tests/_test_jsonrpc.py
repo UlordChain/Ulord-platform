@@ -2,10 +2,22 @@
 import time
 
 from jsonrpclib import Server
+
+def profiler(func):
+    def do_profile(*args, **kw_args):
+        n = func.func_name
+        t0 = time.time()
+        o = func(*args, **kw_args)
+        t = time.time() - t0
+        print "[profiler] %s %f" % (n, t)
+        return o
+    # return lambda *args, **kw_args: do_profile(func, args, kw_args)
+    return do_profile
+
 # server = Server('http://192.168.14.240:8080')
 server = Server('http://192.168.14.241:8003')
 
-
+@profiler
 def publish(user, password, claim_name,  skip_update_check):
     """
 
@@ -36,6 +48,7 @@ def publish(user, password, claim_name,  skip_update_check):
 
     return server.publish(user, password, claim_name, metadata, contentType, sourceHash, currency, amount, bid, None, None, skip_update_check)
 
+@profiler
 def consume(claim_id):
     """
 
@@ -45,6 +58,7 @@ def consume(claim_id):
     password = '123'
     return server.consume(user, password, claim_id)
 
+@profiler
 def create(user, password):
     """
 
@@ -52,13 +66,14 @@ def create(user, password):
     """
     return server.create(user, password)
 
+@profiler
 def getbalance(user, password):
     """
     :return: {u'confirmed': u'9999.99965899', u'success': True, u'unconfirmed': 1.33, u'unmatured': 9.2}
     """
     return server.getbalance(user, password)
 
-
+@profiler
 def pay(receive_user, amount):
     """
 
@@ -70,6 +85,7 @@ def pay(receive_user, amount):
     password = '123'
     return server.pay(send_user, password, receive_user, amount)
 
+@profiler
 def update_claim(user, password, claim_name, claim_id, txid):
     metadata = {
         "license": "LBRY Inc",
@@ -97,59 +113,52 @@ def update_claim(user, password, claim_name, claim_id, txid):
     return server.update_claim(user, password, claim_name, claim_id, txid, nout, metadata,
                          content_type, source_hash, currency, amount, bid, address, tx_fee)
 
+@profiler
 def delete(user, password):
     return server.delete(user, password)
 
+@profiler
+def mul_test():
+    def wrap_publish():
+        print publish(user, password, claim_name, False)
+    def wrap_getbalance():
+        print getbalance(user, password)
+    def wrap_create(user):
+        print create('test_'+ str(user), 123)
+
+    from multiprocessing import Process
+    plist=[]
+    for i in range(1):
+        if i % 2 == 0:
+            # p = Process(target=wrap_publish, args=())
+            p = Process(target=wrap_create, args=(i,))
+        else:
+            p = Process(target=wrap_create, args=(i,))
+        p.start()
+        plist.append(p)
+        print 11
+
+    for pl in plist:
+        pl.join()
+
 
 if __name__ == '__main__':
-    t = time.time()
-    user = 'test_201805070928'
+    user = 'test_201805110926'
     password = '123'
 
     claim_name = 'test_201805223'
-    claim_id = '02b8effb3916538dc1781f2c424c1a0d2246b2db'
-    txid = '54f184fd7983241b94bcb363c1c8621bb9e7529ef71f761900021fe702c29764'
+    claim_id = '587a6c34f66e31d941bfbd1c70df844d55f6ab4f'
+    txid = '6563c2f0cf8f3cb16779f476a9c2b32fe1fbe1a37702597c4020db2f6a1959b5'
 
     # print create(user, password)  # 0.8
-    # print pay(user, amount=10)
+    # print pay(user, amount=1)  # 0.8
     # print getbalance(user, password)
-    print publish(user, password, claim_name, False) # 3.67
+    # print publish(user, password, claim_name, False) # 3.67
     # print publish(user, password, claim_name, True) # 2.68
     # print consume(claim_id)  # 1.4
-    # print update_claim(user, password, claim_name, claim_id, txid)  # 1.56 amount
+    print update_claim(user, password, claim_name, claim_id, txid)  # 1.56 amount
     # print delete(user, password)
-
-    print '** time:', time.time() - t
-
-
-    # ==========================================================
-
-    # def wrap_publish():
-    #     print publish(user, password, claim_name, False)
-    # def wrap_getbalance():
-    #     print getbalance(user, password)
-    # def wrap_create(user):
-    #     print create('test_'+ str(user), 123)
-    #
-    # from multiprocessing import Process
-    # plist=[]
-    # for i in range(1):
-    #     if i % 2 == 0:
-    #         # p = Process(target=wrap_publish, args=())
-    #         p = Process(target=wrap_create, args=(i,))
-    #     else:
-    #         p = Process(target=wrap_create, args=(i,))
-    #     p.start()
-    #     plist.append(p)
-    #     print 11
-    #
-    # for pl in plist:
-    #     pl.join()
-    #
-    # print '** time:', time.time() - t
-
-    # ===============================================================
 
 
     # print server.listaddresses()
-
+    # print server.password(user, '123123', '123')

@@ -21,7 +21,6 @@ from unetschema.error import DecodeError
 from unetschema.signer import SECP256k1, get_signer
 from unetschema.uri import URIParseError, parse_unet_uri
 from unetschema.validator import validate_claim_id
-from uwallet.wallet import WalletStorage, Wallet
 
 from uwallet import __version__
 from uwallet.contacts import Contacts
@@ -41,9 +40,8 @@ from uwallet.errors import InvalidProofError, NotEnoughFunds, InvalidPassword, P
     DecryptionError
 from uwallet.util import format_satoshis, rev_hex
 from uwallet.mnemonic import Mnemonic
-from uwallet.network import Network
 from uwallet import gl
-from uwallet.wallet import Wallet, WalletStorage
+from uwallet.wallet import Wallet, Wallet_Storage
 
 log = logging.getLogger(__name__)
 
@@ -111,7 +109,7 @@ def command(s):
             if s[-2][2] != '_dispatch':
                 return func(*args, **kwargs)
             print '*' * 60
-            t= time.time()
+            t = time.time()
             l_args = list(args)
             self = l_args.pop(0)
 
@@ -130,7 +128,7 @@ def command(s):
                     l_args.remove('is_command')
 
                 if cmd.requires_user:
-                    new_args = self.load_user(l_args)
+                    new_args = self.load_wallet(l_args, cmd.requires_network)
                 else:
                     new_args = tuple([self] + l_args)
                 res = func(*new_args, **kwargs)
@@ -144,12 +142,17 @@ def command(s):
                     'error_code': err.error_code,
                     'reason': err.reason
                 }
+            except Exception as err:
+                log.error(traceback.format_exc())
+                return {
+                    'success': False,
+                    'error_code': '50000',
+                    'reason': err
+                }
 
             finally:
                 # self.unload_user()
-                self.user = None
-                self._password = None
-                print "the %s runtime: %s" % (func.__name__, time.time() -t)
+                print "the %s runtime: %s" % (func.__name__, time.time() - t)
 
         return func_wrapper
 
@@ -159,67 +162,33 @@ def command(s):
 class Commands(object):
     def __init__(self, config, wallets, network):
         self.config = config
+        self.wallet = None
         self.wallets = wallets
         self.network = network
-        self._password = None
-        self.user = None
         self.contacts = Contacts(self.config)
 
-    def load_user(self, args):
+    def load_wallet(self, args, requires_network):
         # warning: 此处顺序不能乱
         password = args.pop(1)
-        self.user = args.pop(0)
+        user = args.pop(0)
 
-        if not password:
-            raise ParamsError('51002')
-        try:
-            password = str(password)
-        except:
-            raise ParamsError('51001', "the password can't conversion into str")
+        if user not in self.wallets:
+            log.info('load wallet: %s' % user)
+            self.wallet = Wallet(user, password)
+            self.wallets[user] = self.wallet
+            if requires_network:
+                self.wallet.start_threads(self.network)
+                time.sleep(2)
+        else:
+            self.wallet = self.wallets[user]
 
-        if self.user not in self.wallets:
-            print self.user
-            print self.wallets
-            print 'load ========================='
-            self.load_wallet(self.user)
-        # check password
-        try:
-            self.wallets[self.user].check_password(password)
-        except (InvalidPassword, KeyError):
-            raise ParamsError('51001')
-
-        self._password = password
         args.insert(0, self)
         return tuple(args)
 
     def unload_user(self):
-        self.wallets[self.user].stop_threads()
+        self.wallet.stop_threads()
         self.wallets.clear()
 
-
-    def load_wallet(self, user):
-        #
-        storage = WalletStorage(user)
-        wallet = Wallet(storage)
-        # automatically generate wallet for ulord
-        if not storage.file_exists:
-            raise ParamsError('51003', user)
-
-        wallet.start_threads(self.network)
-        if wallet:
-            self.wallets[user] = wallet
-
-    # def _run(self, method, args, password_getter):
-    #     # todo: 什么时候进入这里
-    #     cmd = known_commands[method]
-    #     if self._password and cmd.requires_password and self.wallet.use_encryption:
-    #         self._password = apply(password_getter, ())
-    #     f = getattr(self, method)
-    #     result = f(*args)
-    #     self._password = None
-    #     if self._callback:
-    #         apply(self._callback, ())
-    #     return result
 
     @command('c')
     def commands(self):
@@ -320,7 +289,7 @@ class Commands(object):
     def listunspent(self):
         """List unspent outputs. Returns the list of unspent transaction
         outputs in your wallet."""
-        l = copy.deepcopy(self.wallets[self.user].get_spendable_coins(exclude_frozen=False))
+        l = copy.deepcopy(self.wallet.get_spendable_coins(exclude_frozen=False))
         for i in l:
             v = i["value"]
             i["value"] = float(v) / float(COIN) if v is not None else None
@@ -344,14 +313,14 @@ class Commands(object):
     @command('uc')
     def createrawtx(self, inputs, outputs, unsigned=False):
         """Create a transaction from json inputs. The syntax is similar to bitcoind."""
-        coins = self.wallets[self.user].get_spendable_coins(exclude_frozen=False)
+        coins = self.wallet.get_spendable_coins(exclude_frozen=False)
         tx_inputs = []
         for i in inputs:
             prevout_hash = i['txid']
             prevout_n = i['vout']
             for c in coins:
                 if c['prevout_hash'] == prevout_hash and c['prevout_n'] == prevout_n:
-                    self.wallets[self.user].add_input_info(c)
+                    self.wallet.add_input_info(c)
                     tx_inputs.append(c)
                     break
             else:
@@ -360,7 +329,7 @@ class Commands(object):
         outputs = map(lambda x: (TYPE_ADDRESS, x[0], int(COIN * x[1])), outputs.items())
         tx = Transaction.from_io(tx_inputs, outputs)
         if not unsigned:
-            self.wallets[self.user].sign_transaction(tx, self._password)
+            self.wallet.sign_transaction(tx)
         return tx.as_dict()
 
     @command('uc')
@@ -371,7 +340,7 @@ class Commands(object):
             pubkey = public_key_from_private_key(privkey)
             t.sign({pubkey: privkey})
         else:
-            self.wallets[self.user].sign_transaction(t, self._password)
+            self.wallet.sign_transaction(t)
         return t.as_dict()
 
     @command('c')
@@ -396,12 +365,12 @@ class Commands(object):
     @command('uc')
     def freeze(self, address):
         """Freeze address. Freeze the funds at one of your wallet\'s addresses"""
-        return self.wallets[self.user].set_frozen_state([address], True)
+        return self.wallet.set_frozen_state([address], True)
 
     @command('uc')
     def unfreeze(self, address):
         """Unfreeze address. Unfreeze the funds at one of your wallet\'s address"""
-        return self.wallets[self.user].set_frozen_state([address], False)
+        return self.wallet.set_frozen_state([address], False)
 
     @command('uc')
     def getprivatekeys(self, address):
@@ -412,13 +381,13 @@ class Commands(object):
 
         is_list = type(address) is list
         domain = address if is_list else [address]
-        out = [self.wallets[self.user].get_private_key(address, self._password) for address in domain]
+        out = [self.wallet.get_private_key(address) for address in domain]
         return out if is_list else out[0]
 
     @command('uc')
     def ismine(self, address):
         """Check if address is in wallet. Return true if and only address is in wallet"""
-        return self.wallets[self.user].is_mine(address)
+        return self.wallet.is_mine(address)
 
     @command('c')
     def dumpprivkeys(self):
@@ -434,7 +403,7 @@ class Commands(object):
     @command('uc')
     def getpubkeys(self, address):
         """Return the public keys for a wallet address. """
-        return self.wallets[self.user].get_public_keys(address)
+        return self.wallet.get_public_keys(address)
 
     @command('nc')
     def getaddressbalance(self, address):
@@ -477,24 +446,23 @@ class Commands(object):
     @command('uc')
     def getmpk(self):
         """Get master public key. Return your wallet\'s master public key(s)"""
-        return self.wallets[self.user].get_master_public_keys()
+        return self.wallet.get_master_public_keys()
 
     @command('uc')
     def getmasterprivate(self):
         """Get master private key. Return your wallet\'s master private key"""
-        return str(self.wallets[self.user].get_master_private_key(self.wallets[self.user].root_name, self._password))
+        return self.wallet.decoded_xprv
 
     @command('uc')
     def getseed(self):
         """Get seed phrase. Print the generation seed of your wallet."""
-        s = self.wallets[self.user].get_mnemonic(self._password)
-        return s.encode('utf8')
+        return self.wallet.decoded_seed
 
     @command('uc')
     def importprivkey(self, privkey):
         """Import a private key. """
         try:
-            addr = self.wallets[self.user].import_key(privkey, self._password)
+            addr = self.wallet.import_key(privkey, self._password)
             out = "Keypair imported: " + addr
         except Exception as e:
             out = "Error: " + str(e)
@@ -526,7 +494,7 @@ class Commands(object):
     def signmessage(self, address, message):
         """Sign a message with a key. Use quotes if your message contains
         whitespaces"""
-        sig = self.wallets[self.user].sign_message(address, message, self._password)
+        sig = self.wallet.sign_message(address, message, self._password)
         return base64.b64encode(sig)
 
     @command('c')
@@ -541,12 +509,11 @@ class Commands(object):
         self.nocheck = nocheck
         # 确定找零地址
         if change_addr is None:
-            change_addr = self.wallets[self.user].addresses(False)[0]
+            change_addr = self.wallet.first_address
         change_addr = self._resolver(change_addr)
         domain = None if domain is None else map(self._resolver, domain)
         fee = None if fee is None else int(COIN * Decimal(fee))
         final_outputs = []
-        wallet = self.wallets[self.user]
         for address, amount in outputs:
             address = self._resolver(address)
             # assert self.wallet.is_mine(address)
@@ -554,15 +521,15 @@ class Commands(object):
                 # Try to modify the structure of the published resources. --JustinQP
                 # assert len(outputs) == 1
                 assert len(outputs) == 2
-                inputs = wallet.get_spendable_coins(domain)
+                inputs = self.wallet.get_spendable_coins(domain)
                 amount = sum(map(lambda x: x['value'], inputs))
                 if fee is None:
                     for i in inputs:
-                        wallet.add_input_info(i)
+                        self.wallet.add_input_info(i)
                     output = (TYPE_ADDRESS, address, amount)
                     dummy_tx = Transaction.from_io(inputs, [output])
-                    fee_per_kb = wallet.fee_per_kb(self.config)
-                    fee = dummy_tx.estimated_fee(wallet.relayfee(), fee_per_kb)
+                    fee_per_kb = self.wallet.fee_per_kb(self.config)
+                    fee = dummy_tx.estimated_fee(self.wallet.relayfee(), fee_per_kb)
                 amount -= fee
             else:
                 amount = int(COIN * Decimal(amount))
@@ -583,30 +550,30 @@ class Commands(object):
                 val = ((claim_name, claim_val), val)
             final_outputs.append((txout_type, val, amount))
 
-        coins = wallet.get_spendable_coins(domain, abandon_txid=abandon_txid)
-        tx = wallet.make_unsigned_transaction(coins, final_outputs, self.config, fee,
+        coins = self.wallet.get_spendable_coins(domain, abandon_txid=abandon_txid)
+        tx = self.wallet.make_unsigned_transaction(coins, final_outputs, self.config, fee,
                                               change_addr,
                                               abandon_txid=abandon_txid)
         str(tx)  # this serializes
         if not unsigned:
-            wallet.sign_transaction(tx, self._password)
+            self.wallet.sign_transaction(tx)
 
         return tx
 
     @command('uc')
     def getunusedaddress(self, account=None):
-        addr = self.wallets[self.user].get_unused_address(account)
+        addr = self.wallet.get_unused_address(account)
         if addr is None:
-            addr = self.wallets[self.user].create_new_address()
+            addr = self.wallet.create_new_address()
         return addr
 
     @command('uc')
     def getleastusedchangeaddress(self, account=None):
-        return self.wallets[self.user].get_least_used_address(account, for_change=True)
+        return self.wallet.get_least_used_address(account, for_change=True)
 
     @command('uc')
     def getleastusedaddress(self, account=None):
-        return self.wallets[self.user].get_least_used_address(account)
+        return self.wallet.get_least_used_address(account)
 
     @command('uc')
     def payto(self, destination, amount, tx_fee=None, from_addr=None, change_addr=None,
@@ -621,7 +588,8 @@ class Commands(object):
                      nocheck=False, unsigned=False):
         """Create and broadcast transaction. """
         domain = [from_addr] if from_addr else None
-        tx = self._mktx([(destination, amount)], tx_fee, change_addr, domain, nocheck, unsigned, self.user)
+        tx = self._mktx([(destination, amount)], tx_fee, change_addr, domain, nocheck, unsigned)
+        print tx
         return self.network.synchronous_get(('blockchain.transaction.broadcast', [str(tx)]))
 
     @command('uc')
@@ -632,7 +600,7 @@ class Commands(object):
         """
         start_time = time.time()
         while start_time - time.time() < timeout:
-            if txid in self.wallets[self.user].transactions:
+            if txid in self.wallet.transactions:
                 return True
             time.sleep(0.2)
         return False
@@ -717,7 +685,7 @@ class Commands(object):
 
         for history_result in history:
             txid = history_result['txid']
-            tx = self.wallets[self.user].transactions[txid]
+            tx = self.wallet.transactions[txid]
             tx_outs = tx.outputs()
 
             support_infos = []
@@ -782,7 +750,7 @@ class Commands(object):
         """
         Get the fee for a transaction by txid
         """
-        wallet = self.wallets[self.user]
+        wallet = self.wallet
         if txid in wallet.transactions:
             tx = wallet.transactions[txid]
         else:
@@ -806,7 +774,7 @@ class Commands(object):
         """Wallet history. Returns the transaction history of your wallet."""
 
         out = []
-        for tx_hash, confirms, value, timestamp, balance in self.wallets[self.user].get_history():
+        for tx_hash, confirms, value, timestamp, balance in self.wallet.get_history():
             try:
                 time_str = datetime.datetime.fromtimestamp(timestamp).isoformat(' ')[:-3]
             except Exception:
@@ -827,7 +795,7 @@ class Commands(object):
     def setlabel(self, key, label):
         """Assign a label to an item. Item may be a bitcoin address or a
         transaction ID"""
-        self.wallets[self.user].set_label(key, label)
+        self.wallet.set_label(key, label)
 
     @command('c')
     def listcontacts(self):
@@ -855,7 +823,7 @@ class Commands(object):
         List wallet addresses. Returns the list of all addresses in your wallet.
         Use optional arguments to filter the results.
         """
-        wallet = self.wallets[self.user]
+        wallet = self.wallet
         out = []
         for addr in wallet.addresses(True):
             if frozen and not wallet.is_frozen(addr):
@@ -879,7 +847,7 @@ class Commands(object):
     @command('uc')
     def gettransaction(self, txid):
         """Retrieve a transaction in deserialized json format"""
-        tx = self.wallets[self.user].transactions.get(txid) if self.wallets[self.user] else None
+        tx = self.wallet.transactions.get(txid) if self.wallet else None
         if tx is None and net:
             raw = self.network.synchronous_get(('blockchain.transaction.get', [txid]))
             if raw:
@@ -896,7 +864,7 @@ class Commands(object):
     @command('u')
     def decrypt(self, pubkey, encrypted):
         """Decrypt a message encrypted with a public key."""
-        return self.wallets[self.user].decrypt_message(pubkey, encrypted, self._password)
+        return self.wallet.decrypt_message(pubkey, encrypted, self._password)
 
     @command('n')
     def notify(self, address, URL):
@@ -1177,7 +1145,7 @@ class Commands(object):
         Get the claim id of the default certificate used for claim signing, if there is one
         """
 
-        certificate_id = self.wallets[self.user].default_certificate_claim
+        certificate_id = self.wallet.default_certificate_claim
         if not certificate_id:
             return {'error': 'no default certificate configured'}
         return self.getclaimbyid(certificate_id)
@@ -1400,7 +1368,7 @@ class Commands(object):
         block_header = self.network.blockchain.read_header(height)
         block_hash = self.network.blockchain.hash_header(block_header)
         response = self.network.synchronous_get(('blockchain.claimtrie.getvaluesforuris',
-                                        (block_hash,) + uris_to_send))
+                                                 (block_hash,) + uris_to_send))
         result = {}
         for uri in response:
             result[uri] = self._handle_resolve_uri_response(parse_unet_uri(str(uri)), block_header,
@@ -1484,7 +1452,7 @@ class Commands(object):
         Request claims signed by a given certificate
         """
         result = self.network.synchronous_get(('blockchain.claimtrie.getclaimssignedbyid',
-                                      [claim_id]))
+                                               [claim_id]))
         return [self.parse_and_validate_claim_result(claim, raw=raw) for claim in result]
 
     @command('nc')
@@ -1501,10 +1469,10 @@ class Commands(object):
                  [parsed.name, parsed.claim_sequence]))
         elif parsed.claim_id is not None:
             claims = self.network.synchronous_get(('blockchain.claimtrie.getclaimssignedbyid',
-                                          [parsed.claim_id]))
+                                                   [parsed.claim_id]))
         else:
             claims = self.network.synchronous_get(('blockchain.claimtrie.getclaimssignedby',
-                                          [parsed.name]))
+                                                   [parsed.name]))
         if claims:
             return [self.parse_and_validate_claim_result(claim, raw=raw) for claim in claims]
         return []
@@ -1582,11 +1550,11 @@ class Commands(object):
 
         def iter_resolve_and_parse(to_query):
             claim_results = self.network.synchronous_get(("blockchain.claimtrie.getclaimsbyids",
-                                                 to_query))
+                                                          to_query))
             certificate_infos = dict(iter_certificate_ids(claim_results))
 
             cert_results = self.network.synchronous_get(("blockchain.claimtrie.getclaimsbyids",
-                                                certificate_infos.values()))
+                                                         certificate_infos.values()))
             certificates = dict(iter_certificate_claims(cert_results))
 
             for claim_id, claim_result in claim_results.iteritems():
@@ -1613,7 +1581,7 @@ class Commands(object):
         Get the last update to the nth claim to a name
         """
         result = self.network.synchronous_get(('blockchain.claimtrie.getnthclaimforname',
-                                      [name, n]))
+                                               [name, n]))
         return self.parse_and_validate_claim_result(result, raw=raw)
 
     @command('uc')
@@ -1624,8 +1592,8 @@ class Commands(object):
         """
 
         # get the name claims from the wallet
-        result = self.wallets[self.user].get_name_claims(include_abandoned=include_abandoned,
-                                                         include_supports=include_supports)
+        result = self.wallet.get_name_claims(include_abandoned=include_abandoned,
+                                             include_supports=include_supports)
         name_claims = []
 
         # set of claim ids of claims in the wallet
@@ -1736,8 +1704,8 @@ class Commands(object):
         """
 
         certificate_claims = []
-        name_claims = self.wallets[self.user].get_name_claims(include_abandoned=include_abandoned,
-                                                              include_supports=False)
+        name_claims = self.wallet.get_name_claims(include_abandoned=include_abandoned,
+                                                  include_supports=False)
         for claim in name_claims:
             try:
                 decoded = smart_decode(claim['value'])
@@ -1761,7 +1729,7 @@ class Commands(object):
         """
 
         my_certs = self.getcertificateclaims(raw=raw)
-        certificate_claim_ids = self.wallets[self.user].get_certificate_claim_ids_for_signing()
+        certificate_claim_ids = self.wallet.get_certificate_claim_ids_for_signing()
         result = []
         for cert_claim in my_certs:
             cert_claim['is_mine'] = True
@@ -1786,8 +1754,8 @@ class Commands(object):
         # ulords fee estimation algorithm
 
         size = dummy_tx.estimated_size()
-        fee = Transaction.fee_for_size(self.wallets[self.user].relayfee(),
-                                       self.wallets[self.user].fee_per_kb(self.config),
+        fee = Transaction.fee_for_size(self.wallet.relayfee(),
+                                       self.wallet.fee_per_kb(self.config),
                                        size)
         return fee
 
@@ -1812,7 +1780,7 @@ class Commands(object):
         """
         Claim a name
         """
-        wallet = self.wallets[self.user]
+        wallet = self.wallet
         if skip_validate_schema and certificate_id:
             return {'success': False, 'reason': 'refusing to sign claim without validated schema'}
         parsed_claim = self.verify_request_to_make_claim(name, val, certificate_id)
@@ -1905,7 +1873,7 @@ class Commands(object):
                                                   self.config, tx_fee, change_addr)
         except NotEnoughFunds:
             raise ServerError('52004')
-        wallet.sign_transaction(tx, self._password)
+        wallet.sign_transaction(tx)
         if broadcast:
             success, out = wallet.send_tx(tx)
             if not success:
@@ -1942,9 +1910,9 @@ class Commands(object):
                             claim_addr=claim_addr, tx_fee=tx_fee, change_addr=change_addr)
 
         if result['success']:
-            self.wallets[self.user].save_certificate(result['claim_id'], secp256k1_private_key)
-            self.wallets[self.user].set_default_certificate(result['claim_id'],
-                                                            overwrite_existing=set_default_certificate)
+            self.wallet.save_certificate(result['claim_id'], secp256k1_private_key)
+            self.wallet.set_default_certificate(result['claim_id'],
+                                                overwrite_existing=set_default_certificate)
         return result
 
     @staticmethod
@@ -1971,7 +1939,7 @@ class Commands(object):
 
         if not self.cansignwithcertificate(certificate_id):
             return {'error': 'certificate private is not in the wallet: %s' % certificate_id}
-        priv_key = self.wallets[self.user].get_certificate_signing_key(certificate_id)
+        priv_key = self.wallet.get_certificate_signing_key(certificate_id)
         if not priv_key:
             return {'error': 'failed to key signing key for %s' % certificate_id}
         return self._serialize_certificate_key(certificate_id, priv_key)
@@ -1985,7 +1953,7 @@ class Commands(object):
             return {'error': 'claim is not a certificate', 'success': False}
         if not certificate_claim_obj.validate_private_key(signing_key, certificate_id):
             return {'error': 'private key does not match certificate', 'success': False}
-        self.wallets[self.user].save_certificate(certificate_id, signing_key)
+        self.wallet.save_certificate(certificate_id, signing_key)
         return {'success': True}
 
     @command('unc')
@@ -2065,7 +2033,7 @@ class Commands(object):
             secp256k1_private_key = get_signer(SECP256k1).generate().private_key.to_pem()
             certificate = ClaimDict.generate_certificate(secp256k1_private_key, curve=SECP256k1)
             result = self.update(name, certificate.serialized, amount=amount, raw=True)
-            self.wallets[self.user].save_certificate(result['claim_id'], secp256k1_private_key)
+            self.wallet.save_certificate(result['claim_id'], secp256k1_private_key)
         else:
             decoded = smart_decode(val)
             if not decoded.is_certificate:
@@ -2078,7 +2046,7 @@ class Commands(object):
         """
         Can sign with given claim certificate
         """
-        wallet = self.wallets[self.user]
+        wallet = self.wallet
         if wallet.get_certificate_signing_key(certificate_id) is not None:
             return True
         return False
@@ -2089,7 +2057,7 @@ class Commands(object):
         """
         Support a name claim
         """
-        wallet = self.wallets[self.user]
+        wallet = self.wallet
         if claim_addr is None:
             claim_addr = wallet.get_least_used_address()
         if change_addr is None:
@@ -2111,7 +2079,7 @@ class Commands(object):
                                                   change_addr)
         except NotEnoughFunds:
             return {'success': False, 'reason': 'Not enough funds'}
-        wallet.sign_transaction(tx, self._password)
+        wallet.sign_transaction(tx)
         if broadcast:
             success, out = wallet.send_tx(tx)
             if not success:
@@ -2177,8 +2145,8 @@ class Commands(object):
         :param broadcast: (bool) broadcast transactions
         :returns dictionary, {<outpoint string>: formatted claim result}
         """
-        claims = self.wallets[self.user].get_name_claims(include_abandoned=False, include_supports=True,
-                                                         exclude_expired=True)
+        claims = self.wallet.get_name_claims(include_abandoned=False, include_supports=True,
+                                             exclude_expired=True)
         pending_expiration = [claim for claim in claims if claim['expiration_height'] <= height]
         results = {}
         for claim in pending_expiration:
@@ -2198,8 +2166,8 @@ class Commands(object):
         :param broadcast: (bool) True if broadcasting the claim
         :returns dictionary: formatted claim result
         """
-        claims = self.wallets[self.user].get_name_claims(include_abandoned=False, include_supports=True,
-                                                         exclude_expired=True)
+        claims = self.wallet.get_name_claims(include_abandoned=False, include_supports=True,
+                                             exclude_expired=True)
         claims = [claim for claim in claims if claim['txid'] == txid and claim['nout'] == nout]
         if not claims:
             return {'success': False, 'reason': 'no matching claim found for %s:%i' % (txid, nout)}
@@ -2232,7 +2200,7 @@ class Commands(object):
         :param change_addr: (str) address to send change to
         :returns formatted claim result
         """
-        wallet = self.wallets[self.user]
+        wallet = self.wallet
         if claim_addr is None:
             claim_addr = wallet.get_least_used_address()
         if change_addr is None:
@@ -2260,7 +2228,7 @@ class Commands(object):
             outputs = out['outputs']
 
         tx = Transaction.from_io(inputs, outputs)
-        wallet.sign_transaction(tx, self._password)
+        wallet.sign_transaction(tx)
         if broadcast:
             success, out = wallet.send_tx(tx)
             if not success:
@@ -2308,7 +2276,7 @@ class Commands(object):
             be a 'reason' field for the failure reaso. If 'success' is True,
             there will be an 'outputs' field and 'inputs' field.
         """
-        wallet = self.wallets[self.user]
+        wallet = self.wallet
         decoded_claim_id = decode_claim_id_hex(claim_id)
 
         if amount is not None:
@@ -2452,7 +2420,7 @@ class Commands(object):
 
         Either specify the claim with a claim_id or with txid and nout
         """
-        wallet = self.wallets[self.user]
+        wallet = self.wallet
         claims = self.getnameclaims(raw=True, include_abandoned=False, include_supports=True,
                                     claim_id=claim_id, txid=txid, nout=nout,
                                     skip_validate_signatures=True)
@@ -2488,7 +2456,7 @@ class Commands(object):
         # create transaction
         outputs = [(TYPE_ADDRESS, return_addr, return_value)]
         tx = Transaction.from_io(inputs, outputs)
-        wallet.sign_transaction(tx, self._password)
+        wallet.sign_transaction(tx)
         if broadcast:
             success, out = wallet.send_tx(tx)
             if not success:
@@ -2523,7 +2491,7 @@ class Commands(object):
 
         :returns formatted claim result
         """
-        wallet = self.wallets[self.user]
+        wallet = self.wallet
         gl.flag_claim = True
         if skip_validate_schema and certificate_id:
             return {'success': False, 'reason': 'refusing to sign claim without validated schema'}
@@ -2634,7 +2602,7 @@ class Commands(object):
             outputs = out['outputs']
 
         tx = Transaction.from_io(inputs, outputs)
-        wallet.sign_transaction(tx, self._password)
+        wallet.sign_transaction(tx)
         if broadcast:
             success, out = wallet.send_tx(tx)
             if not success:
@@ -2661,24 +2629,13 @@ class Commands(object):
     @command('n')  # 这里不能加u标记
     def create(self, user, password):
         """Create a new wallet"""
-        if not password:
-            raise ParamsError('51002')
-        try:
-            password = str(password)
-        except:
-            raise ParamsError('51001', "the password can't conversion into str")
 
-        storage = WalletStorage(user)
-        if storage.file_exists:
-            raise ParamsError('51004', user)
-        wallet = Wallet(storage)
-        seed = wallet.make_seed()
-        wallet.add_seed(seed, password)
-        wallet.create_master_keys(password)
-        wallet.create_main_account()
-        wallet.start_threads(self.network)
-        self.wallets[user] = wallet
-
+        self.wallet = Wallet(user, password, True)
+        seed = self.wallet.make_and_add_seed()
+        self.wallet.create_master_keys()
+        self.wallet.create_main_account()
+        self.wallet.fill_fields()
+        self.wallet.synchronize()  # gen addresses
         return {
             'user': user,
             'seed': seed,
@@ -2686,24 +2643,26 @@ class Commands(object):
 
     @command('u')
     def delete(self):
-        self.wallets[self.user].storage.del_wallet()
-        del self.wallets[self.user]
-        return '%s deleted successfully' % self.user
-
+        self.wallet.del_wallet()
+        user = self.wallets.user
+        del self.wallets[user]
+        del self.wallet
+        return '%s deleted successfully' % user
 
     @command('u')
     def password(self, new_password):
         """Change wallet password. """
-        self.wallets[self.user].update_password(self._password, str(new_password))
-        return self.wallets[self.user].use_encryption
+        self.wallet.update_password(str(new_password))
+        return True
 
-    @command('u')
+    @command('nu')
     def getbalance(self, account=None, exclude_claimtrietx=False):
         """Return the balance of your wallet. """
         if account is None:
-            c, u, x = self.wallets[self.user].get_balance(exclude_claimtrietx=exclude_claimtrietx)
+            c, u, x = self.wallet.get_balance(exclude_claimtrietx=exclude_claimtrietx)
         else:
-            c, u, x = self.wallets[self.user].get_account_balance(account, exclude_claimtrietx)
+            raise ServerError('52013', 'get account balance')
+            # c, u, x = self.wallet.get_account_balance(account, exclude_claimtrietx)
         out = {"confirmed": str(Decimal(c) / COIN)}
         total = (Decimal(c) / COIN)
         if u:
@@ -2721,7 +2680,7 @@ class Commands(object):
         if 'version' not in metadata:
             metadata['version'] = '_0_0_1'
         if address is None:
-            address = self.wallets[self.user].addresses(False)[0]
+            address = self.wallet.first_address
         if not base_decode(address, ADDRESS_LENGTH, 58):
             # 基本不可能出现
             raise DecryptionError('53001', address)
@@ -2769,15 +2728,14 @@ class Commands(object):
     def __sign_and_send_tx(self, tx, is_update=False):
         """ 签名并发送一个交易 """
         try:
-            self.wallets[self.user].sign_transaction(tx, self._password)
+            self.wallet.sign_transaction(tx)
         except:
             log.error(traceback.format_exc())
             raise ServerError('52006')
 
-        success, out = self.wallets[self.user].send_tx(tx)
+        success, out = self.wallet.send_tx(tx)
         if not success:
             raise ServerError('52005', out)
-
 
     @command('un')
     def publish(self, name, metadata, content_type, source_hash, currency, amount,
@@ -2800,9 +2758,9 @@ class Commands(object):
             if my_claims:
                 my_claim = my_claims[0]
                 log.info("There is an unspent claim in your wallet for this name, updating it instead")
-                return self.update_claim(name, my_claim['claim_id'], my_claim['txid'], my_claim['nout'], metadata, content_type, source_hash,
-                     currency, amount, bid=bid, address=address, tx_fee=tx_fee)
-
+                return self.update_claim(name, my_claim['claim_id'], my_claim['txid'], my_claim['nout'], metadata,
+                                         content_type, source_hash,
+                                         currency, amount, bid=bid, address=address, tx_fee=tx_fee)
 
         # try:   # 这里有验证的作用, 但是我们的val是现场生成的, 不需要这段
         #     claim_value = smart_decode(val)
@@ -2820,12 +2778,12 @@ class Commands(object):
 
         # todo: get_spendable_coins 容易出现错误, 还没找出好的解决办法
         try:
-            coins = self.wallets[self.user].get_spendable_coins()
+            coins = self.wallet.get_spendable_coins()
         except AttributeError:
             raise ServerError('52008')
         try:
-            tx = self.wallets[self.user].make_unsigned_transaction(coins, outputs,
-                                                                   self.config, tx_fee, address)
+            tx = self.wallet.make_unsigned_transaction(coins, outputs,
+                                                       self.config, tx_fee, address)
         except NotEnoughFunds:
             raise ServerError('52004')
 
@@ -2846,7 +2804,6 @@ class Commands(object):
             "claim_id": claimid
         }
 
-
     def __make_tx_for_update(self, name, claim_id, txid, nout, val, address, amount, tx_fee):
         try:
             decoded_claim_id = decode_claim_id_hex(claim_id)
@@ -2855,7 +2812,7 @@ class Commands(object):
 
         try:
             # todo: is watting
-            claim_utxo = self.wallets[self.user].get_spendable_claimtrietx_coin(txid, nout)
+            claim_utxo = self.wallet.get_spendable_claimtrietx_coin(txid, nout)
         except:
             log.error(traceback.format_exc())
             raise ServerError('52009')
@@ -2871,8 +2828,8 @@ class Commands(object):
             if tx_fee is None:
                 claim_input_size = Transaction.estimated_input_size(claim_utxo)
                 additional_input_fee = Transaction.fee_for_size(
-                    self.wallets[self.user].relayfee(),
-                    self.wallets[self.user].fee_per_kb(self.config),
+                    self.wallet.relayfee(),
+                    self.wallet.fee_per_kb(self.config),
                     claim_input_size)
 
             get_inputs_for_amount = amount - txout_value + additional_input_fee
@@ -2884,9 +2841,9 @@ class Commands(object):
                     get_inputs_for_amount
                 )
             ]
-            coins = self.wallets[self.user].get_spendable_coins()
+            coins = self.wallet.get_spendable_coins()
             try:
-                dummy_tx = self.wallets[self.user].make_unsigned_transaction(
+                dummy_tx = self.wallet.make_unsigned_transaction(
                     coins, dummy_outputs, self.config, tx_fee, address)
             except NotEnoughFunds:
                 return ServerError('52004')
@@ -2943,7 +2900,6 @@ class Commands(object):
         tx = Transaction.from_io(inputs, outputs)
         return tx
 
-
     @command('un')
     def update_claim(self, name, claim_id, txid, nout, metadata, content_type, source_hash,
                      currency, amount, bid=1, address=None, tx_fee=None):
@@ -2951,7 +2907,7 @@ class Commands(object):
         gl.flag_claim = True
 
         val, address, amount, tx_fee = self.__package_claim_and_verify_params(
-        metadata, content_type, source_hash, currency, amount, bid, address, tx_fee)
+            metadata, content_type, source_hash, currency, amount, bid, address, tx_fee)
 
         tx = self.__make_tx_for_update(name, claim_id, txid, nout, val, address, amount, tx_fee)
         self.__sign_and_send_tx(tx)
@@ -2971,12 +2927,11 @@ class Commands(object):
             "claim_id": claim_id
         }
 
-    @command('u')
+    @command('un')
     def pay(self, receive_user, amount):
         """ Create and broadcast transaction. """
-        # todo: address 的获取方法需要优化
-        address = WalletStorage(receive_user).get('addresses')[0]
-        tx = self._mktx([(address, amount)], None, None, None, False, False)
+        receive_address = Wallet_Storage.get_first_address(receive_user)
+        tx = self._mktx([(receive_address, amount)], None, None, None, False, False)
         res = self.network.synchronous_get(('blockchain.transaction.broadcast', [str(tx)]))
         if len(res) == 64:
             return {

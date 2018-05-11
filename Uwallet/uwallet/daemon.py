@@ -1,18 +1,9 @@
 #-*- coding: UTF-8 -*-
-import multiprocessing
-import select
 import sys
-
 import jsonrpclib
-import pymongo
 from jsonrpclib.SimpleJSONRPCServer import SimpleJSONRPCRequestHandler, SimpleJSONRPCServer
 
-from uwallet import settings
 from uwallet.commands import Commands, known_commands
-from uwallet.util import DaemonThread, json_decode
-from uwallet.wallet import Wallet, WalletStorage
-import thread
-import time
 
 
 def get_daemon(config):
