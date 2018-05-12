@@ -2,55 +2,59 @@
 # @Date    : 2018/4/10
 # @Author  : Shu
 # @Email   : httpservlet@yeah.net
-from . import bpv1
-from flask import request
-from ulord.extensions import db
+from . import bpv1,admin_required,blocked_check
+from flask import request,g
+from ulord.extensions import db,auth
 from ulord.models.users import Role
 from ulord.utils import return_result
 from ulord.schema import roles_schema
+from ulord.forms import validate_form,AddRoleForm,EditRoleForm,RemoveRoleForm
 
 
-@bpv1.route('/role/add/', methods=['POST'])
+@bpv1.route('/role/add', methods=['POST'])
+@auth.login_required
+@blocked_check
+@admin_required
+@validate_form(form_class=AddRoleForm)
 def role_add():
-    """管理员才能调用,需要权限检查"""
-    name = request.json.get('name')
-    des = request.json.get('des')
-    role = Role(name=name, des=des)
+    role = Role(**g.form.data)
     db.session.add(role)
-    db.session.commit()  # 先提交,才能取id值
+    # You submit it, and then you take the id.
+    db.session.commit()
     return return_result(result={'id': role.id})
 
 
-@bpv1.route('/role/list/')
-def role_list():
-    roles = Role.query.all()
-    result=roles_schema.dump(roles).data
-    return return_result(result=result)
+@bpv1.route('/role/list/<int:page>/<int:num>')
+@auth.login_required
+@blocked_check
+def role_list(page,num):
+    roles = Role.query.order_by(Role.id.asc()).paginate(page,num,error_out=False)
+    total=roles.total
+    pages=roles.pages
+    result=roles_schema.dump(roles.items).data
+    return return_result(result=dict(total=total,pages=pages,records=result))
 
 
-@bpv1.route('/role/edit/', methods=['POST'])
+@bpv1.route('/role/edit', methods=['POST'])
+@auth.login_required
+@blocked_check
+@admin_required
+@validate_form(form_class=EditRoleForm)
 def role_edit():
     id = request.json.get('id')
-    name = request.json.get('name')
     des = request.json.get('des')
-
-    role = Role.query.get(id)
-    if not role:
-        return return_result(errcode=20005)
-
-    if name is not None:
-        role.name = name
-    if des is not None:
-        role.des = des
-    db.session.add(role)
+    role=Role.query.get(id)
+    role.des=des
     return return_result()
 
 
-
-@bpv1.route('/role/remove/', methods=['POST'])
+@bpv1.route('/role/remove', methods=['POST'])
+@auth.login_required
+@blocked_check
+@admin_required
+@validate_form(form_class=RemoveRoleForm)
 def role_remove():
     _id = request.json.get('id')
-    # db.session.delete(role)  # 需要先查询,在删除
-    # 下面的方式只需要一步
-    num = Role.query.filter_by(id=_id).delete()
+    # db.session.delete(role)  # Check first, then delete.
+    num = Role.query.filter_by(id=_id).delete()  # Delete directly
     return return_result(result=dict(num=num))

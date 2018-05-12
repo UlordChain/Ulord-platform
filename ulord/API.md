@@ -1,10 +1,14 @@
 # 一. API平台管理界面相关接口(内部接口)
 
-#### 说明: 需要登录开发这帐号才能进行相关操作.
+#### 说明: 先登录获取token, 然后将其添加到请求headers中, 格式如下
+```
+Authorization:Bearer token值
+```
+
 
 ### 1. 开发者角色接口
 
-##### A. 角色添加  `POST`    `/v1/role/add/`
+##### A. 角色添加  `POST`    `/v1/role/add`
 ```
 # 请求参数:
 
@@ -30,10 +34,11 @@
 }
 ```
 
-##### B. 角色列表  `GET`    `/v1/role/list/`
+##### B. 角色列表  `GET`    `/v1/role/list/<page>/<num>`
 ```
 # 请求参数:
-无
+page: 当前页
+num: 每页条数
 
 # 返回值:
 
@@ -41,27 +46,31 @@
 {
     "errcode": 0,
     "reason": "success",
-    "result": [
-        {
-            "des": "管理员",
-            "id": 4,
-            "name": "admin"
-        },
-        {
-            "des": "标准用户",
-            "id": 7,
-            "name": "normal"
-        },
-        {
-            "des": "封禁用户",
-            "id": 8,
-            "name": "blocked"
-        }
-    ]
+    "result": {
+        "pages": 1,
+        "records": [
+            {
+                "des": "管理员",
+                "id": 4,
+                "name": "admin"
+            },
+            {
+                "des": "标准用户",
+                "id": 7,
+                "name": "normal"
+            },
+            {
+                "des": "封禁用户",
+                "id": 8,
+                "name": "blocked"
+            }
+        ],
+        "total": 3
+    }
 }
 ```
 
-##### C. 角色修改  `POST`    `/v1/role/edit/`
+##### C. 角色修改  `POST`    `/v1/role/edit`
 ```
 # 请求参数:
 
@@ -80,7 +89,7 @@
 }
 ```
 
-##### D. 角色删除  `POST`    `/v1/role/remove/`
+##### D. 角色删除  `POST`    `/v1/role/remove`
 ```
 # 请求参数:
 
@@ -105,7 +114,7 @@
 
 ### 2. 应用类型接口
 
-##### A. 类型添加  `POST`    `/v1/type/add/`
+##### A. 类型添加  `POST`    `/v1/type/add`
 ```
 # 请求参数:
 
@@ -127,7 +136,7 @@
 }
 ```
 
-##### B. 类型列表  `GET`    `/v1/type/list/`
+##### B. 类型列表  `GET`    `/v1/type/list`
 ```
 # 请求参数:
 
@@ -171,13 +180,12 @@
 }
 ```
 
-##### C. 类型修改  `POST`    `/v1/type/edit/`
+##### C. 类型修改  `POST`    `/v1/type/edit`
 ```
 # 请求参数:
 
 {
     "id":id值,
-    "name":类型名,
     "des":类型描述,
     "parent_id":父类id,
 }
@@ -191,7 +199,7 @@
 }
 ```
 
-##### D. 类型删除  `POST`    `/v1/type/remove/`
+##### D. 类型删除  `POST`    `/v1/type/remove`
 ```
 # 请求参数:
 
@@ -213,7 +221,7 @@
 
 ### 3. 开发者帐号接口
 
-##### A. 开发者注册  `POST`    `/v1/users/reg/`
+##### A. 开发者注册  `POST`    `/v1/users/reg`
 ```
 # 请求参数:
 
@@ -222,7 +230,6 @@
     "password":帐号密码,
     "email":邮箱(可空),
     "telphone":电话(可空),
-    "role_id":角色id,
 }
 
 # 返回值:
@@ -235,9 +242,22 @@
         "id":1,
     }
 }
+失败
+{
+    "errcode": 20100,
+    "reason": "参数错误.",
+    "result": {
+        "password": [
+            "Field must be between 6 and 128 characters long."
+        ],
+        "username": [
+            "Field must be between 3 and 32 characters long."
+        ]
+    }
+}
 ```
 
-##### B. 开发者登录  `POST`    `/v1/users/login/`
+##### B. 开发者登录  `POST`    `/v1/users/login`
 ```
 # 请求参数:
 
@@ -253,19 +273,54 @@
     "errcode": 0,
     "reason": "success",
     "result":{
-        "token":token(令牌认证暂时还未实现),
+        "token":token,
     }
 }
 ```
 
-##### C. 开发者密码修改  `POST`    `/v1/users/edit/`
+##### C. 开发者密码修改  `POST`    `/v1/users/changepassword`
 ```
 # 请求参数:
 
 {
-    "username":开发这帐号,
-    "password":帐号密码,
+    "password":原密码,
     "new_password":新密码,
+}
+
+# 返回值:
+
+成功
+{
+    "errcode": 0,
+    "reason": "success",
+}
+```
+
+##### D. 开发者资料修改  `POST`    `/v1/users/edit`
+```
+# 请求参数:
+
+{
+    "telphone":开发这帐号(选填),
+    "email":帐号密码(选填),
+}
+
+# 返回值:
+
+成功
+{
+    "errcode": 0,
+    "reason": "success",
+}
+```
+
+##### E. 管理员修改用户角色  `POST`    `/v1/users/role/edit`
+```
+# 请求参数:
+
+{
+    "id":要修改的用户id,
+    "role_id":角色id
 }
 
 # 返回值:
@@ -279,12 +334,11 @@
 
 ### 4. 应用接口
 
-##### A. 应用添加  `POST`    `/v1/app/add/`
+##### A. 应用添加  `POST`    `/v1/app/add`
 ```
 # 请求参数:
 
 {
-    "user_id":用户id,
     "appname":应用名称,
     "apptype_id":应用类型id,
     "appdes":应用描述,
@@ -297,18 +351,17 @@
     "errcode": 0,
     "reason": "success",
     "result": {
-        "id": 应用id
+        "id": 12,
+        "appkey": "b4a5fe5e4f7411e8ad76f48e3889c8ab",
+        "secret": "b4a5fe5f4f7411e8a7fbf48e3889c8ab"
     }
 }
 ```
 
-##### B. 应用列表  `POST`    `/v1/app/list/`
+##### B. 应用列表  `GET`    `/v1/app/list/<page>/<num>`
 ```
 # 请求参数:
-
-{
-    "user_id":登录用户id(以后可以在登录状态中获取,暂时传入),
-}
+无
 
 # 返回值:
 
@@ -316,28 +369,32 @@
 {
     "errcode": 0,
     "reason": "success",
-    "result": [
-        {
-            "appdes": null,
-            "appkey": "31f7e6703d5c11e893fcf48e3889c8ab",
-            "appname": "boke",
-            "create_timed": "2018-04-12T10:56:19.394662+00:00",
-            "id": 1,
-            "secret": "ba5fe8403dfe11e89f1bf48e3889c8ab",
-            "type": 7,
-            "update_timed": "2018-04-12T11:08:09.265021+00:00"
-        }
-    ]
+    "result": {
+        "pages": 1,
+        "total": 1,
+        "records": [
+            {
+                "appdes": "appdes",
+                "appkey": "b0d2a95e4f6b11e88c1ff48e3889c8ab",
+                "appname": "个人博客",
+                "create_timed": "2018-05-04 15:20:58",
+                "create_timed_timestamp": 1525418458,
+                "id": 11,
+                "secret": "b0d2a95f4f6b11e89b6bf48e3889c8ab",
+                "type": 2,
+                "update_timed": null
+            }
+        ]
+    }
 }
 ```
 
-##### C. 应用修改secret  `POST`    `/v1/app/edit/`
+##### C. 应用重新生成secret  `POST`    `/v1/app/rebuild`
 ```
 # 请求参数:
 
 {
     "id":应用id,
-    "user_id":用户id,
 }
 
 # 返回值:
@@ -351,7 +408,26 @@
     }
 }
 ```
-##### D. 应用删除  `POST`    `/v1/app/remove/`
+
+##### D. 应用信息修改  `POST`    `/v1/app/edit`
+```
+# 请求参数:
+
+{
+    "id":应用id,
+    "appdes":应用描述
+}
+
+# 返回值:
+
+成功
+{
+    "errcode": 0,
+    "reason": "success"
+}
+```
+
+##### E. 应用删除  `POST`    `/v1/app/remove`
 ```
 # 请求参数:
 
@@ -378,7 +454,7 @@
 ​
 ### 交易相关
 
-##### 1. 创建钱包  `POST`    `/v1/transactions/createwallet/`
+##### 1. 创建钱包  `POST`    `/v1/transactions/createwallet`
 ```
 # 请求参数:
 
@@ -396,7 +472,7 @@
 }
 ```
 
-##### 2. 转账  `POST`    `/v1/transactions/paytouser/`
+##### 2. 转账  `POST`    `/v1/transactions/paytouser`
 ```
 # 请求参数:
 {
@@ -418,7 +494,7 @@
 ```
 
 
-##### 3. 查询余额  `POST`    `/v1/transactions/balance/`
+##### 3. 查询余额  `POST`    `/v1/transactions/balance`
 ```
 # 请求参数:
 
@@ -442,7 +518,7 @@
 }
 ```
 
-##### 4. 发布资源  `POST`    `/v1/transactions/publish/`
+##### 4. 发布资源  `POST`    `/v1/transactions/publish`
 ```
 # 请求参数:
 
@@ -470,7 +546,7 @@
 }
 ```
 
-##### 5. 检查是否付费  `POST`    `/v1/transactions/check/`
+##### 5. 检查是否付费  `POST`    `/v1/transactions/check`
 ```
 # 请求参数:
 
@@ -497,7 +573,7 @@
 }
 ```
 
-##### 6. 消费资源  `POST`    `/v1/transactions/consume/`
+##### 6. 消费资源  `POST`    `/v1/transactions/consume`
 ```
 # 请求参数:
 
@@ -520,7 +596,7 @@
 }
 ```
 
-##### 7. 收入账单  `POST`    `/v1/transactions/account/in/<page>/<num>/`
+##### 7. 收入账单  `POST`    `/v1/transactions/account/in/<page>/<num>`
 ```
 # 请求参数:
 {
@@ -561,7 +637,7 @@
 ```
 
 
-##### 8. 支出账单  `POST`    `/v1/transactions/account/out/<page>/<num>/`
+##### 8. 支出账单  `POST`    `/v1/transactions/account/out/<page>/<num>`
 ```
 # 请求参数:
 {
@@ -601,7 +677,7 @@
 }
 ```
 
-##### 9. 收支账单(上面两个接口2合1)  `POST`    `/v1/transactions/account/inout/<page>/<num>/`
+##### 9. 收支账单(上面两个接口2合1)  `POST`    `/v1/transactions/account/inout/<page>/<num>`
 ```
 # 请求参数:
 {
@@ -659,7 +735,7 @@
 }
 ```
 
-##### 10. 收支总额  `POST`    `/v1/transactions/account/`
+##### 10. 收支总额  `POST`    `/v1/transactions/account`
 ```
 # 请求参数:
 {
@@ -693,7 +769,7 @@
 }
 ```
 
-##### 11. 发布资源总数  `POST`    `/v1/transactions/publish/count/`
+##### 11. 发布资源总数  `POST`    `/v1/transactions/publish/count`
 ```
 # 请求参数:
 {
@@ -732,7 +808,7 @@
     "result": {
         total:总条数,
         pages:总页数,
-        data:
+        records:
         [
             {
                 "author": "justin",
@@ -740,7 +816,7 @@
                 "content_type": ".txt",
                 "create_timed": "2018-04-12T15:47:34.446858+00:00",
                 "create_timed_timestamp": 1525312874,
-                "currency": "ULD",
+                "currency": "UT",
                 "des": "这是使用UDFS和区块链生成的第2篇博客的描述信息",
                 "id": 5,
                 "price": 1.3,
@@ -760,7 +836,7 @@
 }
 ```
 
-##### 2. 单用户已消费资源列表  `POST`    `/v1/content/consume/list/<page>/<num>/`
+##### 2. 单用户已消费资源列表  `POST`    `/v1/content/consume/list/<page>/<num>`
 ```
 # 请求参数:
 {
@@ -794,7 +870,7 @@
 }
 ```
 
-##### 3. 单用户已发布资源列表  `POST`    `/v1/content/publish/list/<page>/<num>/`
+##### 3. 单用户已发布资源列表  `POST`    `/v1/content/publish/list/<page>/<num>`
 ```
 # 请求参数:
 {
@@ -829,7 +905,7 @@
 }
 ```
 
-##### 4. 浏览量增加  `POST`    `/v1/content/view/`
+##### 4. 浏览量增加  `POST`    `/v1/content/view`
 ```
 # 请求参数:
 {
@@ -850,6 +926,7 @@
 
 ### 附录A: 错误码对照表
 ```
+ulord平台错误码:
 {
     # 正常
     0:{'errcode':0,'reason':'success'},
@@ -900,6 +977,38 @@
     20204:{'errcode':20204,'reason':'创建钱包失败.'},
     20205:{'errcode':20205,'reason':'用户注册失败,因为没有成功创建ulord钱包.'},
     20206:{'errcode':20206,'reason':'支付失败.'},
+}
+
+ulord钱包错误码:
+{
+    # ServerError
+    '51000': 'command not found',
+    '51001': 'password error',
+    '51002': 'password cannot be empty',
+    '51003': 'user not exists',
+    '51004': 'user already exists',
+    '51005': 'invalid claim_id',
+    '51006': "claim not find",
+    '51007': "the bid must > 0",
+    '51008': "the tx_fee must >= 0",
+    '51009': "val and metadata can't both empty",
+    # ServerError
+    '50000': "Unknown Error",
+    '52001': 'payment Failed',
+    '52002': "can't find fee in the claim.",
+    '52003': 'permission denied',
+    '52004': 'Not enough funds',
+    '52005': 'broadcast transaction fail',
+    '52006': 'signature transaction fail',
+    '52007': 'nout is None',
+    '52008': 'operation is too frequent: it is necessary to wait for the transaction confirmation',
+    '52009': 'get UTXO fail',
+    '52010': 'No extra funds paid fee',
+    '52011': 'Dont know which claim to update, because the same name claim > 1',
+    '52012': 'cannot save field',
+    # DecryptionError
+    '53000': 'Decode claim value error',
+    '53001': 'invalid claim address',
 }
 ```
 ### 附录B: 数据库ER图

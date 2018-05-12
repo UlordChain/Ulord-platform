@@ -11,7 +11,7 @@ from ulord.extensions import db
 from ulord.utils.generate import generate_appkey
 
 
-@bpv1.route('/transactions/createwallet/', methods=['POST'])
+@bpv1.route('/transactions/createwallet', methods=['POST'])
 @appkey_check
 def create_address():
     """Generate wallets for app users."""
@@ -37,7 +37,7 @@ def create_address():
     return return_result()
 
 
-@bpv1.route('/transactions/paytouser/', methods=['POST'])
+@bpv1.route('/transactions/paytouser', methods=['POST'])
 @appkey_check
 def pay_to_user():
     """The user account transfer
@@ -69,7 +69,7 @@ def pay_to_user():
     return return_result()
 
 
-@bpv1.route('/transactions/balance/', methods=['POST'])
+@bpv1.route('/transactions/balance', methods=['POST'])
 @appkey_check
 def balance():
     """Check balances"""
@@ -99,7 +99,7 @@ def balance():
     return return_result(result=dict(total=total, confirmed=confirmed, unconfirmed=unconfirmed, unmatured=unmatured))
 
 
-@bpv1.route('/transactions/publish/', methods=['POST'])
+@bpv1.route('/transactions/publish', methods=['POST'])
 @appkey_check
 def publish():
     """Release resources"""
@@ -114,7 +114,7 @@ def publish():
     udfs_hash = request.json.get('udfs_hash')
     price = request.json.get('price')
     content_type = request.json.get('content_type')
-    currency = 'ULD'
+    currency = 'UT'
     description = request.json.get('description')
 
     sourcename = generate_appkey()
@@ -122,8 +122,6 @@ def publish():
     metadata = dict(title=title, author=author, tag=['action'],
                     description='', language='en',
                     license='', licenseUrl='', nsfw=False, preview='', thumbnail='', )
-
-
     try:
         server = get_jsonrpc_server()
         # print(username_wallet, pay_password, sourcename, bid, metadata, content_type, udfs_hash, currency, price)
@@ -151,7 +149,7 @@ def publish():
     return return_result(result=dict(id=content.id, claim_id=claim_id))
 
 
-@bpv1.route('/transactions/check/', methods=['POST'])
+@bpv1.route('/transactions/check', methods=['POST'])
 @appkey_check
 def check():
     """Check whether users pay for resources
@@ -181,7 +179,7 @@ def check():
     return return_result(result=result)
 
 
-@bpv1.route('/transactions/consume/', methods=['POST'])
+@bpv1.route('/transactions/consume', methods=['POST'])
 @appkey_check
 def consume():
     appkey = g.appkey
@@ -216,7 +214,7 @@ def consume():
             except Exception as e:
                 print(e)
                 return return_result(20202, result=dict(wallet_reason=str(e)))
-            print(result)
+            # print(result)
             result=result.get('result')
             txid = result.get('txid')
             c = Consume(txid=txid, claim_id=claim_id, customer=customer, appkey=appkey, price=price)
@@ -225,7 +223,7 @@ def consume():
     return return_result(result=dict(udfs_hash=content.udfs_hash))
 
 
-@bpv1.route('/transactions/account/in/<int:page>/<int:num>/', methods=['POST'])
+@bpv1.route('/transactions/account/in/<int:page>/<int:num>', methods=['POST'])
 @appkey_check
 def account_in(page, num):
     """income statement
@@ -248,7 +246,7 @@ def account_in(page, num):
     return return_result(result=dict(total=total, pages=pages, records=records))
 
 
-@bpv1.route('/transactions/account/out/<int:page>/<int:num>/', methods=['POST'])
+@bpv1.route('/transactions/account/out/<int:page>/<int:num>', methods=['POST'])
 @appkey_check
 def account_out(page, num):
     """expenditure statement
@@ -271,7 +269,7 @@ def account_out(page, num):
     return return_result(result=dict(total=total, pages=pages, records=records))
 
 
-@bpv1.route('/transactions/account/inout/<int:page>/<int:num>/', methods=['POST'])
+@bpv1.route('/transactions/account/inout/<int:page>/<int:num>', methods=['POST'])
 @appkey_check
 def account_inout(page, num):
     """Income and expenditure statement
@@ -293,7 +291,7 @@ def account_inout(page, num):
     return return_result(result=dict(total=total, pages=pages, records=records))
 
 
-@bpv1.route('/transactions/publish/count/', methods=['POST'])
+@bpv1.route('/transactions/publish/count', methods=['POST'])
 @appkey_check
 def publish_count():
     """发布资源数量"""
@@ -303,7 +301,7 @@ def publish_count():
     return return_result(result=dict(count=count))
 
 
-@bpv1.route('/transactions/account/', methods=['POST'])
+@bpv1.route('/transactions/account', methods=['POST'])
 @appkey_check
 def account():
     """ 用户收支总额及资源统计"""
@@ -327,7 +325,6 @@ def account():
     customer_out=Consume.query.with_entities(
                     db.func.sum(Consume.price).label('sum'),db.func.count(Consume.price).label('count')). \
                     filter(Consume.appkey==appkey, Consume.customer==username,Consume.price>0).first()
-
 
     return return_result(result=dict(publisher_in=publisher_in, publisher_out=publisher_out,
                                      customer_in=customer_in,customer_out=customer_out))

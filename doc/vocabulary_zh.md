@@ -1,5 +1,14 @@
 # 词汇表
 [English](./vocabulary.md)
+#### UPaaS
+Ulord平台即服务
+
+#### UCSS
+Ulord内容存储系统
+
+#### UCWallet
+Ulord中心化托管钱包
+
 #### UDFS
 Ulord分布式文件系统，基于IPFS（星际互联文件系统）。
 

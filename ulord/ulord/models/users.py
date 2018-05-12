@@ -24,10 +24,11 @@ class AppUser(db.Model):
 class Application(db.Model):
     """ 应用表 """
     __tablename__ = 'apps'
+    __table_args__ = (db.UniqueConstraint('user_id', 'appname'),)
 
     id = db.Column(db.Integer, primary_key=True, comment=u'自增id')
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, comment=u'应用所属用户')
-    appname = db.Column(db.String(128), unique=True, nullable=False, comment=u'应用名')
+    appname = db.Column(db.String(128), nullable=False, comment=u'应用名')
     apptype_id = db.Column(db.Integer, db.ForeignKey('app_type.id'), nullable=False, comment=u'应用分类')
     appdes = db.Column(db.String(500), comment=u'应用描述')
     appkey = db.Column(db.String(32), unique=True, index=True, nullable=False, comment=u'应用的标识')
@@ -95,16 +96,19 @@ class User(db.Model):
             user = User.query.get(data['id'])
             return user
         except Exception as e:
-            print(e)
+            print('e: ',e)
             return None
 
 
 class Role(db.Model):
-    """ 用户角色权限表 """
+    """ 用户角色权限表
+
+    normal, blocked, admin
+    """
     __tablename__ = 'user_role'
 
     id = db.Column(db.Integer, primary_key=True, comment=u'角色id')
     name = db.Column(db.String(32), unique=True, nullable=False, comment=u'角色名')
-    des = db.Column(db.String(500), comment=u'角色描述')
+    des = db.Column(db.String(500), nullable=False,comment=u'角色描述')
 
     user = db.relationship('User', backref='role', lazy='dynamic')

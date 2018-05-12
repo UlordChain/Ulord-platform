@@ -10,7 +10,7 @@ from ulord import return_result
 from ulord.utils.formatter import add_timestamp
 
 
-@bpv1.route("/content/list/<int:page>/<int:num>/")
+@bpv1.route("/content/list/<int:page>/<int:num>")
 @appkey_check
 def content_list(page, num):
     """因为price使用了Numeric类型, 在转换为python对象时,对应 Decimal 类型
@@ -26,10 +26,10 @@ def content_list(page, num):
     total = contents.total
     pages = contents.pages
     result = contents_schema.dump(contents.items).data
-    return return_result(result=dict(total=total, pages=pages, data=result))
+    return return_result(result=dict(total=total, pages=pages, records=result))
 
 
-@bpv1.route("/content/consume/list/<int:page>/<int:num>/", methods=['POST'])
+@bpv1.route("/content/consume/list/<int:page>/<int:num>", methods=['POST'])
 @appkey_check
 def consumed(page, num):
     """用户已消费的资源记录"""
@@ -49,13 +49,12 @@ def consumed(page, num):
     records = query.order_by(Consume.create_timed.desc()).paginate(page, num, error_out=False)
     total = records.total
     pages = records.pages
-    # 联表查询的结果是sqlalchemy.util._collections.result对象, 不是一个model对象
-    # 所以不能够想content_list接口那样格式化数据
+
     records=add_timestamp(records.items)
     return return_result(result=dict(total=total, pages=pages, records=records))
 
 
-@bpv1.route("/content/publish/list/<int:page>/<int:num>/", methods=['POST'])
+@bpv1.route("/content/publish/list/<int:page>/<int:num>", methods=['POST'])
 @appkey_check
 def published(page, num):
     """作者已发布资源被消费记录"""
@@ -79,10 +78,11 @@ def published(page, num):
     return return_result(result=dict(total=total, pages=pages, records=records))
 
 
-@bpv1.route("/content/view/", methods=['POST'])
+@bpv1.route("/content/view", methods=['POST'])
 @appkey_check
 def view():
-    """浏览量+1"""
-    _id = request.json.get('id')
-    num = Content.query.filter_by(id=_id).update({Content.views: Content.views + 1})
-    return return_result(result=dict(num=num))
+    """资源购买量"""
+    appkey=g.appkey
+    claim_id = request.json.get('claim_id')
+    count = Consume.query.filter_by(claim_id=claim_id,appkey=appkey).count()
+    return return_result(result=dict(count=count))
