@@ -108,7 +108,6 @@ def command(s):
             # 不是rpc直接调用的命令
             if s[-2][2] != '_dispatch':
                 return func(*args, **kwargs)
-            print '*' * 60
             t = time.time()
             l_args = list(args)
             self = l_args.pop(0)
@@ -118,7 +117,7 @@ def command(s):
 
             params = cmd.params
             if params:
-                log.info("the %s's params are>>>>>> %s" %
+                log.info("the %s's params are >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> %s" %
                          (name, [zip(params, l_args), kwargs]))
 
             try:
@@ -151,15 +150,17 @@ def command(s):
                 }
 
             finally:
-                # self.unload_user()
+                self.unload_wallet()
                 print "the %s runtime: %s" % (func.__name__, time.time() - t)
 
         return func_wrapper
 
     return decorator
 
-
+# todo: 目前是每个用户来了之后改变Commands的wallets 属性, 这种模式要改变
 class Commands(object):
+    max_wallet = 30
+
     def __init__(self, config, wallets, network):
         self.config = config
         self.wallet = None
@@ -172,23 +173,29 @@ class Commands(object):
         password = args.pop(1)
         user = args.pop(0)
 
+        while self.wallet is not None:
+            print "last user's request is not completed and %s needs to wait" % user
+            time.sleep(0.01)
+
         if user not in self.wallets:
             log.info('load wallet: %s' % user)
             self.wallet = Wallet(user, password)
             self.wallets[user] = self.wallet
             if requires_network:
                 self.wallet.start_threads(self.network)
-                time.sleep(2)
+                # 暂时这里不能去掉
+                # time.sleep(2)
         else:
             self.wallet = self.wallets[user]
 
         args.insert(0, self)
         return tuple(args)
 
-    def unload_user(self):
-        self.wallet.stop_threads()
-        self.wallets.clear()
-
+    def unload_wallet(self):
+        if len(self.wallets) > self.max_wallet:
+            self.wallet.stop_threads()
+            del self.wallets[self.wallets.keys()[0]]
+        self.wallet = None
 
     @command('c')
     def commands(self):

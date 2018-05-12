@@ -738,7 +738,6 @@ class Network(DaemonThread):
             self.run_jobs()  # Synchronizer and Verifier
             self.process_pending_sends()
 
-        log.info('Stopping network')
         self.stop_network()
         log.info("stopped")
 

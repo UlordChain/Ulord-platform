@@ -215,6 +215,8 @@ class Abstract_Wallet(Wallet_Storage):
             self.prepare_for_verifier()
             self.verifier = SPV(self.network, self)
             self.synchronizer = Synchronizer(self, network)
+            self.verifier.run()
+            self.synchronizer.run()
             network.add_jobs([self.verifier, self.synchronizer])
         else:
             self.verifier = None
@@ -381,7 +383,10 @@ class Abstract_Wallet(Wallet_Storage):
 
     def get_balance(self, domain=None, exclude_claimtrietx=False):
         if domain is None:
-            domain = self.get_addresses(True)
+            domain = self.get_addresses()
+            if self.use_change:
+                domain += self.get_addresses(True)
+
         cc = uu = xx = 0
         for addr in domain:
             c, u, x = self.get_addr_balance(addr, exclude_claimtrietx)
@@ -470,6 +475,97 @@ class Abstract_Wallet(Wallet_Storage):
                         tx_hash, {}).get(addr) is None:
                     self.add_transaction(tx_hash, tx)
 
+    # synchronizer callback
+    def get_history(self, domain=None):
+        log.debug('start get history')
+        from collections import defaultdict
+        # get domain
+        if domain is None:
+            domain = self.get_addresses()
+            if self.use_change:
+                domain += self.get_addresses(True)
+
+        # 1. Get the history of each address in the domain, maintain the
+        #    delta of a tx as the sum of its deltas on domain addresses
+        tx_deltas = defaultdict(int)
+        for addr in domain:
+            h = self.get_address_history(addr)
+            for tx_hash, height in h:
+                delta = self.get_tx_delta(tx_hash, addr)
+                if delta is None or tx_deltas[tx_hash] is None:
+                    tx_deltas[tx_hash] = None
+                else:
+                    tx_deltas[tx_hash] += delta
+
+        # 2. create sorted history
+        history = []
+        for tx_hash, delta in tx_deltas.items():
+            conf, timestamp = self.get_confirmations(tx_hash)
+            history.append((tx_hash, conf, delta, timestamp))
+        history.sort(key=lambda x: self.get_txpos(x[0]))
+        history.reverse()
+
+        # 3. add balance
+        c, u, x = self.get_balance(domain)
+        balance = c + u + x
+        h2 = []
+        for item in history:
+            tx_hash, conf, delta, timestamp = item
+            h2.append((tx_hash, conf, delta, timestamp, balance))
+            if balance is None or delta is None:
+                balance = None
+            else:
+                balance -= delta
+        h2.reverse()
+
+        # fixme: this may happen if history is incomplete
+        if balance not in [None, 0]:
+            log.error("Error: history not synchronized")
+            return []
+
+        return h2
+
+    def get_txpos(self, tx_hash):
+        "return position, even if the tx is unverified"
+        with self.lock:
+            x = self.verified_tx3.get(tx_hash)
+        y = self.unverified_tx.get(tx_hash)
+        if x:
+            height, timestamp, pos = x
+            return height, pos
+        elif y:
+            return y, 0
+        else:
+            return 1e12, 0
+
+    def undo_verifications(self, height):
+        """Used by the verifier when a reorg has happened"""
+        log.debug('in undo_verifications >>>>>>>>>>>>>>> Unexpected')
+        txs = []
+        with self.lock:
+            for tx_hash, item in self.verified_tx3:
+                tx_height, timestamp, pos = item
+                if tx_height >= height:
+                    self.verified_tx3.pop(tx_hash, None)
+                    txs.append(tx_hash)
+        return txs
+
+    def get_tx_delta(self, tx_hash, address):
+        "effect of tx on address"
+        # pruned
+        if tx_hash in self.pruned_txo.values():
+            return None
+        delta = 0
+        # substract the value of coins sent from address
+        d = self.txi.get(tx_hash, {}).get(address, [])
+        for n, v in d:
+            delta -= v
+        # add the value of the coins received at address
+        d = self.txo.get(tx_hash, {}).get(address, [])
+        for n, v, cb in d:
+            delta += v
+        return delta
+
     def find_pay_to_pubkey_address(self, prevout_hash, prevout_n):
         dd = self.txo.get(prevout_hash, {})
         for addr, l in dd.items():
@@ -482,7 +578,10 @@ class Abstract_Wallet(Wallet_Storage):
         coins = []
         found_abandon_txid = False
         if domain is None:
-            domain = self.get_addresses(True)
+            domain = self.get_addresses()
+            if self.use_change:
+                domain += self.get_addresses(True)
+
         if exclude_frozen:
             domain = set(domain) - self.frozen_addresses
         for addr in domain:
@@ -492,8 +591,13 @@ class Abstract_Wallet(Wallet_Storage):
                 if is_cb and tx_height + COINBASE_MATURITY > self.get_local_height():
                     continue
                 prevout_hash, prevout_n = txo.split(':')
+
                 tx = self.tx_transactions.get(prevout_hash)
-                tx.deserialize()
+                try:
+                    tx.deserialize()
+                except AttributeError:
+                    log.error("************* tx_transactions has no key %s", prevout_hash)
+                    continue
                 txout = tx.outputs()[int(prevout_n)]
                 if txout[0] & (TYPE_CLAIM | TYPE_SUPPORT | TYPE_UPDATE) == 0 or (
                         abandon_txid is not None and prevout_hash == abandon_txid):
@@ -1090,3 +1194,31 @@ class Wallet(Abstract_Wallet):
             return []
         sequence = self.get_address_index(address)
         return self.account_obj.get_private_key(sequence, self, self._password)
+
+
+    def wait_until_synchronized(self, callback=None):
+        def wait_for_wallet():
+            self.set_up_to_date(False)
+            while not self.is_up_to_date():
+                if callback:
+                    msg = "%s\n%s %d" % (
+                        "Please wait...",
+                        "Addresses generated:",
+                        len(self.get_addresses()))
+                    callback(msg)
+                time.sleep(0.1)
+
+        def wait_for_network():
+            while not self.network.is_connected():
+                if callback:
+                    msg = "%s \n" % ("Connecting...")
+                    callback(msg)
+                time.sleep(0.1)
+
+        # wait until we are connected, because the user
+        # might have selected another server
+        if self.network:
+            wait_for_network()
+            wait_for_wallet()
+        else:
+            self.synchronize()

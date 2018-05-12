@@ -118,12 +118,3 @@ class List_Field(list):
         self.storage.update_col(self.__field_name, value, '$push')
         if self.__field in self.__both_field:
             super(List_Field, self).append(value)
-
-
-if __name__ == '__main__':
-
-    a = Dict_Field(1, 'test')
-    if a:
-        print 111
-    else:
-        print 22

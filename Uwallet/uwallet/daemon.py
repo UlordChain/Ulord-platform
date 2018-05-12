@@ -1,10 +1,11 @@
 #-*- coding: UTF-8 -*-
 import sys
+from collections import OrderedDict
+
 import jsonrpclib
 from jsonrpclib.SimpleJSONRPCServer import SimpleJSONRPCRequestHandler, SimpleJSONRPCServer
 
 from uwallet.commands import Commands, known_commands
-
 
 def get_daemon(config):
     server = jsonrpclib.Server('http://%s:%d' % ('localhost', config.get('rpc_port')))
@@ -32,7 +33,7 @@ class Daemon():
     def __init__(self, config, network):
         self.config = config
         self.network = network
-        self.wallets = {}
+        self.wallets = OrderedDict()
         self.cmd_runner = Commands(self.config, self.wallets, self.network)
 
         self.server = SimpleJSONRPCServer(('0.0.0.0', config.get('rpc_port')),
@@ -74,7 +75,3 @@ class Daemon():
         for k, wallet in self.wallets.items():
             wallet.stop_threads()
         sys.exit()
-
-    def __del__(self):
-        print '析构 daemon', '='*60
-        self.stop()
