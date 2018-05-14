@@ -450,7 +450,7 @@ num: 每页条数
 
 # 二. API平台外部调用接口
 
-#### 说明: 将appkey将如到请求头headers中.如: `appkey:123412`
+#### 说明: 将appkey值将如到请求头headers中.如: `U-AppKey:37fd0c5e3eeb11e8a12af48e3889c8ab`
 ​
 ### 交易相关
 
@@ -461,7 +461,7 @@ num: 每页条数
 {
     "username": 钱包用户名,
     "pay_passwrod":支付密码
-}
+}U-AppKey
 
 # 返回值:
 
@@ -905,11 +905,11 @@ num: 每页条数
 }
 ```
 
-##### 4. 浏览量增加  `POST`    `/v1/content/view`
+##### 4. 购买量  `POST`    `/v1/content/purchase`
 ```
 # 请求参数:
 {
-    'id':资源id
+    'claim_id':a0f65383247ad6f804da8897281b88a6c1ddd2e6  # 资源在ulord链上的id值
 }
 
 # 返回值:
@@ -919,7 +919,7 @@ num: 每页条数
     "errcode": 0,
     "reason": "success",
     "result": {
-        "num": 修改影响行数
+        "num": 1,  # 修改影响行数
     }
 }
 ```
