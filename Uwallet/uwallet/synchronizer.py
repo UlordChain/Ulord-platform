@@ -142,17 +142,18 @@ class Synchronizer(ThreadJob):
         addresses, and request any transactions in its address history
         we don't have.
         '''
-        for history in self.wallet.history.values():
+        for history in self.wallet.addr_history.values():
             if history == ['*']:
                 continue
             self.request_missing_txs(history)
 
         if self.requested_tx:
             log.warning("missing tx: %s", self.requested_tx)
-        self.subscribe_to_addresses(set(self.wallet.addresses(True)))
+        self.subscribe_to_addresses(set(self.wallet.get_addresses(True)))
 
     def run(self):
         '''Called from the network proxy thread main loop.'''
+
         # 1. Create new addresses
         self.wallet.synchronize()
 

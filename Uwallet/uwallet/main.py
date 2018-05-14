@@ -45,7 +45,7 @@ def main():
     args = parser.parse_args()
 
     if args.verbose:
-        logging.getLogger("uwallet").setLevel(logging.INFO)
+        logging.getLogger("uwallet").setLevel(logging.DEBUG)
     else:
         logging.getLogger("uwallet").setLevel(logging.ERROR)
     handler = logging.StreamHandler()
@@ -93,57 +93,27 @@ def main():
         if subcommand in ['status', 'stop']:
             sys.exit("Daemon not running")
         elif subcommand == 'start':
-            if hasattr(os, "fork"):
-                # p = os.fork()
-                p = 0
-            else:
-                log.warning("Cannot start uwallet daemon as a background process")
-                log.warning("To use uwallet commands, run them from a different window")
-                p = 0
-            if p == 0:
-                network = Network(config)
-                network.start()
-                daemon = Daemon(config, network)
-                # daemon.start()
-                # daemon.run()
+            network = Network(config)
+            network.start()
+            daemon = Daemon(config, network)
+            try:
                 daemon.server.serve_forever()
-            else:
-                print "starting daemon (PID %d)" % p
+            except:
+                log.info('stop daemon from main')
+                daemon.stop()
         else:
             print "syntax: uwallet daemon <start|status|stop>"
-        sys.exit()
 
 
 if __name__ == '__main__':
     import sys
 
-    # -------- create wallet ----------------
-    # sys.argv.append('create')
-    # sys.argv.append('31f7e6703d5c11e893fcf48e3889c8ab_justin')
-    # sys.argv.append('123')
-
-    # -------- create wallet ----------------
-    # sys.argv.append('getbalance')
-    # sys.argv.append('test_create111')
-    # sys.argv.append('123')
-
-    # -------- list address ----------------
-    # sys.argv.append('listaddresses')
-    # sys.argv.append('test_hetao')
-    # sys.argv.append('123')
-
-    #  -------- send to address ----------------
-    # sys.argv.append('paytoandsend')x
-    # sys.argv.append('uWNsSvyHPTmwd2eUxhtLPXPSBZP6neJRfz')
-    # sys.argv.append('50')
-    # sys.argv.append('default_wallet')
-
     # -------- start daemon ----------------
-    sys.argv.append('daemon')
-    sys.argv.append('start')
-    sys.argv.append('-v')
-    sys.argv.append('-P')
-    sys.argv.append('8003')
+    if 'daemon' not in sys.argv:
+        sys.argv.append('daemon')
+        sys.argv.append('start')
+        sys.argv.append('-v')
+        sys.argv.append('-P 8003')
 
     print sys.argv
     rs = main()

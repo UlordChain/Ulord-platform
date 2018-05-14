@@ -13,18 +13,21 @@ from uwallet.errors import InvalidPassword
 log = logging.getLogger(__name__)
 
 class Account(object):
-    def __init__(self, v):
+    def __init__(self, v, use_change=False):
+        self.use_change = use_change
         self.receiving_pubkeys = v.get('receiving', [])
-        self.change_pubkeys = v.get('change', [])
 
         # addresses will not be stored on disk
         self.receiving_addresses = map(self.pubkeys_to_address, self.receiving_pubkeys)
-        self.change_addresses = map(self.pubkeys_to_address, self.change_pubkeys)
-
+        if self.use_change:
+            self.change_pubkeys = v.get('change', [])
+            self.change_addresses = map(self.pubkeys_to_address, self.change_pubkeys)
 
 
     def dump(self):
-        return {'receiving': self.receiving_pubkeys, 'change': self.change_pubkeys}
+        if self.use_change:
+            return {'receiving': self.receiving_pubkeys, 'change': self.change_pubkeys}
+        return self.receiving_pubkeys
 
     def get_pubkey(self, for_change, n):
         pubkeys_list = self.change_pubkeys if for_change else self.receiving_pubkeys
@@ -74,20 +77,24 @@ class Account(object):
     def synchronize_sequence(self, wallet, for_change):
         limit = wallet.gap_limit_for_change if for_change else wallet.gap_limit
         while True:
-            addresses = self.get_addresses(for_change)
+            # addresses = self.get_addresses(for_change)
+            addresses = wallet.get_addresses(for_change)
             if len(addresses) < limit:
                 address = self.create_new_address(for_change)
-                wallet.add_address(address)
+                wallet.add_address(address, for_change)
                 continue
-            if map(lambda a: wallet.address_is_old(a), addresses[-limit:]) == limit * [False]:
-                break
-            else:
-                address = self.create_new_address(for_change)
-                wallet.add_address(address)
+            break
+            # if map(lambda a: wallet.address_is_old(a), addresses[-limit:]) == limit * [False]:
+            #     break
+            # else:
+            #     address = self.create_new_address(for_change)
+            #     wallet.add_address(address)
+
 
     def synchronize(self, wallet):
         self.synchronize_sequence(wallet, False)
-        self.synchronize_sequence(wallet, True)
+        if self.use_change:
+            self.synchronize_sequence(wallet, True)
 
 
 class ImportedAccount(Account):
@@ -143,11 +150,12 @@ class ImportedAccount(Account):
 
 
 class BIP32_Account(Account):
-    def __init__(self, v):
-        Account.__init__(self, v)
+    def __init__(self, v, use_change=False):
+        Account.__init__(self, v, use_change)
         self.xpub = v['xpub']
         self.xpub_receive = None
-        self.xpub_change = None
+        if use_change:
+            self.xpub_change = None
 
     def correct_pubkeys(self):
         """
@@ -160,7 +168,7 @@ class BIP32_Account(Account):
         if self._check_pubkeys(self.receiving_pubkeys, False):
             self.receiving_pubkeys = self._correct_pubkeys(self.receiving_pubkeys, False)
             correction_made = True
-        if self._check_pubkeys(self.change_pubkeys, True):
+        if self.use_change and self._check_pubkeys(self.change_pubkeys, True):
             self.change_pubkeys = self._correct_pubkeys(self.change_pubkeys, True)
             correction_made = True
         return correction_made
@@ -199,10 +207,10 @@ class BIP32_Account(Account):
                     "Critical error found when correcting public key, exceeded max key generation")
         return corrected_pubkeys
 
-    def dump(self):
-        d = Account.dump(self)
-        d['xpub'] = self.xpub
-        return d
+    # def dump(self):
+    #     d = Account.dump(self)
+    #     d['xpub'] = self.xpub
+    #     return d
 
     def first_address(self):
         pubkeys = self.derive_pubkeys(0, 0)
