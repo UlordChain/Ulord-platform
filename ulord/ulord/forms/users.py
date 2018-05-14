@@ -6,10 +6,10 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, IntegerField
 from wtforms.validators import Email, DataRequired, Length, Optional
-from .validators import Unique
-from ulord.models import User
+from .validators import Unique, Exists
+from ulord.models import User, Role
 
-__all__ = ['RegForm','LoginForm','EditForm','ChangePasswordForm']
+__all__ = ['RegForm', 'LoginForm', 'EditForm', 'ChangePasswordForm','EditUserRoleForm']
 
 
 class RegForm(FlaskForm):
@@ -25,11 +25,12 @@ class RegForm(FlaskForm):
     # The default value goes from '' to None.
     email = StringField('email', validators=[Optional(), Email(), Unique(User, User.email)],
                         filters=[lambda x: x or None])
-    role_id = IntegerField('role_id', validators=[DataRequired()])
+
 
 class LoginForm(FlaskForm):
     username = StringField('username', validators=[DataRequired(), Length(3, 32)])
     password = StringField('username', validators=[DataRequired(), Length(3, 128)])
+
 
 class EditForm(FlaskForm):
     # Telephone Numbers vary from country to country.
@@ -38,6 +39,12 @@ class EditForm(FlaskForm):
     email = StringField('email', validators=[Optional(), Email(), Unique(User, User.email)],
                         filters=[lambda x: x or None])
 
+
 class ChangePasswordForm(FlaskForm):
     password = StringField('password', validators=[DataRequired(), Length(3, 128)])
-    new_password=StringField('new_password', validators=[DataRequired(), Length(3, 128)])
+    new_password = StringField('new_password', validators=[DataRequired(), Length(3, 128)])
+
+
+class EditUserRoleForm(FlaskForm):
+    id = IntegerField('id', validators=[DataRequired(), Exists(User, User.id)])
+    role_id = IntegerField('id', validators=[DataRequired(), Exists(Role, Role.id)])

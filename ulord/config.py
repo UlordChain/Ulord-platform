@@ -9,11 +9,12 @@ class Config(object):
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
     FLASKY_MAIL_SUBJECT_PREFIX = '[Ulord]'
     FLASKY_MAIL_SENDER = 'Ulord Admin <shuxudong@ulord.net>'
-    FLASKY_ADMIN = 'Shuxudong'
-    WALLET_JSONRPC_HOST = '192.168.14.241'
+    FLASKY_ADMIN = 'Ulord'
+    WALLET_JSONRPC_HOST = '192.168.14.240'
     WALLET_JSONRPC_PORT = '8000'
     PUBLISH_BID=0.01  # Amount paid to Ulord Platform
-    EXPIRATION=60*60*3 # Login token expiration time
+    EXPIRATION=60*60*6 # Login token expiration time
+    UAPP_MAX_COUNT=10  # The maximum number of new applications available.
 
     @staticmethod
     def init_app(app):
@@ -22,10 +23,10 @@ class Config(object):
 
 class DevelopmentConfig(Config):
     DEBUG = True
-    WTF_CSRF_ENABLED=False # 是否打开CSRF保护
+    WTF_CSRF_ENABLED=False # Whether to open CSRF protection.
     SQLALCHEMY_DATABASE_URI = "postgres://postgres:123@127.0.0.1:5432/ulord_development"
     SQLALCHEMY_TRACK_MODIFICATIONS = True
-    SQLALCHEMY_ECHO=False  # 显示SQL
+    SQLALCHEMY_ECHO=False  # Display sql statement
 
 
 class TestingConfig(Config):
