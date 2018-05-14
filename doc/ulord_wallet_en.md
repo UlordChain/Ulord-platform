@@ -21,5 +21,5 @@ The Ulord platform layer needs to create a managed wallet for each user to sign 
 ## UWallet
 Ulord wallet mainly provides transaction view and transaction initiation, personal use, and does not have functions related to content.
 
-## UCWallet
+## UCWallet ([api document](../Uwallet/uwallet_api.md))
 Ulord centralization wallet /Ulord content wallet, requires hosting within the Ulord platform, through the payment of password management, has the content transaction related functions.

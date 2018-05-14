@@ -21,5 +21,5 @@ Ulord平台层需要为每一个用户创建一个托管钱包用于代理用户
 ## UWallet
 Ulord钱包，主要提供交易查看和交易发起，个人使用，不具有和内容相关的功能。
 
-## UCWallet
+## UCWallet ([api文档](../Uwallet/uwallet_api.md))
 Ulord中心化钱包/Ulord内容钱包，要求托管在Ulord平台内部，通过支付密码管理，具有内容交易相关的功能。
