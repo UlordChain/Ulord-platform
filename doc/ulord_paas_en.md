@@ -59,4 +59,4 @@ Content distribution service is mainly based on the advantages of UPaaS platform
 ## UPaaS Enterprise
 The enterprise end is the core component of UPaaS. UPaaS provides enterprises with the need to rapidly develop applications based on content delivery.
 
-![UPaaS Enterprise App](images/UPaaS-App.png)
+![UPaaS Enterprise App](../images/UPaaS-App.png)
