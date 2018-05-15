@@ -187,6 +187,8 @@ class Commands(object):
                 # time.sleep(2)
         else:
             self.wallet = self.wallets[user]
+            if self.wallet._password != password:
+                raise ParamsError('51001')
 
         args.insert(0, self)
         return tuple(args)

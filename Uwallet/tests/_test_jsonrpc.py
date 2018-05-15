@@ -143,18 +143,19 @@ def mul_test():
 
 
 if __name__ == '__main__':
-    user = 'test_201805121618'
-    password = '123'
+    user = 'cln'
+    # password = '123'
+    password = 'pbkdf2:sha256:50000$oEw0SZX0$f8d9951addfa90213e63bb4553cacc7e3cc8e78d9d59f5e707da1fc09dd4d675'
 
     claim_name = 'test_201802014'
     claim_id = '587a6c34f66e31d941bfbd1c70df844d55f6ab4f'
     txid = '6563c2f0cf8f3cb16779f476a9c2b32fe1fbe1a37702597c4020db2f6a1959b5'
 
-    # print create(user, password)  # 0.48
+    # print create('shuxudong', password)  # 0.48
     # print server.pay(user, '123', 'hetao', 9)  # 0.95
-    # print pay(user, amount=10)  # 0.95
-    # print getbalance(user, password)  # 0.14
-    print publish(user, password, claim_name, False) # 3.67
+    # print pay(user, amount=1000)  # 0.95
+    print getbalance('shuxudong', password)  # 0.14
+    # print publish(user, password, claim_name, False) # 3.67
     # print publish(user, password, claim_name, True) # 2.68
     # print consume(claim_id)  # 1.4
     # print update_claim(user, password, claim_name, claim_id, txid)  # 1.56 amount
@@ -162,4 +163,4 @@ if __name__ == '__main__':
 
 
     # print server.listaddresses()
-    # print server.password(user, '123123', '123')
+    # print server.password('shuxudong', '123', 'pbkdf2:sha256:50000$oEw0SZX0$f8d9951addfa90213e63bb4553cacc7e3cc8e78d9d59f5e707da1fc09dd4d675')

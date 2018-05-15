@@ -5,7 +5,6 @@
 import hashlib
 import json
 import logging
-import random
 import threading
 import time
 import traceback
@@ -30,7 +29,6 @@ from uwallet.settings import DATABASE_HOST, DATABASE_PORT, WALLET_FIELD, NOR_FIE
 from uwallet.util import profiler, rev_hex, Timekeeping
 from uwallet.verifier import SPV
 from uwallet.version import UWALLET_VERSION, NEW_SEED_VERSION
-from uwallet.wallet_ import BIP32_Wallet
 
 log = logging.getLogger(__name__)
 
@@ -171,9 +169,9 @@ class Wallet_Storage(object):
         return res
 
     def check_password(self):
-        self.decoded_xprv = pw_decode(self.master_private_keys[self.root_name], self._password)
         self.xpub = self.master_public_keys[self.root_name]
         try:
+            self.decoded_xprv = pw_decode(self.master_private_keys[self.root_name], self._password)
             if deserialize_xkey(self.decoded_xprv)[3] == deserialize_xkey(self.xpub)[3]:
                 return True
         except InvalidPassword:
