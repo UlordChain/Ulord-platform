@@ -8,12 +8,16 @@ Ulord platform application主要提供如下功能：
 - content pay
 - content download
 - content search
+
 以上接口主要提供给企业应用实现基于内容的应用软件。下面以一个提供电子书阅读的应用为例，简要概述实现该应用的一个模式：
+
 需求：提供一个付费电子书阅读的应用程序/小程序
+
 实现：
 在Ulord platform注册一个企业应用ID(AppID)，利用Ulord platform提供的SDK开发服务端应用和客户端应用。企业通过Ulord platform提供的SDK用自己的迷药加密和上传具有版权的电子书到Ulord，由于Ulord是基于付费的内容平台，上传需要支付一定押金作为内容的信用凭证，如果内容违规，.......（问题复杂，TBD）
 
 Ulord platform主要分三个模块：Platform service, blockchain binding service, wallet service.
+
 ### Platform service
 平台服务提供企业应用的服务，包括：
 - 企业用户注册，权限管理
