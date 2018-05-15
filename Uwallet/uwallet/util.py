@@ -246,3 +246,20 @@ def prompt_password(prompt, confirm=True):
     if not password:
         password = None
     return password
+
+class Timekeeping:
+
+    def __init__(self):
+        self.temp = time.time()
+
+    def __run(self):
+        t1 = self.temp
+        t2 = time.time()
+        self.temp = t2
+        return t2 - t1
+
+    def get_interval(self):
+        return self.__run()
+
+    def print_interval(self):
+        print('the interval is:', self.__run())
