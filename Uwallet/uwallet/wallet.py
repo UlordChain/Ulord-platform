@@ -17,7 +17,7 @@ from uwallet.account import BIP32_Account
 from uwallet.coinchooser import COIN_CHOOSERS
 from uwallet.constants import COINBASE_MATURITY, TYPE_CLAIM, TYPE_UPDATE, TYPE_SUPPORT, TYPE_ADDRESS, TYPE_PUBKEY, \
     RECOMMENDED_FEE, EXPIRATION_BLOCKS
-from uwallet.errors import ServerError, ParamsError, InvalidPassword, NotEnoughFunds
+from uwallet.errors import ServerError, ParamsError
 from uwallet.mnemonic import Mnemonic
 from uwallet.store import Dict_Field, List_Field
 from uwallet.synchronizer import Synchronizer
@@ -170,12 +170,9 @@ class Wallet_Storage(object):
 
     def check_password(self):
         self.xpub = self.master_public_keys[self.root_name]
-        try:
-            self.decoded_xprv = pw_decode(self.master_private_keys[self.root_name], self._password)
-            if deserialize_xkey(self.decoded_xprv)[3] == deserialize_xkey(self.xpub)[3]:
-                return True
-        except InvalidPassword:
-            pass
+        self.decoded_xprv = pw_decode(self.master_private_keys[self.root_name], self._password)
+        if deserialize_xkey(self.decoded_xprv)[3] == deserialize_xkey(self.xpub)[3]:
+            return True
         raise ParamsError('51001')
 
 
@@ -696,7 +693,7 @@ class Abstract_Wallet(Wallet_Storage):
 
         # Avoid index-out-of-range with coins[0] below
         if not coins:
-            raise NotEnoughFunds()
+            raise ServerError('52004')
 
         for item in coins:
             self.add_input_info(item)

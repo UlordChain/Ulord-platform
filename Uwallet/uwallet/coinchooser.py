@@ -4,10 +4,10 @@ import logging
 from collections import defaultdict, namedtuple
 from math import floor, log10
 
+from uwallet.errors import ServerError
 from uwallet.hashing import sha256
 from uwallet.constants import COIN, TYPE_ADDRESS
 from uwallet.transaction import Transaction
-from uwallet.errors import NotEnoughFunds
 from uwallet.util import PrintError
 
 log = logging.getLogger()
@@ -232,7 +232,7 @@ class CoinChooserOldestFirst(CoinChooserBase):
             selected.append(bucket)
             if sufficient_funds(selected):
                 return strip_unneeded(selected, sufficient_funds)
-        raise NotEnoughFunds()
+        raise ServerError('52004')
 
 
 class CoinChooserRandom(CoinChooserBase):
@@ -263,7 +263,7 @@ class CoinChooserRandom(CoinChooserBase):
                     candidates.add(tuple(sorted(permutation[:count + 1])))
                     break
             else:
-                raise NotEnoughFunds()
+                raise ServerError('52004')
 
         candidates = [[buckets[n] for n in c] for c in candidates]
         return [strip_unneeded(c, sufficient_funds) for c in candidates]

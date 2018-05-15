@@ -15,9 +15,9 @@ from ecdsa.util import number_to_string, string_to_number
 
 from uwallet import msqr, version
 from uwallet.base import base_decode, base_encode, EncodeBase58Check, DecodeBase58Check, __b58chars
+from uwallet.errors import ParamsError
 from uwallet.util import print_error, rev_hex, var_int, int_to_hex
 from uwallet.hashing import Hash, sha256, hash_160, hmac_sha_512
-from uwallet.errors import InvalidPassword
 
 log = logging.getLogger(__name__)
 
@@ -105,7 +105,7 @@ def pw_decode(s, password):
         try:
             d = DecodeAES(secret, s).decode("utf8")
         except Exception:
-            raise InvalidPassword()
+            raise ParamsError('51001')
         return d
     else:
         return s

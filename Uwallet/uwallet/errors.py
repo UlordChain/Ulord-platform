@@ -1,13 +1,4 @@
 # -*- coding: UTF-8 -*-
-class NotEnoughFunds(Exception):
-    pass
-
-
-class InvalidPassword(Exception):
-    def __str__(self):
-        return "Incorrect password"
-
-
 class Timeout(Exception):
     pass
 
