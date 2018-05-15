@@ -78,9 +78,9 @@ def published(page, num):
     return return_result(result=dict(total=total, pages=pages, records=records))
 
 
-@bpv1.route("/content/view", methods=['POST'])
+@bpv1.route("/content/purchase", methods=['POST'])
 @appkey_check
-def view():
+def purchase():
     """资源购买量"""
     appkey=g.appkey
     claim_id = request.json.get('claim_id')

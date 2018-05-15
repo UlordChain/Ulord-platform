@@ -60,7 +60,7 @@ Ulord操作系统其实并不是一般意义上的操作系统，而是借用操
 ## UPaaS企业端
 企业端是UPaaS的核心组成部分。UPaaS提供企业端快速开发基于内容分发领域应用所需。
 
-![UPaaS Enterprise App](images/UPaaS-App.png)
+![UPaaS Enterprise App](../images/UPaaS-App.png)
 
 ## Q&A
 

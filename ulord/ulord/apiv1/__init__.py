@@ -7,9 +7,36 @@ from functools import wraps
 from ulord.utils import return_result
 from ulord.models import Application
 from jsonrpclib import Server
-import time
+import time, hashlib
 
-# def verify_sign(curtime,sign):
+
+def verify_sign(appkey, secret, curtime, old_sign):
+    j = request.get_json(silent=True)
+    params = j if j is not None else {}
+    params = sorted(params.items(), key=lambda i: i[0])
+    sign = ''
+
+    for k, v in params:
+        if isinstance(v, bool):
+            # In josn, False is false.
+            if v is True:
+                v = 'true'
+            else:
+                v = 'false'
+        if isinstance(v, list):
+            tv = ''
+            for i in v:
+                tv += str(i)
+            v = tv
+        sign += str(k) + str(v)
+
+    sign = appkey + sign + secret + str(curtime)
+    print(sign)
+    sign = hashlib.md5(sign.encode('u8')).hexdigest().upper()
+    # print(sign,old_sign)
+    if sign == old_sign.upper():
+        return True
+    return False
 
 
 def appkey_check(f):
@@ -21,25 +48,27 @@ def appkey_check(f):
         if not appkey:
             return return_result(10012)
 
-        # if not curtime:
-        #     return return_result(10017)
-        # else:
-        #     if not curtime.isdigit():
-        #         return return_result(20100)
-        #     if time.time() - int(curtime) > 60 * 5:
-        #         return return_result(10017)
-        # if not sign:
-        #     return return_result(10013)
-        # if not verify_sign(curtime,sign):
-        #     return return_result(20102)
-
         # insert to redis
         uapp = Application.query.filter_by(appkey=appkey).first()
         if not uapp:
             return return_result(10001)
         user = uapp.user
+        secret = uapp.secret
         if user.role.name == 'blocked':
             return return_result(20006)
+
+        # Verify digital signature
+        if not curtime:
+            return return_result(10017)
+        else:
+            if not curtime.isdigit():
+                return return_result(20100)
+            if time.time() - int(curtime) > current_app.config['SIGN_EXPIRES']:
+                return return_result(10017)
+        if not sign:
+            return return_result(10013)
+        if not verify_sign(appkey, secret, curtime, sign):
+            return return_result(20102)
 
         g.user = user
         g.appkey = appkey

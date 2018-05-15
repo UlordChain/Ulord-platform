@@ -15,6 +15,7 @@ class Config(object):
     PUBLISH_BID=0.01  # Amount paid to Ulord Platform
     EXPIRATION=60*60*6 # Login token expiration time
     UAPP_MAX_COUNT=10  # The maximum number of new applications available.
+    SIGN_EXPIRES=60*1000  # API signature expiration time.
 
     @staticmethod
     def init_app(app):

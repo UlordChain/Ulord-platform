@@ -37,8 +37,10 @@ def config_app(app, config_name):
 
     @app.before_request
     def before():
-        if request.method=='POST' and not request.json:
+        # silent: if set to ``True`` this method will fail silently and return ``None``.
+        if request.method=='POST' and not request.get_json(silent=True):
             return return_result(20101)
+
 
 def dispatch_apps(app):
     app.register_blueprint(bpv1)

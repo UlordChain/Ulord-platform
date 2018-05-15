@@ -13,7 +13,7 @@ Features of various wallets:
 |--------|------|------|------|----------|--------------------|
 |Desktop SPV wallet|High|convenient|recoverable|Memorizing words|You can manage a large number of coins and keep your wallet keys and memorizing words properly.|
 |Mobile SPV wallet|High|convenient|recoverable|Memorizing words|You can manage a large number of coins and keep your wallet keys and memorizing words properly.|
-|Full node wallet|High|middle|recoverable|Memorizing words|You can manage large amounts of money and keep good private keys and mnemonic words.|
+|Full node wallet|High|middle|recoverable|Filesystem backup and Recovery|You can manage large amounts of money and keep good private keys and mnemonic words.|
 |Centeralized wallet|middle|convenient|recoverable|Password|It can manage coins that are often needed to circulate, and can restore passwords by forgetting passwords.|
 
 The Ulord platform layer needs to create a managed wallet for each user to sign the transaction for the proxy user.
