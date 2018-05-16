@@ -2,6 +2,9 @@
 # @Time    : 2018/3/22
 # @Author  : Shu
 # @Email   : httpservlet@yeah.net
+
+
+from Crypto import Random
 from ulord.utils import return_result
 from flask import request, g, current_app
 from ulord.models import User,Role
@@ -9,7 +12,11 @@ from ulord.extensions import db, auth
 from werkzeug.security import generate_password_hash
 from . import bpv1, get_jsonrpc_server,admin_required,blocked_check
 from ulord.forms import validate_form, RegForm, LoginForm, EditForm, ChangePasswordForm,EditUserRoleForm
+from ulord.utils.rsa import rsahelper
 
+@bpv1.route('/getpubkey')
+def getpubkey():
+    return rsahelper.pubkeybytes
 
 @bpv1.route('/users/reg', methods=['POST'])
 @validate_form(form_class=RegForm)
@@ -18,7 +25,8 @@ def reg():
     form = g.form
 
     # The user login password is also the wallet's payment password.
-    pay_password = generate_password_hash(form.password.data)
+    password = rsahelper.decrypt(form.password.data).decode('u8')
+    pay_password = generate_password_hash(password)
     form.password.data = pay_password
 
     try:
@@ -27,7 +35,7 @@ def reg():
         result = server.create(form.username.data, pay_password)
         if result.get('success') is not True:
             print(result)
-            return return_result(20205)
+            return return_result(20205,result=result)
     except Exception as e:
         print(e)
         return return_result(20205)
@@ -44,8 +52,7 @@ def reg():
 @validate_form(form_class=LoginForm)
 def login():
     username = g.form.username.data
-    password = g.form.password.data
-
+    password = rsahelper.decrypt(g.form.password.data).decode('u8')
     user = User.query.filter_by(username=username).first()
     if user is None:
         return return_result(20003)
@@ -75,21 +82,23 @@ def edit():
 def change_password():
     user = g.user
     old_password_hash = user.password_hash
-    if not user.check_password(g.form.password.data):
+
+    password = rsahelper.decrypt(g.form.password.data).decode('u8')
+    if not user.check_password(password):
         return return_result(20004)
 
-    password_hash = generate_password_hash(g.form.new_password.data)
+    new_password_hash = generate_password_hash(rsahelper.decrypt(g.form.new_password.data).decode('u8'))
     try:
         server = get_jsonrpc_server()
-        result = server.password(user.username, old_password_hash, password_hash)
+        result = server.password(user.username, old_password_hash, new_password_hash)
         if result.get('success') is not True:
             print(result)
-            return return_result(20207)
+            return return_result(20207,result=result)
     except Exception as e:
         print(e)
         return return_result(20207)
 
-    user.password=password_hash
+    user.password=new_password_hash  # update password, auto commit
     return return_result()
 
 @bpv1.route('/users/role/edit',methods=['POST'])

@@ -11,7 +11,7 @@ class Config(object):
     FLASKY_MAIL_SENDER = 'Ulord Admin <shuxudong@ulord.net>'
     FLASKY_ADMIN = 'Ulord'
     WALLET_JSONRPC_HOST = '192.168.14.240'
-    WALLET_JSONRPC_PORT = '8000'
+    WALLET_JSONRPC_PORT = '8080'
     PUBLISH_BID=0.01  # Amount paid to Ulord Platform
     EXPIRATION=60*60*6 # Login token expiration time
     UAPP_MAX_COUNT=10  # The maximum number of new applications available.

@@ -5,6 +5,22 @@
 Authorization:Bearer token值
 ```
 
+### 获取注册登录等时用于密码rsa加密的公钥  `POST`    `/v1/getpubkey`
+```
+# 请求参数:
+无
+
+# 返回值:
+
+成功
+-----BEGIN PUBLIC KEY-----
+MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDwEYW1eX0JZEraQIxRUOsRYOL2
+9AXVFhjQZt0zhMNusgxo49zgU162+SwxIesp1KDwN4QI6ov1rIuxlYMELOh0zIRZ
+pLEWBm9khyhIyNT6et1r4y0QQrqc01ZuwiODezb0q+0bHn5zsezAXkV9VMe2p1DB
+vk/7uGmIrz5E8AOLbQIDAQAB
+-----END PUBLIC KEY-----
+```
+
 
 ### 1. 开发者角色接口
 
@@ -227,7 +243,7 @@ num: 每页条数
 
 {
     "username":开发这帐号,
-    "password":帐号密码,
+    "password":rsa加密后再base64编码,
     "email":邮箱(可空),
     "telphone":电话(可空),
 }
@@ -263,7 +279,7 @@ num: 每页条数
 
 {
     "username":开发这帐号,
-    "password":帐号密码,
+    "password":rsa加密后再base64编码,
 }
 
 # 返回值:
@@ -283,8 +299,8 @@ num: 每页条数
 # 请求参数:
 
 {
-    "password":原密码,
-    "new_password":新密码,
+    "password":原密码(rsa加密后再base64编码),
+    "new_password":新密码(rsa加密后再base64编码),
 }
 
 # 返回值:
@@ -929,7 +945,7 @@ num: 每页条数
 ulord平台错误码:
 {
     # 正常
-    0:{'errcode':0,'reason':'success'},
+    0:{'errcode':0,'reason':'success'},  # 可以重写reason与result内容
 
     # HTTP协议错误码
     400:{'errcode':400,'reason':'Bad Request.'},
@@ -953,6 +969,10 @@ ulord平台错误码:
     10011:{'errcode':10011,'reason':'当前没有登录用户,请登录.'},
     10012:{'errcode':10012,'reason':'缺少应用KEY值.'},
     10013:{'errcode':10013,'reason':'无权限进行此操作.'},
+    10014:{'errcode':10014,'reason':'需要管理员权限.'},
+    10015:{'errcode':10015,'reason':'用户被禁用.'},
+    10016:{'errcode':10016,'reason':'用户可新建的uapp数量已达最大数.'},
+    10017:{'errcode':10017,'reason':'此请求已过期.'},
 
     # 服务级错误码
     # 1. DB查询验证
@@ -965,10 +985,13 @@ ulord平台错误码:
     20006:{'errcode':20006,'reason':'用户被禁用.'},
     20007:{'errcode':20007,'reason':'资源不存在.'},
     20008:{'errcode':20008,'reason':'资源需付费.'},
+    20009:{'errcode':20009,'reason':'加密参数不合要求.'},
+    20010:{'errcode':20010,'reason':'密码长度不符合要求,请输入3-128位长度.'},
 
     # 2. 请求参数验证相关
     20100:{'errcode':20100,'reason':'参数错误.'},
     20101:{'errcode':20101,'reason':'参数必须为json格式.'},
+    20102:{'errcode':20102,'reason':'签名错误.'},
     # 3. 钱包相关接口调用
     20200:{'errcode':20200,'reason':'调用钱包接口失败.'},
     20201:{'errcode':20201,'reason':'资源发布失败.'},
@@ -977,6 +1000,7 @@ ulord平台错误码:
     20204:{'errcode':20204,'reason':'创建钱包失败.'},
     20205:{'errcode':20205,'reason':'用户注册失败,因为没有成功创建ulord钱包.'},
     20206:{'errcode':20206,'reason':'支付失败.'},
+    20207:{'errcode':20207,'reason':'修改钱包密码失败.'},
 }
 
 ulord钱包错误码:

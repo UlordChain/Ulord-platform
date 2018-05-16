@@ -11,6 +11,7 @@ from ulord.extensions import db
 from ulord.utils.generate import generate_appkey
 
 
+
 @bpv1.route('/transactions/createwallet', methods=['POST'])
 @appkey_check
 def create_address():
@@ -22,9 +23,9 @@ def create_address():
 
     try:
         server = get_jsonrpc_server()
-        print(username_wallet,pay_password)
+        # print(username_wallet,pay_password)
         result = server.create(username_wallet, pay_password)
-        print(result)
+        # print(result)
         if result.get('success') is not True:
             print(result)
             return return_result(20204, result=result)
@@ -119,7 +120,7 @@ def publish():
 
     sourcename = generate_appkey()
 
-    metadata = dict(title=title, author=author, tag=['action'],
+    metadata = dict(title=title, author=author, tag=tags,
                     description='', language='en',
                     license='', licenseUrl='', nsfw=False, preview='', thumbnail='', )
     try:
