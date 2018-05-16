@@ -595,6 +595,7 @@ class Network(DaemonThread):
         if len(self.interfaces) + len(self.connecting) < self.num_server:
             self.start_random_interface()
             if now - self.nodes_retry_time > NODES_RETRY_INTERVAL:
+                # todo: 代表什么意义
                 log.info('network: retrying connections')
                 self.disconnected_servers = set([])
                 self.nodes_retry_time = now

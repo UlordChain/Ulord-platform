@@ -5,7 +5,6 @@
 import hashlib
 import json
 import logging
-import random
 import threading
 import time
 import traceback
@@ -18,7 +17,7 @@ from uwallet.account import BIP32_Account
 from uwallet.coinchooser import COIN_CHOOSERS
 from uwallet.constants import COINBASE_MATURITY, TYPE_CLAIM, TYPE_UPDATE, TYPE_SUPPORT, TYPE_ADDRESS, TYPE_PUBKEY, \
     RECOMMENDED_FEE, EXPIRATION_BLOCKS
-from uwallet.errors import ServerError, ParamsError, InvalidPassword, NotEnoughFunds
+from uwallet.errors import ServerError, ParamsError
 from uwallet.mnemonic import Mnemonic
 from uwallet.store import Dict_Field, List_Field
 from uwallet.synchronizer import Synchronizer
@@ -27,10 +26,9 @@ from uwallet.ulord import deserialize_xkey, pw_decode, pw_encode, bip32_root, bi
     public_key_to_bc_address, is_address, hash_160_to_bc_address, bip32_private_key, encode_claim_id_hex, claim_id_hash
 from uwallet.settings import DATABASE_HOST, DATABASE_PORT, WALLET_FIELD, NOR_FIELD, LIST_DB_FIELD, LIST_BOTH_FIELD, \
     DICT_DB_FIELD, DICT_BOTH_FIELD
-from uwallet.util import profiler, rev_hex
+from uwallet.util import profiler, rev_hex, Timekeeping
 from uwallet.verifier import SPV
 from uwallet.version import UWALLET_VERSION, NEW_SEED_VERSION
-from uwallet.wallet_ import BIP32_Wallet
 
 log = logging.getLogger(__name__)
 
@@ -171,13 +169,10 @@ class Wallet_Storage(object):
         return res
 
     def check_password(self):
-        self.decoded_xprv = pw_decode(self.master_private_keys[self.root_name], self._password)
         self.xpub = self.master_public_keys[self.root_name]
-        try:
-            if deserialize_xkey(self.decoded_xprv)[3] == deserialize_xkey(self.xpub)[3]:
-                return True
-        except InvalidPassword:
-            pass
+        self.decoded_xprv = pw_decode(self.master_private_keys[self.root_name], self._password)
+        if deserialize_xkey(self.decoded_xprv)[3] == deserialize_xkey(self.xpub)[3]:
+            return True
         raise ParamsError('51001')
 
 
@@ -698,7 +693,7 @@ class Abstract_Wallet(Wallet_Storage):
 
         # Avoid index-out-of-range with coins[0] below
         if not coins:
-            raise NotEnoughFunds()
+            raise ServerError('52004')
 
         for item in coins:
             self.add_input_info(item)
@@ -912,11 +907,13 @@ class Abstract_Wallet(Wallet_Storage):
     @profiler
     def send_tx(self, tx, timeout=300):
         # fixme: this does not handle the case where server does not answer
+        # tkp = Timekeeping()
         if not self.network.interface:
             raise Exception("Not connected.")
-
+        # tkp.print_interval()
+        # tkp = Timekeeping()
         txid = tx.hash()
-
+        # print 'hash cost: %s' % tkp.get_interval()
         with self.send_tx_lock:
             self.network.send([('blockchain.transaction.broadcast', [str(tx)])], self.on_broadcast)
             self.tx_event.wait()
@@ -926,11 +923,13 @@ class Abstract_Wallet(Wallet_Storage):
             if not success:
                 log.error("send tx failed: %s", result)
                 return success, result
+            # print 'broadcast: %s' % tkp.get_interval()
 
             log.debug("waiting for %s to be added to the wallet", txid)
             now = time.time()
             while txid not in self.tx_transactions and time.time() < now + timeout:
                 time.sleep(0.2)
+            # print 'add tx_transactions: %s' % tkp.get_interval()
 
             if txid not in self.tx_transactions:
                 # TODO: detect if the txid is not known because it changed

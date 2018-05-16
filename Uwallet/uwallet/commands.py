@@ -2,7 +2,6 @@
 import argparse
 import ast
 import base64
-import collections
 import copy
 import datetime
 import json
@@ -36,7 +35,7 @@ from uwallet.base import base_decode
 from uwallet.transaction import Transaction
 from uwallet.transaction import decode_claim_script, deserialize as deserialize_transaction
 from uwallet.transaction import get_address_from_output_script, script_GetOp
-from uwallet.errors import InvalidProofError, NotEnoughFunds, InvalidPassword, ParamsError, ReturnError, ServerError, \
+from uwallet.errors import InvalidProofError, ParamsError, ReturnError, ServerError, \
     DecryptionError
 from uwallet.util import format_satoshis, rev_hex
 from uwallet.mnemonic import Mnemonic
@@ -187,6 +186,8 @@ class Commands(object):
                 # time.sleep(2)
         else:
             self.wallet = self.wallets[user]
+            if self.wallet._password != password:
+                raise ParamsError('51001')
 
         args.insert(0, self)
         return tuple(args)
@@ -1875,11 +1876,8 @@ class Commands(object):
                    (TYPE_ADDRESS, PLATFORM_ADDRESS, commission)]
         # outputs = [(TYPE_ADDRESS | TYPE_CLAIM, ((name, val), claim_addr), amount)]
         coins = wallet.get_spendable_coins()
-        try:
-            tx = wallet.make_unsigned_transaction(coins, outputs,
+        tx = wallet.make_unsigned_transaction(coins, outputs,
                                                   self.config, tx_fee, change_addr)
-        except NotEnoughFunds:
-            raise ServerError('52004')
         wallet.sign_transaction(tx)
         if broadcast:
             success, out = wallet.send_tx(tx)
@@ -2081,11 +2079,8 @@ class Commands(object):
 
         outputs = [(TYPE_ADDRESS | TYPE_SUPPORT, ((name, claim_id), claim_addr), amount)]
         coins = wallet.get_spendable_coins()
-        try:
-            tx = wallet.make_unsigned_transaction(coins, outputs, self.config, tx_fee,
+        tx = wallet.make_unsigned_transaction(coins, outputs, self.config, tx_fee,
                                                   change_addr)
-        except NotEnoughFunds:
-            return {'success': False, 'reason': 'Not enough funds'}
         wallet.sign_transaction(tx)
         if broadcast:
             success, out = wallet.send_tx(tx)
@@ -2358,11 +2353,8 @@ class Commands(object):
                 )
             ]
             coins = wallet.get_spendable_coins()
-            try:
-                dummy_tx = wallet.make_unsigned_transaction(coins, dummy_outputs,
+            dummy_tx = wallet.make_unsigned_transaction(coins, dummy_outputs,
                                                             self.config, tx_fee, change_addr)
-            except NotEnoughFunds:
-                return {'success': False, 'reason': 'Not enough funds'}
 
             # add the unspents to input
             for i in dummy_tx._inputs:
@@ -2788,11 +2780,8 @@ class Commands(object):
             coins = self.wallet.get_spendable_coins()
         except AttributeError:
             raise ServerError('52008')
-        try:
-            tx = self.wallet.make_unsigned_transaction(coins, outputs,
+        tx = self.wallet.make_unsigned_transaction(coins, outputs,
                                                        self.config, tx_fee, address)
-        except NotEnoughFunds:
-            raise ServerError('52004')
 
         self.__sign_and_send_tx(tx)
 
@@ -2849,11 +2838,8 @@ class Commands(object):
                 )
             ]
             coins = self.wallet.get_spendable_coins()
-            try:
-                dummy_tx = self.wallet.make_unsigned_transaction(
+            dummy_tx = self.wallet.make_unsigned_transaction(
                     coins, dummy_outputs, self.config, tx_fee, address)
-            except NotEnoughFunds:
-                return ServerError('52004')
 
             # add the unspents to input
             for i in dummy_tx._inputs:

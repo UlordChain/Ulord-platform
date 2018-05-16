@@ -1,6 +1,7 @@
 #-*- coding: UTF-8 -*-
 import logging
 
+from uwallet.errors import ParamsError
 from uwallet.util import rev_hex, int_to_hex, is_extended_pubkey
 from uwallet.hashing import hash_160
 from uwallet.base import DecodeBase58Check, EncodeBase58Check
@@ -8,7 +9,6 @@ from uwallet.transaction import Transaction
 from uwallet.ulord import pw_decode, pw_encode, hash_160_to_bc_address, address_from_private_key
 from uwallet.ulord import public_key_to_bc_address, deserialize_xkey, bip32_public_derivation
 from uwallet.ulord import CKD_pub, bip32_private_key
-from uwallet.errors import InvalidPassword
 
 log = logging.getLogger(__name__)
 
@@ -123,7 +123,7 @@ class ImportedAccount(Account):
         pk = pw_decode(self.keypairs[address][1], password)
         # this checks the password
         if address != address_from_private_key(pk):
-            raise InvalidPassword()
+            raise ParamsError('51001')
         return [pk]
 
     def has_change(self):
