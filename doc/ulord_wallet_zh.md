@@ -1,5 +1,5 @@
 # Ulord钱包
-[英文](ulord_wallet_en.md)
+[English](ulord_wallet_en.md)
 
 Ulord钱包是用于保存用户资金，签名交易的工具。Ulord钱包有如下几个种类：
 - 桌面版轻钱包，可以运行在在各类操作系统中，可以接受，查看和转帐交易，用户通过助记词可以恢复钱包
