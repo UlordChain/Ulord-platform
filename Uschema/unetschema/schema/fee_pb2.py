@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='fee.proto',
   package='',
   syntax='proto2',
-  serialized_pb=_b('\n\tfee.proto\"\xcf\x01\n\x03\x46\x65\x65\x12\x1d\n\x07version\x18\x01 \x02(\x0e\x32\x0c.Fee.Version\x12\x1f\n\x08\x63urrency\x18\x02 \x02(\x0e\x32\r.Fee.Currency\x12\x0f\n\x07\x61\x64\x64ress\x18\x03 \x02(\x0c\x12\x0e\n\x06\x61mount\x18\x04 \x02(\x02\"*\n\x07Version\x12\x13\n\x0fUNKNOWN_VERSION\x10\x00\x12\n\n\x06_0_0_1\x10\x01\";\n\x08\x43urrency\x12\x14\n\x10UNKNOWN_CURRENCY\x10\x00\x12\x07\n\x03ULD\x10\x01\x12\x07\n\x03\x42TC\x10\x02\x12\x07\n\x03USD\x10\x03')
+  serialized_pb=_b('\n\tfee.proto\"\xce\x01\n\x03\x46\x65\x65\x12\x1d\n\x07version\x18\x01 \x02(\x0e\x32\x0c.Fee.Version\x12\x1f\n\x08\x63urrency\x18\x02 \x02(\x0e\x32\r.Fee.Currency\x12\x0f\n\x07\x61\x64\x64ress\x18\x03 \x02(\x0c\x12\x0e\n\x06\x61mount\x18\x04 \x02(\x02\"*\n\x07Version\x12\x13\n\x0fUNKNOWN_VERSION\x10\x00\x12\n\n\x06_0_0_1\x10\x01\":\n\x08\x43urrency\x12\x14\n\x10UNKNOWN_CURRENCY\x10\x00\x12\x06\n\x02UT\x10\x01\x12\x07\n\x03\x42TC\x10\x02\x12\x07\n\x03USD\x10\x03')
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -58,7 +58,7 @@ _FEE_CURRENCY = _descriptor.EnumDescriptor(
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='ULD', index=1, number=1,
+      name='UT', index=1, number=1,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
@@ -73,7 +73,7 @@ _FEE_CURRENCY = _descriptor.EnumDescriptor(
   containing_type=None,
   options=None,
   serialized_start=162,
-  serialized_end=221,
+  serialized_end=220,
 )
 _sym_db.RegisterEnumDescriptor(_FEE_CURRENCY)
 
@@ -128,7 +128,7 @@ _FEE = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=14,
-  serialized_end=221,
+  serialized_end=220,
 )
 
 _FEE.fields_by_name['version'].enum_type = _FEE_VERSION

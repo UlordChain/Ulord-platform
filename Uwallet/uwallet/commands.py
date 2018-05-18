@@ -1348,7 +1348,7 @@ class Commands(object):
     @command('nc')
     def getvalueforuri(self, uri, raw=False, page=0, page_size=10):
         """
-        Resolve a ULD URI
+        Resolve a UT URI
         """
 
         result = self.getvaluesforuris(raw, page, page_size, uri)
@@ -1359,7 +1359,7 @@ class Commands(object):
     @command('nc')
     def getvaluesforuris(self, raw=False, page=0, page_size=10, *uris):
         """
-        Resolve a ULD URI
+        Resolve a UT URI
         """
         page = int(page)
         page_size = int(page_size)
@@ -2703,9 +2703,10 @@ class Commands(object):
                     "sourceType": "unet_sd_hash"
                 },
                 'version': '_0_0_1',
-            }
+            },
+            'appKey': self.wallet.user.replace('_', '.')
         }
-
+        print claim_dict
         try:
             claim = ClaimDict.load_dict(claim_dict)
         except DecodeError:
@@ -2933,6 +2934,15 @@ class Commands(object):
         else:
             raise ServerError('52001', res)
 
+    @command('')
+    def is_wallet_exists(self, user):
+        # Since the address is created at the same time as creating the wallet under the existing business logic, it is feasible here. -- blueboxH
+        try:
+            Wallet_Storage.get_first_address(user)
+        except ParamsError:
+            return False
+        return True
+
     @command('u')
     def consume(self, claim_id):
         try:
@@ -3043,8 +3053,8 @@ command_options = {
     'val': (None, '--value', 'claim value'),
     'timeout': (None, '--timeout', 'timeout'),
     'include_tip_info': (None, "--include_tip_info", 'Include claim tip information'),
-    'address': (None, "--address", 'a address, to receive ULD'),
-    'bid': (None, '--bid', 'the ULD that publish a resource to the platform')
+    'address': (None, "--address", 'a address, to receive UT'),
+    'bid': (None, '--bid', 'the UT that publish a resource to the platform')
 }
 
 
