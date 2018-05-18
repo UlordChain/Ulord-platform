@@ -7,7 +7,7 @@ message Fee {
     }
     enum Currency {
         UNKNOWN_CURRENCY = 0;
-        ULD = 1;
+        UT = 1;
         BTC = 2;
         USD = 3;
     }

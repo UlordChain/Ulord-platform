@@ -27,7 +27,7 @@
 
   source_hash = "QmVcVaHhMeWNNetSLTZArmqaHMpu5ycqntx7mFZaci63VF"
   content_type = "video/mp4"
-  currency = "ULD"
+  currency = "UT"
   amount = 1.2
   bid = 0.57
   claim_name = 'het1ao111'
@@ -262,7 +262,7 @@ print res
 
   source_hash = "QmVcVaHhMeWNNetSLTZArmqaHMpu5ycqntx7mFZaci63VF"
   content_type = "video/mp4"
-  currency = "ULD"
+  currency = "UT"
   amount = 1.2
   bid = 0.57
   claim_name = 'het1ao111'

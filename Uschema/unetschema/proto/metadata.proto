@@ -198,11 +198,6 @@ message Metadata {
         zu = 184;
     }
 
-    enum Tag {
-        UNKNOWN_Tag = 0;
-        science = 1;
-        action = 2;
-    }
     required Version version = 1;
     required Language language = 2;
     required string title = 3;
@@ -215,5 +210,5 @@ message Metadata {
     optional string thumbnail = 9;
     optional string preview = 10;
     optional string licenseUrl = 11;
-    repeated Tag tag = 12;
+    repeated string tag = 13;
 }

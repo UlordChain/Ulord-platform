@@ -19,7 +19,7 @@ sourceHash = "d5169241150022f996fa7cd6a9a1c421937276a3275eb912790bd07ba7aec1fac5
 
 contentType = "video/mp4"
 
-currency = "ULD"
+currency = "UT"
 amount = 1.2
 server = Server('http://127.0.0.1:8000')
 
