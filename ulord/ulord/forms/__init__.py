@@ -10,6 +10,7 @@ from .users import *
 from .role import *
 from .uapp import *
 from .app_type import *
+from .transactions import *
 
 def validate_form(form_class):
     def decorator(f):

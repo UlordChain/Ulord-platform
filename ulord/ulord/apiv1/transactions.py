@@ -9,23 +9,22 @@ from flask import request, g,current_app
 from ulord.models import Content, Tag, ContentHistory, Consume, AppUser,User
 from ulord.extensions import db
 from ulord.utils.generate import generate_appkey
-
+from ulord.forms import validate_form,CreateWalletForm,PayToUserForm,BalanceForm,PublishForm
 
 
 @bpv1.route('/transactions/createwallet', methods=['POST'])
 @appkey_check
-def create_address():
+@validate_form(form_class=CreateWalletForm)
+def create_wallet():
     """Generate wallets for app users."""
     appkey = g.appkey
-    username = request.json.get('username', '')
-    username_wallet = get_wallet_name(username)
-    pay_password = request.json.get('pay_password')
+    username = g.form.username.data
+    pay_password = g.form.pay_password.data
 
     try:
         server = get_jsonrpc_server()
-        # print(username_wallet,pay_password)
-        result = server.create(username_wallet, pay_password)
-        # print(result)
+        print(username,pay_password)
+        result = server.create(username, pay_password)
         if result.get('success') is not True:
             print(result)
             return return_result(20204, result=result)
@@ -40,22 +39,24 @@ def create_address():
 
 @bpv1.route('/transactions/paytouser', methods=['POST'])
 @appkey_check
+@validate_form(form_class=PayToUserForm)
 def pay_to_user():
     """The user account transfer
 
     Args:
         is_developer:Is it a developer
     """
-    is_developer = request.json.get('is_developer')
+    is_developer = g.form.is_developer.data
     if is_developer is True:
         send_user_wallet = g.user.username
         pay_password = g.user.password_hash
     else:
-        send_user_wallet = get_wallet_name(request.json.get('send_user'))
-        pay_password = request.json.get('pay_password')
+        send_user_wallet = g.form.send_user.data
+        pay_password = g.form.pay_password.data
 
-    recv_wallet_username = get_wallet_name(request.json.get('recv_user'))
-    amount = request.json.get('amount')
+
+    recv_wallet_username = g.form.recv_user.data
+    amount = g.form.amount.data
 
     try:
         server = get_jsonrpc_server()
@@ -72,16 +73,16 @@ def pay_to_user():
 
 @bpv1.route('/transactions/balance', methods=['POST'])
 @appkey_check
+@validate_form(form_class=BalanceForm)
 def balance():
     """Check balances"""
-    is_developer = request.json.get('is_developer')
+    is_developer = g.form.is_developer.data
     if is_developer:
         username_wallet = g.user.username
         pay_password=g.user.password_hash
     else:
-        username_wallet = get_wallet_name(request.json.get('username'))
-        pay_password = request.json.get('pay_password')
-
+        username_wallet = g.form.username.data
+        pay_password = g.form.pay_password.data
 
     try:
         server = get_jsonrpc_server()
@@ -102,9 +103,11 @@ def balance():
 
 @bpv1.route('/transactions/publish', methods=['POST'])
 @appkey_check
+@validate_form(form_class=PublishForm)
 def publish():
     """Release resources"""
     appkey = g.appkey
+    print(g.form.price.data)
     author = request.json.get('author', '')
     username_wallet = get_wallet_name(author)
     pay_password = request.json.get('pay_password')
@@ -345,6 +348,8 @@ def save_content_history(**kwargs):
 
 
 def save_tag(tag_names):
+    if not tag_names:
+        return []
     tags = list()
     for name in tag_names:
         tag = Tag.query.filter_by(name=name).first()
