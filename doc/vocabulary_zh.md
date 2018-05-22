@@ -1,4 +1,4 @@
-# 词汇表
+# 术语与缩略语
 [English](./vocabulary.md)
 #### UPaaS
 Ulord平台即服务
