@@ -8,7 +8,6 @@ from wtforms.validators import ValidationError
 from flask import g
 from ulord.utils.rsa import rsahelper
 from ulord.apiv1 import get_jsonrpc_server
-from flask import g
 
 __all__ = ['Unique', 'Exists', 'RsaCheck', 'WalletUnique', 'WalletExists']
 
@@ -54,26 +53,38 @@ class RsaCheck(object):
 
 
 class WalletUnique(object):
-    def __init__(self, message='The user already exists'):
+    def __init__(self, message='The user already exists.',is_wallet_name=True):
         self.message = message
+        self.is_wallet_name=is_wallet_name
 
     def __call__(self, form, field):
         server = get_jsonrpc_server()
         username_wallet = '{}_{}'.format(g.appkey, field.data)
-        result = server.is_wallet_exists(username_wallet)
+        try:
+            result = server.is_wallet_exists(username_wallet)
+        except Exception as e:
+            print(type(e),e)
+            raise ValidationError('Wallet service exception.')
         if result.get('result'):
             raise ValidationError(self.message)
-        field.data = username_wallet
+        if self.is_wallet_name is True:
+            field.data = username_wallet
 
 
 class WalletExists(object):
-    def __init__(self, message="The user doesn't exist"):
+    def __init__(self, message="The user doesn't exist.",is_wallet_name=True):
         self.message = message
+        self.is_wallet_name=is_wallet_name
 
     def __call__(self, form, field):
         server = get_jsonrpc_server()
         username_wallet = '{}_{}'.format(g.appkey, field.data)
-        result = server.is_wallet_exists(username_wallet)
+        try:
+            result = server.is_wallet_exists(username_wallet)
+        except Exception as e:
+            print(type(e),e)
+            raise ValidationError('Wallet service exception.')
         if not result.get('result'):
             raise ValidationError(self.message)
-        field.data = username_wallet
+        if self.is_wallet_name is True:
+            field.data = username_wallet

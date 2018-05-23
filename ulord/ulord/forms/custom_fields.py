@@ -9,10 +9,7 @@ class TagListField(Field):
     widget = TextInput()
 
     def _value(self):
-        if self.data:
-            return self.data
-        else:
-            return ''
+        return self.data if self.data else ""
 
     def process_formdata(self, valuelist):
         if valuelist:
