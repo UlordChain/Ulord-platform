@@ -536,9 +536,9 @@ class Network(DaemonThread):
                     self.subscriptions[k] = l
                     # check cached response for subscriptions
                     r = self.sub_cache.get(k)
-                if r is not None:
-                    log.warning("cache hit: %s", k)
-                    callback(r)
+                    if r is not None:
+                        log.warning("cache hit: %s", k)
+                        callback(r)
                 else:
                     message_id = self.queue_request(method, params)
                     self.unanswered_requests[message_id] = method, params, callback

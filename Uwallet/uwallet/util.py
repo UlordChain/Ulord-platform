@@ -263,3 +263,8 @@ class Timekeeping:
 
     def print_interval(self):
         print('the interval is:', self.__run())
+
+def join_str(*args):
+    str_args = [i.encode('utf-8') if isinstance(i, unicode) else i for i in args]
+
+    return ' '.join(str_args)

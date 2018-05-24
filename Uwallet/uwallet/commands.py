@@ -565,6 +565,7 @@ class Commands(object):
         str(tx)  # this serializes
         if not unsigned:
             self.wallet.sign_transaction(tx)
+        print('######', tx)
 
         return tx
 
@@ -597,7 +598,6 @@ class Commands(object):
         """Create and broadcast transaction. """
         domain = [from_addr] if from_addr else None
         tx = self._mktx([(destination, amount)], tx_fee, change_addr, domain, nocheck, unsigned)
-        print tx
         return self.network.synchronous_get(('blockchain.transaction.broadcast', [str(tx)]))
 
     @command('uc')

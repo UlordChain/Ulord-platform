@@ -148,7 +148,7 @@ if __name__ == '__main__':
     password = 'pbkdf2:sha256:50000$oEw0SZX0$f8d9951addfa90213e63bb4553cacc7e3cc8e78d9d59f5e707da1fc09dd4d675'
 
     claim_name = 'test_201801588'
-    claim_id = '587a6c34f66e31d941bfbd1c70df844d55f6ab4f'
+    claim_id = '8b33c43b7d9954d1333541d9f40f1236ca9622c7'
     txid = '6563c2f0cf8f3cb16779f476a9c2b32fe1fbe1a37702597c4020db2f6a1959b5'
 
     # print create(user, password)  # 0.48
@@ -163,4 +163,4 @@ if __name__ == '__main__':
 
     # print server.listaddresses()
     # print server.password('shuxudong', '123', 'pbkdf2:sha256:50000$oEw0SZX0$f8d9951addfa90213e63bb4553cacc7e3cc8e78d9d59f5e707da1fc09dd4d675')
-    print server.is_wallet_exists('hetao')
+    print server.is_wallet_exists('好的')
