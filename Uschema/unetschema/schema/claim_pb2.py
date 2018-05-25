@@ -22,9 +22,10 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='claim.proto',
   package='',
   syntax='proto2',
-  serialized_pb=_b('\n\x0b\x63laim.proto\x1a\x0cstream.proto\x1a\x11\x63\x65rtificate.proto\x1a\x0fsignature.proto\"\xa7\x02\n\x05\x43laim\x12\x1f\n\x07version\x18\x01 \x02(\x0e\x32\x0e.Claim.Version\x12#\n\tclaimType\x18\x02 \x02(\x0e\x32\x10.Claim.ClaimType\x12\x17\n\x06stream\x18\x03 \x01(\x0b\x32\x07.Stream\x12!\n\x0b\x63\x65rtificate\x18\x04 \x01(\x0b\x32\x0c.Certificate\x12&\n\x12publisherSignature\x18\x05 \x01(\x0b\x32\n.Signature\"*\n\x07Version\x12\x13\n\x0fUNKNOWN_VERSION\x10\x00\x12\n\n\x06_0_0_1\x10\x01\"H\n\tClaimType\x12\x16\n\x12UNKNOWN_CLAIM_TYPE\x10\x00\x12\x0e\n\nstreamType\x10\x01\x12\x13\n\x0f\x63\x65rtificateType\x10\x02')
+  serialized_pb=_b('\n\x0b\x63laim.proto\x1a\x0cstream.proto\x1a\x11\x63\x65rtificate.proto\x1a\x0fsignature.proto\"\xb7\x02\n\x05\x43laim\x12\x1f\n\x07version\x18\x01 \x02(\x0e\x32\x0e.Claim.Version\x12#\n\tclaimType\x18\x02 \x02(\x0e\x32\x10.Claim.ClaimType\x12\x17\n\x06stream\x18\x03 \x01(\x0b\x32\x07.Stream\x12!\n\x0b\x63\x65rtificate\x18\x04 \x01(\x0b\x32\x0c.Certificate\x12&\n\x12publisherSignature\x18\x05 \x01(\x0b\x32\n.Signature\x12\x0e\n\x06\x61ppKey\x18\x06 \x02(\t\"*\n\x07Version\x12\x13\n\x0fUNKNOWN_VERSION\x10\x00\x12\n\n\x06_0_0_1\x10\x01\"H\n\tClaimType\x12\x16\n\x12UNKNOWN_CLAIM_TYPE\x10\x00\x12\x0e\n\nstreamType\x10\x01\x12\x13\n\x0f\x63\x65rtificateType\x10\x02')
   ,
   dependencies=[stream__pb2.DESCRIPTOR,certificate__pb2.DESCRIPTOR,signature__pb2.DESCRIPTOR,])
+_sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 
 
@@ -45,8 +46,8 @@ _CLAIM_VERSION = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=245,
-  serialized_end=287,
+  serialized_start=261,
+  serialized_end=303,
 )
 _sym_db.RegisterEnumDescriptor(_CLAIM_VERSION)
 
@@ -71,8 +72,8 @@ _CLAIM_CLAIMTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=289,
-  serialized_end=361,
+  serialized_start=305,
+  serialized_end=377,
 )
 _sym_db.RegisterEnumDescriptor(_CLAIM_CLAIMTYPE)
 
@@ -119,6 +120,13 @@ _CLAIM = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
+    _descriptor.FieldDescriptor(
+      name='appKey', full_name='Claim.appKey', index=5,
+      number=6, type=9, cpp_type=9, label=2,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
   ],
   extensions=[
   ],
@@ -134,7 +142,7 @@ _CLAIM = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=66,
-  serialized_end=361,
+  serialized_end=377,
 )
 
 _CLAIM.fields_by_name['version'].enum_type = _CLAIM_VERSION
@@ -145,7 +153,6 @@ _CLAIM.fields_by_name['publisherSignature'].message_type = signature__pb2._SIGNA
 _CLAIM_VERSION.containing_type = _CLAIM
 _CLAIM_CLAIMTYPE.containing_type = _CLAIM
 DESCRIPTOR.message_types_by_name['Claim'] = _CLAIM
-_sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 Claim = _reflection.GeneratedProtocolMessageType('Claim', (_message.Message,), dict(
   DESCRIPTOR = _CLAIM,

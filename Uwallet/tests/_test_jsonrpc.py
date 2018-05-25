@@ -14,8 +14,8 @@ def profiler(func):
     # return lambda *args, **kw_args: do_profile(func, args, kw_args)
     return do_profile
 
-# server = Server('http://192.168.14.240:8080')
-server = Server('http://192.168.14.241:8003')
+server = Server('http://192.168.14.240:8080')
+# server = Server('http://192.168.14.241:8003')
 
 @profiler
 def publish(user, password, claim_name,  skip_update_check):
@@ -34,7 +34,7 @@ def publish(user, password, claim_name,  skip_update_check):
         "licenseUrl": "",
         "preview": "",
         "thumbnail": "https://s3.amazonaws.com/files.lbry.io/logo.png",
-        "tag": ["action"]
+        "tag": ["action", "sss"]
     }
 
     # sourceHash = "d5169241150022f996fa7cd6a9a1c421937276a3275eb912790bd07ba7aec1fac5fd45431d226b8fb402691e79aeb24b"
@@ -42,7 +42,7 @@ def publish(user, password, claim_name,  skip_update_check):
 
     contentType = "video/mp4"
 
-    currency = "ULD"
+    currency = "UT"
     amount = 1.56
     bid = 0.59
 
@@ -98,12 +98,12 @@ def update_claim(user, password, claim_name, claim_id, txid):
         "licenseUrl": "",
         "preview": "",
         "thumbnail": "https://s3.amazonaws.com/files.lbry.io/logo.png",
-        "tag": ["action"]
+        "tag": ["action", "sss"]
     }
 
     source_hash = "QmVcVaHhMeWNNetSLTZArmqaHMpu5ycqntx7mFZaci63VF"
     content_type = "video/mp4"
-    currency = "ULD"
+    currency = "UT"
     amount = 1.2
     bid = 0.57
     address = None
@@ -147,12 +147,12 @@ if __name__ == '__main__':
     # password = '123'
     password = 'pbkdf2:sha256:50000$oEw0SZX0$f8d9951addfa90213e63bb4553cacc7e3cc8e78d9d59f5e707da1fc09dd4d675'
 
-    claim_name = 'test_201802014'
+    claim_name = 'test_201801588'
     claim_id = '587a6c34f66e31d941bfbd1c70df844d55f6ab4f'
     txid = '6563c2f0cf8f3cb16779f476a9c2b32fe1fbe1a37702597c4020db2f6a1959b5'
 
     # print create(user, password)  # 0.48
-    print pay(user, amount=1000000000)  # 0.95
+    # print pay(user, amount=1000000000)  # 0.95
     # print getbalance(user, password)  # 0.14
     # print publish(user, password, claim_name, False) # 3.67
     # print publish(user, password, claim_name, True) # 2.68
@@ -163,3 +163,4 @@ if __name__ == '__main__':
 
     # print server.listaddresses()
     # print server.password('shuxudong', '123', 'pbkdf2:sha256:50000$oEw0SZX0$f8d9951addfa90213e63bb4553cacc7e3cc8e78d9d59f5e707da1fc09dd4d675')
+    print server.is_wallet_exists('hetao')

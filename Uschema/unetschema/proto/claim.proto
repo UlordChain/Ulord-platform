@@ -19,4 +19,5 @@ message Claim {
     optional Stream stream = 3;
     optional Certificate certificate = 4;
     optional Signature publisherSignature = 5;
+    required string appKey = 6;
 }

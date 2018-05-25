@@ -64,7 +64,7 @@ VER_001 = {
         },
         'fee': {
             'properties': {
-                'ULD': {'$ref': '#/definitions/fee_info'},
+                'UT': {'$ref': '#/definitions/fee_info'},
                 'BTC': {'$ref': '#/definitions/fee_info'},
                 'USD': {'$ref': '#/definitions/fee_info'}
             }
@@ -148,7 +148,7 @@ VER_002 = {
         },
         'fee': {
             'properties': {
-                'ULD': {'$ref': '#/definitions/fee_info'},
+                'UT': {'$ref': '#/definitions/fee_info'},
                 'BTC': {'$ref': '#/definitions/fee_info'},
                 'USD': {'$ref': '#/definitions/fee_info'}
             }
@@ -242,7 +242,7 @@ VER_003 = {
         },
         'fee': {
             'properties': {
-                'ULD': {'$ref': '#/definitions/fee_info'},
+                'UT': {'$ref': '#/definitions/fee_info'},
                 'BTC': {'$ref': '#/definitions/fee_info'},
                 'USD': {'$ref': '#/definitions/fee_info'}
             }
