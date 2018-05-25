@@ -1,0 +1,104 @@
+# Development configure
+server:
+  port: 8063
+
+spring:
+  profiles: dev
+  application:
+    name: upaas-uauth-client
+
+  cloud:
+    config:
+      discovery:
+        enabled: true
+        service-id: ushare-config-server
+
+eureka:
+  instance:
+    ip-address: 127.0.0.1
+    prefer-ip-address: true
+  client:
+    registerWithEureka: true
+    fetchRegistry: true
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+    enabled: true
+
+logging:
+  config: classpath:log4j2.xml
+
+---
+
+# Test environment
+server:
+  port: 8063
+
+spring:
+  profiles: test
+  application:
+    name: upaas-uauth-client
+#  cloud:
+#    uri: http://localhost:8888/
+  cloud:
+    config:
+      discovery:
+        enabled: true
+        service-id: ulord-config-client
+#      fail-fast: true
+#      retry:
+#        initial-interval: 2000
+#        max-interval: 10000
+#        multiplier: 2
+#        max-attempts: 10
+eureka:
+  instance:
+    ip-address: 127.0.0.1
+    prefer-ip-address: true
+  client:
+    registerWithEureka: true
+    fetchRegistry: true
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+    enabled: true
+
+logging:
+  config: classpath:log4j2.xml
+
+
+
+###########################
+# Production environment
+server:
+  port: 8063
+
+spring:
+  profiles: prod
+  application:
+    name: upaas-uauth-client
+#  cloud:
+#    uri: http://localhost:8888/
+  cloud:
+    config:
+      discovery:
+        enabled: true
+        service-id: ulord-config-client
+#      fail-fast: true
+#      retry:
+#        initial-interval: 2000
+#        max-interval: 10000
+#        multiplier: 2
+#        max-attempts: 10
+eureka:
+  instance:
+    ip-address: 127.0.0.1
+    prefer-ip-address: true
+  client:
+    registerWithEureka: true
+    fetchRegistry: true
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+    enabled: true
+
+logging:
+  config: classpath:log4j2-prod.xml
+
