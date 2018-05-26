@@ -50,6 +50,7 @@ class RsaCheck(object):
         if len(password) < 3 or len(password) > 128:
             self.message="Password must be between 3 and 128 characters long."
             raise ValidationError(self.message)
+        field.data=password
 
 
 class WalletUnique(object):

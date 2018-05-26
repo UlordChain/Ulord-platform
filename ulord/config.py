@@ -12,13 +12,13 @@ class Config(object):
     FLASKY_MAIL_SUBJECT_PREFIX = '[Ulord]'
     FLASKY_MAIL_SENDER = 'Ulord Admin <shuxudong@ulord.net>'
     FLASKY_ADMIN = 'Ulord'
-    WALLET_JSONRPC_HOST = '192.168.14.240'
+    WALLET_JSONRPC_HOST = '192.168.14.241'
     WALLET_JSONRPC_PORT = '8000'
     PUBLISH_BID = 0.01  # Amount paid to Ulord Platform
     PUBLISH_CURRENCY = 'UT'  # Token unit
     EXPIRATION = 60 * 60 * 6  # Login token expiration time
     UAPP_MAX_COUNT = 10  # The maximum number of new applications available.
-    SIGN_EXPIRES = 60 * 1000  # API signature expiration time.
+    SIGN_EXPIRES = 60 * 1000*1000  # API signature expiration time.
     ERROR_LOG = "logs/error.log"
     INFO_LOG = "logs/info.log"
 

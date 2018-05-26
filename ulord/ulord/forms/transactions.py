@@ -17,7 +17,7 @@ __all__ = ['CreateWalletForm', 'PayToUserForm', 'BalanceForm', 'PublishForm', 'C
 
 
 class CreateWalletForm(FlaskForm):
-    username = StringField('username', validators=[DataRequired()])
+    username = StringField('username', validators=[DataRequired(),WalletUnique()])
     pay_password = StringField('pay_password', validators=[DataRequired()])
 
 
@@ -27,7 +27,7 @@ class PayToUserForm(FlaskForm):
     send_user = StringField('send_user')
     pay_password = StringField('pay_password')
     recv_user = StringField('recv_user', validators=[DataRequired(), WalletExists()])
-    amount = IntegerField('amount', validators=[DataRequired("Error parameter values.")])
+    amount = FloatField('amount', validators=[DataRequired("Error parameter values.")])
 
     def validate_send_user(self, field):
         if self.is_developer.data is False:

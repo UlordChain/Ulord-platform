@@ -34,7 +34,7 @@ def reg():
     """User register"""
     form = g.form
     # The user login password is also the wallet's payment password.
-    password = rsahelper.decrypt(form.password.data).decode('u8')
+    password = form.password.data
     pay_password = generate_password_hash(password)
     form.password.data = pay_password
 
@@ -59,7 +59,7 @@ def reg():
 @validate_form(form_class=LoginForm)
 def login():
     username = g.form.username.data
-    password = rsahelper.decrypt(g.form.password.data).decode('u8')
+    password = g.form.password.data
     user = User.query.filter_by(username=username).first()
     if user is None:
         return return_result(20003)
@@ -91,11 +91,11 @@ def change_password():
     user = g.user
     old_password_hash = user.password_hash
 
-    password = rsahelper.decrypt(g.form.password.data).decode('u8')
+    password = g.form.password.data
     if not user.check_password(password):
         return return_result(20004)
 
-    new=rsahelper.decrypt(g.form.new_password.data).decode('u8')
+    new=g.form.new_password.data
     new_password_hash = generate_password_hash(new)
     try:
         server = get_jsonrpc_server()
