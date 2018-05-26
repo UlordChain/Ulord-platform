@@ -14,7 +14,7 @@ class RSAHelper(object):
         pubkeypath = os.path.join(dirpath, 'ulord_private_rsa_key.bin')
         prikeypath = os.path.join(dirpath, 'ulord_public_rsa_key.pem')
         if os.path.isfile(pubkeypath) and os.path.isfile(prikeypath):
-            print('if')
+            # print('if')
             with open(pubkeypath) as f:
                 self.pubkeybytes = f.read()
                 self.pubkey = RSA.import_key(self.pubkeybytes)
@@ -22,7 +22,7 @@ class RSAHelper(object):
                 self.prikeybytes = f.read()
                 self.prikey = RSA.import_key(self.prikeybytes)
         else:
-            print('else')
+            # print('else')
             self.prikey = RSA.generate(1024)
             self.prikeybytes = self.prikey.export_key()
             with open(prikeypath, 'wb') as f:
@@ -52,6 +52,6 @@ class RSAHelper(object):
 rsahelper = RSAHelper()
 
 if __name__ == '__main__':
-    msg = rsahelper.encry(b'12')
+    msg = rsahelper.encry(b'123')
     print(msg)
     print(rsahelper.decrypt(b'O0UqkRjcdFyF8+vfVO2YjsMwh72ymESjlgqygXef+LlBJ+KaMlAVXbqLXgk9BuAv+9lDCE/T26gnoTUMAcqRrToyoZZE3Kv+D2QPTK+S5jBxf7s6I0q3fN0P3rtrPvDnU6SKISpiLpL/hptyZNrHo2kA5KoF/Q/p2upLSS8kKAE='))

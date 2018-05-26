@@ -2,6 +2,7 @@
 # @Date    : 2018/3/28
 # @Author  : Shu
 # @Email   : httpservlet@yeah.net
+import time
 from ulord.extensions import db
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
@@ -97,6 +98,32 @@ class User(db.Model):
             return user
         except Exception as e:
             print('e: ',e)
+            return None
+
+    @property
+    def create_timed_str(self):
+        """输出日期字符串"""
+        return self.create_timed.strftime("%Y-%m-%d %H:%M:%S")
+
+    @property
+    def create_timed_timestamp(self):
+        """输出时间戳"""
+        return int(time.mktime(self.create_timed.timetuple()))
+
+    @property
+    def update_timed_str(self):
+        """输出日期字符串"""
+        if self.update_timed:
+            return self.update_timed.strftime("%Y-%m-%d %H:%M:%S")
+        else:
+            return None
+
+    @property
+    def update_timed_timestamp(self):
+        """输出时间戳"""
+        if self.update_timed:
+            return int(time.mktime(self.update_timed.timetuple()))
+        else:
             return None
 
 

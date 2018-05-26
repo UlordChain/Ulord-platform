@@ -45,13 +45,15 @@ def type_edit():
     t=Type.query.get_or_404(g.form.id.data)
     t.des=g.form.des.data
     t.parent_id=g.form.parent_id.data
+    db.session.commit()
     return return_result()
 
-@bpv1.route('/type/remove/',methods=['POST'])
+@bpv1.route('/type/remove',methods=['POST'])
 @auth.login_required
 @blocked_check
 @admin_required
 @validate_form(form_class=RemoveTypeForm)
 def type_remove():
     num=Type.query.filter_by(id=g.form.id.data).delete()
+    db.session.commit()
     return return_result(result=dict(num=num))

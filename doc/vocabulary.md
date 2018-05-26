@@ -1,4 +1,4 @@
-# vocabulary
+# Abbreviation
 [中文](./vocabulary_zh.md)
 #### UPaaS
 Ulord Platform as a Service

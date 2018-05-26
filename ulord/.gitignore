@@ -10,3 +10,4 @@ dist/
 _trial_temp/
 test.py
 __pycache__
+ulord/logs

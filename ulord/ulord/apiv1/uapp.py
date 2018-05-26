@@ -32,7 +32,7 @@ def app_add():
 @auth.login_required
 @blocked_check
 def app_list(page, num):
-    uapps = g.user.app.order_by(Application.create_timed.desc()).paginate(page,num,error_out=False)
+    uapps = g.user.app.order_by(Application.id.desc()).paginate(page,num,error_out=False)
     records=apps_schema.dump(uapps.items).data
     records=add_timestamp(records)
     return return_result(result=dict(total=uapps.total,pages=uapps.pages,records=records))
@@ -49,6 +49,7 @@ def app_rebuild():
         return return_result(20005)
     secret = generate_appkey()
     uapp.secret = secret
+    db.session.commit()
     return return_result(result=dict(secret=secret))
 
 
@@ -62,8 +63,8 @@ def app_edit():
     uapp=Application.query.filter_by(id=g.form.id.data, user_id=g.user.id).first()
     if not uapp:
         return return_result(20005)
-
     uapp.appdes=g.form.appdes.data
+    db.session.commit()
     return return_result()
 
 
@@ -73,6 +74,7 @@ def app_edit():
 @validate_form(form_class=RemoveAppForm)
 def app_remove():
     num = Application.query.filter_by(id=g.form.id.data,user_id=g.user.id).delete()
+    db.session.commit()
     return return_result(result=dict(num=num))
 
 
