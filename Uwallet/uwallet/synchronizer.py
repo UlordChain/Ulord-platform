@@ -4,7 +4,7 @@ from threading import Lock
 
 from uwallet.hashing import Hash, hash_encode
 from uwallet.transaction import Transaction
-from uwallet.util import ThreadJob
+from uwallet.util import ThreadJob, important_print
 
 log = logging.getLogger(__name__)
 
@@ -56,11 +56,19 @@ class Synchronizer(ThreadJob):
     def subscribe_to_addresses(self, addresses):
         if addresses:
             self.requested_addrs |= addresses
-            msgs = map(lambda addr: ('blockchain.address.subscribe', [addr]),
-                       addresses)
-            self.network.send(msgs, self.addr_subscription_response)
+        important_print('addresses', addresses)
+        msgs = map(lambda addr: ('blockchain.address.subscribe', [addr]),
+                   addresses)
+        self.network.send(msgs, self.addr_subscription_response)
+
+        # change 20180225  --hetao
+        # msgs = map(lambda addr: ('blockchain.address.subscribe', [addr]),
+        #            self.requested_addrs)
+        # self.network.send(msgs, self.addr_subscription_response)
+
 
     def addr_subscription_response(self, response):
+        important_print(response)
 
         params, result = self.parse_response(response)
         if not params:

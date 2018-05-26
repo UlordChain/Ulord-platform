@@ -37,7 +37,7 @@ from uwallet.transaction import decode_claim_script, deserialize as deserialize_
 from uwallet.transaction import get_address_from_output_script, script_GetOp
 from uwallet.errors import InvalidProofError, ParamsError, ReturnError, ServerError, \
     DecryptionError
-from uwallet.util import format_satoshis, rev_hex
+from uwallet.util import format_satoshis, rev_hex, important_print
 from uwallet.mnemonic import Mnemonic
 from uwallet import gl
 from uwallet.wallet import Wallet, Wallet_Storage
@@ -131,30 +131,30 @@ def command(s):
                     new_args = tuple([self] + l_args)
                 res = func(*new_args, **kwargs)
                 return {
-                    'success': True,
+                    'errcode': 0,
+                    'reason': 'success.',
                     'result': res
                 }
             except ReturnError as err:
                 return {
-                    'success': False,
-                    'error_code': err.error_code,
+                    'errcode': err.error_code,
                     'reason': err.reason
                 }
             except Exception as err:
                 log.error(traceback.format_exc())
                 return {
-                    'success': False,
-                    'error_code': '50000',
+                    'errcode': '50000',
                     'reason': err
                 }
 
             finally:
                 self.unload_wallet()
-                print "the %s runtime: %s" % (func.__name__, time.time() - t)
+                print "the %s runtime: %s" % (name, time.time() - t)
 
         return func_wrapper
 
     return decorator
+
 
 # todo: 目前是每个用户来了之后改变Commands的wallets 属性, 这种模式要改变
 class Commands(object):
@@ -194,8 +194,10 @@ class Commands(object):
 
     def unload_wallet(self):
         if len(self.wallets) > self.max_wallet:
+            user = self.wallets.keys()[0]
+            important_print('logout', user)
             self.wallet.stop_threads()
-            del self.wallets[self.wallets.keys()[0]]
+            del self.wallets[user]
         self.wallet = None
 
     @command('c')
@@ -560,8 +562,8 @@ class Commands(object):
 
         coins = self.wallet.get_spendable_coins(domain, abandon_txid=abandon_txid)
         tx = self.wallet.make_unsigned_transaction(coins, final_outputs, self.config, fee,
-                                              change_addr,
-                                              abandon_txid=abandon_txid)
+                                                   change_addr,
+                                                   abandon_txid=abandon_txid)
         str(tx)  # this serializes
         if not unsigned:
             self.wallet.sign_transaction(tx)
@@ -1877,7 +1879,7 @@ class Commands(object):
         # outputs = [(TYPE_ADDRESS | TYPE_CLAIM, ((name, val), claim_addr), amount)]
         coins = wallet.get_spendable_coins()
         tx = wallet.make_unsigned_transaction(coins, outputs,
-                                                  self.config, tx_fee, change_addr)
+                                              self.config, tx_fee, change_addr)
         wallet.sign_transaction(tx)
         if broadcast:
             success, out = wallet.send_tx(tx)
@@ -2080,7 +2082,7 @@ class Commands(object):
         outputs = [(TYPE_ADDRESS | TYPE_SUPPORT, ((name, claim_id), claim_addr), amount)]
         coins = wallet.get_spendable_coins()
         tx = wallet.make_unsigned_transaction(coins, outputs, self.config, tx_fee,
-                                                  change_addr)
+                                              change_addr)
         wallet.sign_transaction(tx)
         if broadcast:
             success, out = wallet.send_tx(tx)
@@ -2354,7 +2356,7 @@ class Commands(object):
             ]
             coins = wallet.get_spendable_coins()
             dummy_tx = wallet.make_unsigned_transaction(coins, dummy_outputs,
-                                                            self.config, tx_fee, change_addr)
+                                                        self.config, tx_fee, change_addr)
 
             # add the unspents to input
             for i in dummy_tx._inputs:
@@ -2640,11 +2642,14 @@ class Commands(object):
             'seed': seed,
         }
 
-    @command('u')
-    def delete(self):
-        self.wallet.del_wallet()
-        user = self.wallets.user
-        del self.wallets[user]
+    @command('')
+    def delete(self, user):
+        Wallet.del_wallet(user)
+        print(user)
+        try:
+            del self.wallets[user]
+        except:
+            pass
         del self.wallet
         return '%s deleted successfully' % user
 
@@ -2782,7 +2787,7 @@ class Commands(object):
         except AttributeError:
             raise ServerError('52008')
         tx = self.wallet.make_unsigned_transaction(coins, outputs,
-                                                       self.config, tx_fee, address)
+                                                   self.config, tx_fee, address)
 
         self.__sign_and_send_tx(tx)
 
@@ -2840,7 +2845,7 @@ class Commands(object):
             ]
             coins = self.wallet.get_spendable_coins()
             dummy_tx = self.wallet.make_unsigned_transaction(
-                    coins, dummy_outputs, self.config, tx_fee, address)
+                coins, dummy_outputs, self.config, tx_fee, address)
 
             # add the unspents to input
             for i in dummy_tx._inputs:

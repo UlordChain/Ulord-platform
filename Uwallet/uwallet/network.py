@@ -14,7 +14,7 @@ from threading import Lock
 from uwallet import __version__ as UWALLET_VERSION
 from uwallet.constants import COIN, BLOCKS_PER_CHUNK, DEFAULT_PORTS, proxy_modes
 from uwallet.constants import SERVER_RETRY_INTERVAL, NODES_RETRY_INTERVAL
-from uwallet.util import DaemonThread, normalize_version
+from uwallet.util import DaemonThread, normalize_version, important_print
 from uwallet.blockchain import get_blockchain
 from uwallet.interface import Connection, Interface
 from uwallet.simple_config import SimpleConfig
@@ -506,6 +506,7 @@ class Network(DaemonThread):
             # update cache if it's a subscription
             if method.endswith('.subscribe'):
                 self.sub_cache[k] = response
+                important_print('subscribe', response)
             # Response is now in canonical form
             self.process_response(interface, response, callbacks)
 
@@ -519,9 +520,10 @@ class Network(DaemonThread):
         # we cannot process them.
         if not self.interface:
             return
-
+        important_print('self.subscriptions', self.subscriptions)
         with self.lock:
             sends = self.pending_sends
+            important_print('pending_sends', self.pending_sends)
             self.pending_sends = []
 
         for messages, callback in sends:

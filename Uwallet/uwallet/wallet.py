@@ -163,9 +163,18 @@ class Wallet_Storage(object):
         res = self.__col.update_one({'_id': self.id}, {operate: update_data}, True)
         return res
 
+    @classmethod
+    def del_wallet(cls, user):
+        if '_' in user:
+            app_key, id = user.split('_')
+        else:
+            app_key, id = 'ulord', user
+        col = Connection.mongo_con()['uwallet_user'][app_key]
+        # todo: except
+        res = col.delete_one({'_id': id})
+        if res is None:
+            raise ParamsError('51003', user)
 
-    def del_wallet(self):
-        res = self.__col.delete_one({'_id': self.id})
         return res
 
     def check_password(self):

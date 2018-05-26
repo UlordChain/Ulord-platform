@@ -14,8 +14,8 @@ def profiler(func):
     # return lambda *args, **kw_args: do_profile(func, args, kw_args)
     return do_profile
 
-server = Server('http://192.168.14.240:8080')
-# server = Server('http://192.168.14.241:8003')
+# server = Server('http://192.168.14.240:8080')
+server = Server('http://192.168.14.241:8000')
 
 @profiler
 def publish(user, password, claim_name,  skip_update_check):
@@ -114,8 +114,8 @@ def update_claim(user, password, claim_name, claim_id, txid):
                          content_type, source_hash, currency, amount, bid, address, tx_fee)
 
 @profiler
-def delete(user, password):
-    return server.delete(user, password)
+def delete(user):
+    return server.delete(user)
 
 @profiler
 def mul_test():
@@ -144,23 +144,24 @@ def mul_test():
 
 if __name__ == '__main__':
     user = 'test_201802151729'
-    # password = '123'
-    password = 'pbkdf2:sha256:50000$oEw0SZX0$f8d9951addfa90213e63bb4553cacc7e3cc8e78d9d59f5e707da1fc09dd4d675'
+    password = '123'
+    # password = 'pbkdf2:sha256:50000$oEw0SZX0$f8d9951addfa90213e63bb4553cacc7e3cc8e78d9d59f5e707da1fc09dd4d675'
 
     claim_name = 'test_201801588'
     claim_id = '8b33c43b7d9954d1333541d9f40f1236ca9622c7'
     txid = '6563c2f0cf8f3cb16779f476a9c2b32fe1fbe1a37702597c4020db2f6a1959b5'
 
-    # print create(user, password)  # 0.48
-    # print pay(user, amount=1000000000)  # 0.95
-    # print getbalance(user, password)  # 0.14
+    # print create('ht', password)  # 0.48
+    # print pay(user, amount=1)  # 0.95
+    # print getbalance('heto', password)  # 0.14
     # print publish(user, password, claim_name, False) # 3.67
     # print publish(user, password, claim_name, True) # 2.68
     # print consume(claim_id)  # 1.4
     # print update_claim(user, password, claim_name, claim_id, txid)  # 1.56 amount
-    # print delete(user, password)
+    print delete('ht')
 
 
     # print server.listaddresses()
     # print server.password('shuxudong', '123', 'pbkdf2:sha256:50000$oEw0SZX0$f8d9951addfa90213e63bb4553cacc7e3cc8e78d9d59f5e707da1fc09dd4d675')
-    print server.is_wallet_exists('好的')
+    # print server.is_wallet_exists('好的')
+    # print server.pay('shuxudong', password, 'hetao', 1)

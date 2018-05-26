@@ -19,7 +19,7 @@
 
 import logging
 from uwallet.hashing import Hash, hash_decode, hash_encode
-from uwallet.util import ThreadJob
+from uwallet.util import ThreadJob, important_print
 
 log = logging.getLogger(__name__)
 
@@ -47,6 +47,7 @@ class SPV(ThreadJob):
                 self.merkle_roots[tx_hash] = None
 
     def verify_merkle(self, r):
+        important_print('in SPV callback', r)
         if r.get('error'):
             log.error('received an error: %s', r)
             return
