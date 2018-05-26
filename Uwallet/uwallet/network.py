@@ -506,7 +506,6 @@ class Network(DaemonThread):
             # update cache if it's a subscription
             if method.endswith('.subscribe'):
                 self.sub_cache[k] = response
-                important_print('subscribe', response)
             # Response is now in canonical form
             self.process_response(interface, response, callbacks)
 
@@ -520,10 +519,8 @@ class Network(DaemonThread):
         # we cannot process them.
         if not self.interface:
             return
-        important_print('self.subscriptions', self.subscriptions)
         with self.lock:
             sends = self.pending_sends
-            important_print('pending_sends', self.pending_sends)
             self.pending_sends = []
 
         for messages, callback in sends:
@@ -538,9 +535,9 @@ class Network(DaemonThread):
                     self.subscriptions[k] = l
                     # check cached response for subscriptions
                     r = self.sub_cache.get(k)
-                    if r is not None:
-                        log.warning("cache hit: %s", k)
-                        callback(r)
+                if r is not None:
+                    log.warning("cache hit: %s", k)
+                    callback(r)
                 else:
                     message_id = self.queue_request(method, params)
                     self.unanswered_requests[message_id] = method, params, callback

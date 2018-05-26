@@ -144,7 +144,7 @@ def command(s):
                 log.error(traceback.format_exc())
                 return {
                     'errcode': '50000',
-                    'reason': err
+                    'reason': err.message
                 }
 
             finally:

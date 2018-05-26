@@ -56,15 +56,9 @@ class Synchronizer(ThreadJob):
     def subscribe_to_addresses(self, addresses):
         if addresses:
             self.requested_addrs |= addresses
-        important_print('addresses', addresses)
-        msgs = map(lambda addr: ('blockchain.address.subscribe', [addr]),
-                   addresses)
-        self.network.send(msgs, self.addr_subscription_response)
-
-        # change 20180225  --hetao
-        # msgs = map(lambda addr: ('blockchain.address.subscribe', [addr]),
-        #            self.requested_addrs)
-        # self.network.send(msgs, self.addr_subscription_response)
+            msgs = map(lambda addr: ('blockchain.address.subscribe', [addr]),
+                       addresses)
+            self.network.send(msgs, self.addr_subscription_response)
 
 
     def addr_subscription_response(self, response):

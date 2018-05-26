@@ -9,6 +9,7 @@ import time
 import traceback
 
 from uwallet.errors import Timeout
+from uwallet.util import important_print
 
 log = logging.getLogger(__name__)
 

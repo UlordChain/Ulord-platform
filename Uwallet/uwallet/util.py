@@ -270,7 +270,7 @@ def join_str(*args):
     return ' '.join(str_args)
 
 def important_print(*args):
-    # print('*'*60)
-    # print(args)
-    # print('*' * 60)
-    pass
+    print('*'*60)
+    print(args)
+    print('*' * 60)
+    # pass

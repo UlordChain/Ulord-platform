@@ -151,17 +151,17 @@ if __name__ == '__main__':
     claim_id = '8b33c43b7d9954d1333541d9f40f1236ca9622c7'
     txid = '6563c2f0cf8f3cb16779f476a9c2b32fe1fbe1a37702597c4020db2f6a1959b5'
 
-    # print create('ht', password)  # 0.48
+    print create('5d42b27e581c11e88b12f48e3889c8ab_caolinan1111', password)  # 0.48
     # print pay(user, amount=1)  # 0.95
-    # print getbalance('heto', password)  # 0.14
+    # print getbalance('shuxudong', password)  # 0.14
     # print publish(user, password, claim_name, False) # 3.67
     # print publish(user, password, claim_name, True) # 2.68
     # print consume(claim_id)  # 1.4
     # print update_claim(user, password, claim_name, claim_id, txid)  # 1.56 amount
-    print delete('ht')
+    # print delete('ht')
 
 
     # print server.listaddresses()
     # print server.password('shuxudong', '123', 'pbkdf2:sha256:50000$oEw0SZX0$f8d9951addfa90213e63bb4553cacc7e3cc8e78d9d59f5e707da1fc09dd4d675')
-    # print server.is_wallet_exists('好的')
+    # print server.is_wallet_exists('')
     # print server.pay('shuxudong', password, 'hetao', 1)
