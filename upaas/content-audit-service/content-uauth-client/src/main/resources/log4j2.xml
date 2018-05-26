@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
+        </Console>
+        <RollingFile name="MyFile" fileName="./logs/upaas-cauth-server/upaas-cauth-server.log" filePattern="./logs/upaas-cauth-server/upaas-cauth-server-%d{yyyy-MM-dd}.log.gz">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />  
+            <Policies>  
+		        <TimeBasedTriggeringPolicy modulate="true" interval="1"/>  
+		    </Policies>
+		    <DefaultRolloverStrategy>
+			    <Delete basePath="./logs/upaas-cauth-server" maxDepth="1">
+	                 <IfFileName glob="mupaas-cauth-server-*.log" />
+	                 <IfLastModified age="30d" />    
+	            </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>  
+    </Appenders>
+    <Loggers>
+        <Root level="debug">
+            <AppenderRef ref="Console" />
+            <AppenderRef ref="MyFile" />
+        </Root>
+        <logger level="info" name="com.netflix">
+        	<AppenderRef ref="Console" />
+            <AppenderRef ref="MyFile" />
+        </logger>
+        <logger level="info" name="org.mybatis">
+            <AppenderRef ref="Console" />
+            <AppenderRef ref="MyFile" />
+        </logger>
+        <logger level="info" name="org.apache">
+        	<AppenderRef ref="Console" />
+            <AppenderRef ref="MyFile" />
+        </logger>
+        <logger level="info" name="org.springframework">
+        	<AppenderRef ref="Console" />
+            <AppenderRef ref="MyFile" />
+        </logger>
+    </Loggers>
+</Configuration>

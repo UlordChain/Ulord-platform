@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
+        </Console>
+        <RollingFile name="MyFile" fileName="./logs/upaas/upaas-common.log" filePattern="./logs/upaas/upaas-common-%d{yyyy-MM-dd}.log.gz">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />  
+            <Policies>  
+		        <TimeBasedTriggeringPolicy modulate="true" interval="1"/>  
+		    </Policies>
+		    <DefaultRolloverStrategy>
+			    <Delete basePath="./logs/upaas" maxDepth="1">
+	                 <IfFileName glob="upaas-common-*.log" />
+	                 <IfLastModified age="30d" />    
+	            </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>  
+    </Appenders>
+    <Loggers>
+        <Root level="debug">
+            <AppenderRef ref="Console" />
+            <AppenderRef ref="MyFile" />
+        </Root>
+    </Loggers>
+</Configuration>

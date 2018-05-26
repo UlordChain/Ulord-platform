@@ -12,3 +12,11 @@ _trial_temp/
 test.py
 __pycache__
 test.py
+
+
+.gradle/
+out/
+*.iml
+*.log
+logs/
+
