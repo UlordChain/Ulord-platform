@@ -28,7 +28,7 @@ def add_timestamp(records):
     """给返回数据添加一个时间戳
 
     # 联表查询的结果是sqlalchemy.util._collections.result对象, 不是一个model对象
-    # 所以不能够想content_list接口那样格式化数据
+    # 所以不能够像content_list接口这样格式化数据
     """
     # from sqlalchemy.util._collections import result
     datas = list()

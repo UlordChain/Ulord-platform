@@ -10,6 +10,8 @@ from .extensions import db,ma
 from config import dconfig
 from .utils import return_result
 from .apiv1 import bpv1
+from ulord.utils.log import init_logging
+from flask_cors import CORS
 
 
 class JSONResponse(Response):
@@ -25,7 +27,7 @@ class ULORDFlask(Flask):
 
 
 app = ULORDFlask(__name__)
-
+CORS(app,supports_credentials=True)
 
 def config_app(app, config_name):
     logger.info('Setting up application...')
@@ -34,6 +36,7 @@ def config_app(app, config_name):
     config.init_app(app)
     db.init_app(app)
     ma.init_app(app)
+    init_logging(app)
 
     @app.before_request
     def before():

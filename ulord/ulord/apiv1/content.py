@@ -3,7 +3,7 @@
 # @Author  : Shu
 # @Email   : httpservlet@yeah.net
 from . import bpv1, appkey_check
-from flask import request, g
+from flask import request, g,current_app
 from ulord.models import Content, Consume
 from ulord.schema import contents_schema
 from ulord import return_result
@@ -21,13 +21,15 @@ def content_list(page, num):
     当你安装了simplejson, flask的jsonify会自动使用它,而放弃系统标准库中的json库
     ref: https://github.com/pallets/flask/issues/835
     """
+    current_app.logger.info('aaaa')
     appkey = g.appkey
     contents = Content.query.filter(Content.appkey == appkey, Content.enabled == True).order_by(
         Content.create_timed.desc()).paginate(page, num, error_out=False)
     total = contents.total
     pages = contents.pages
     result = contents_schema.dump(contents.items).data
-    return return_result(result=dict(total=total, pages=pages, records=result))
+    records=add_timestamp(result)
+    return return_result(result=dict(total=total, pages=pages, records=records))
 
 
 @bpv1.route("/content/consume/list/<int:page>/<int:num>", methods=['POST'])
@@ -38,7 +40,6 @@ def consumed(page, num):
     appkey = g.appkey
     customer = g.form.customer.data
     category = g.form.category.data  # 0: Consumer spending 1: Advertising revenue other:all
-    print(category)
     query = Content.query.with_entities(Content.id, Content.author, Content.title, Consume.txid, Content.enabled,
                                         Content.claim_id, Consume.price,
                                         Consume.create_timed). \

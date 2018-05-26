@@ -13,18 +13,17 @@ Authorization:Bearer token值
 # 返回值:
 
 成功
------BEGIN PUBLIC KEY-----
-MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDwEYW1eX0JZEraQIxRUOsRYOL2
-9AXVFhjQZt0zhMNusgxo49zgU162+SwxIesp1KDwN4QI6ov1rIuxlYMELOh0zIRZ
-pLEWBm9khyhIyNT6et1r4y0QQrqc01ZuwiODezb0q+0bHn5zsezAXkV9VMe2p1DB
-vk/7uGmIrz5E8AOLbQIDAQAB
------END PUBLIC KEY-----
+{
+    "errcode": 0,
+    "reason": "success",
+    "result": "-----BEGIN PUBLIC KEY-----\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDwEYW1eX0JZEraQIxRUOsRYOL2\n9AXVFhjQZt0zhMNusgxo49zgU162+SwxIesp1KDwN4QI6ov1rIuxlYMELOh0zIRZ\npLEWBm9khyhIyNT6et1r4y0QQrqc01ZuwiODezb0q+0bHn5zsezAXkV9VMe2p1DB\nvk/7uGmIrz5E8AOLbQIDAQAB\n-----END PUBLIC KEY-----"
+}
 ```
 
 
-### 1. 开发者角色接口
+### 1. 用户角色接口
 
-##### A. 角色添加  `POST`    `/v1/role/add`
+##### A. **[管理员]**角色添加  `POST`    `/v1/role/add`
 ```
 # 请求参数:
 
@@ -43,14 +42,9 @@ vk/7uGmIrz5E8AOLbQIDAQAB
         "id": 11
     }
 }
-失败
-{
-    "errcode": 错误码,
-    "reason": "错误原因",
-}
 ```
 
-##### B. 角色列表  `GET`    `/v1/role/list/<page>/<num>`
+##### B. **[管理员]**角色列表  `GET`    `/v1/role/list/<page>/<num>`
 ```
 # 请求参数:
 page: 当前页
@@ -86,7 +80,7 @@ num: 每页条数
 }
 ```
 
-##### C. 角色修改  `POST`    `/v1/role/edit`
+##### C. **[管理员]**角色修改  `POST`    `/v1/role/edit`
 ```
 # 请求参数:
 
@@ -105,7 +99,7 @@ num: 每页条数
 }
 ```
 
-##### D. 角色删除  `POST`    `/v1/role/remove`
+##### D. **[管理员]**角色删除  `POST`    `/v1/role/remove`
 ```
 # 请求参数:
 
@@ -130,7 +124,7 @@ num: 每页条数
 
 ### 2. 应用类型接口
 
-##### A. 类型添加  `POST`    `/v1/type/add`
+##### A. **[管理员]**类型添加  `POST`    `/v1/type/add`
 ```
 # 请求参数:
 
@@ -184,19 +178,13 @@ num: 每页条数
             "id": 3,
             "name": "图片",
             "parent_id": null
-        },
-        {
-            "des": "视频",
-            "id": 4,
-            "name": "视频",
-            "parent_id": null
         }
     ]
 }
 }
 ```
 
-##### C. 类型修改  `POST`    `/v1/type/edit`
+##### C. **[管理员]**类型修改  `POST`    `/v1/type/edit`
 ```
 # 请求参数:
 
@@ -215,7 +203,7 @@ num: 每页条数
 }
 ```
 
-##### D. 类型删除  `POST`    `/v1/type/remove`
+##### D. **[管理员]**类型删除  `POST`    `/v1/type/remove`
 ```
 # 请求参数:
 
@@ -235,9 +223,9 @@ num: 每页条数
 }
 ```
 
-### 3. 开发者帐号接口
+### 3. 用户帐号接口
 
-##### A. 开发者注册  `POST`    `/v1/users/reg`
+##### A. 用户注册  `POST`    `/v1/users/reg`
 ```
 # 请求参数:
 
@@ -273,7 +261,7 @@ num: 每页条数
 }
 ```
 
-##### B. 开发者登录  `POST`    `/v1/users/login`
+##### B. 用户登录  `POST`    `/v1/users/login`
 ```
 # 请求参数:
 
@@ -294,7 +282,7 @@ num: 每页条数
 }
 ```
 
-##### C. 开发者密码修改  `POST`    `/v1/users/changepassword`
+##### C. 用户密码修改  `POST`    `/v1/users/changepassword`
 ```
 # 请求参数:
 
@@ -312,7 +300,7 @@ num: 每页条数
 }
 ```
 
-##### D. 开发者资料修改  `POST`    `/v1/users/edit`
+##### D. 用户资料修改  `POST`    `/v1/users/edit`
 ```
 # 请求参数:
 
@@ -330,7 +318,7 @@ num: 每页条数
 }
 ```
 
-##### E. 管理员修改用户角色  `POST`    `/v1/users/role/edit`
+##### E. **[管理员]**修改用户角色  `POST`    `/v1/users/role/edit`
 ```
 # 请求参数:
 
@@ -345,6 +333,41 @@ num: 每页条数
 {
     "errcode": 0,
     "reason": "success",
+}
+```
+
+##### F. **[管理员]**获取用户列表  `POST`|`GET`    `/v1/users/list/<page>/<num>`
+```
+# 请求参数:
+1. GET: 无参数, 查询所有用户列表
+2. POST:
+{
+    "username":用户名(模糊查询),
+}
+
+# 返回值:
+
+成功
+{
+    "errcode": 0,
+    "reason": "success",
+    "result": {
+        "pages": 1,
+        "records": [
+            {
+                "create_timed": "2018-05-26 08:51:07",
+                "create_timed_timestamp": 1527295867,
+                "email": null,
+                "id": 49,
+                "role": 4,
+                "telphone": null,
+                "update_timed": "2018-05-26 09:03:19",
+                "update_timed_timestamp": 1527296599,
+                "username": "admin"
+            }
+        ],
+        "total": 7
+    }
 }
 ```
 
@@ -491,15 +514,20 @@ num: 每页条数
 ##### 2. 转账  `POST`    `/v1/transactions/paytouser`
 ```
 # 请求参数:
+# 第一种转账方式(开发者给用户转账)
 {
-    'is_developer':bool,  # 是否是开发者帐号转账
-    # 如果is_developer为True, 下面两个参数不需要
+    'is_developer':true,
+    'recv_user': 转账的接收用户,
+    'amount':金额,
+}
+# 第二种转账方式(用户之间转账)
+{
+	'is_developer':false,  # 也可以不传此参数
     'send_user':转账的支付用户,
     'pay_password':转账支付密码,
     'recv_user': 转账的接收用户,
     'amount':金额,
 }
-
 # 返回值:
 
 成功
@@ -542,7 +570,7 @@ num: 每页条数
         'author': 发布者用户名,
         'pay_password': 支付密码,
         'title': 资源标题,
-        'tag': 标签列表,
+        'tags': 标签列表,
         'udfs_hash': Ulord文件系统哈希,
         'price': 定价,
         'content_type': 资源类型(文件后缀名),
@@ -567,7 +595,7 @@ num: 每页条数
 # 请求参数:
 
 {
-        "username":"user2",
+        "customer":"user2",
         "claim_ids":[
         	"25e48b12694b4704aeff32ba0a568c21ad8dd5d6",
         	"2d4bbaf369464feeb90ac957af72a641f9a1bc9c",
@@ -594,7 +622,7 @@ num: 每页条数
 # 请求参数:
 
 {
-        'username':消费者用户名,
+        'customer':消费者用户名,
         'claim_id':'45cdb43d78bd12ee3acfa9be7c56ae02d6c88d3e'
         'customer_pay_password':消费密码(登录用户的支付密码,消费正常资源时传入),
         "author_pay_password":资源发布者的支付密码(点击广告时传入)
@@ -616,7 +644,7 @@ num: 每页条数
 ```
 # 请求参数:
 {
-    'username':用户名
+    'username':719355782
 }
 
 # 返回值:
@@ -628,7 +656,7 @@ num: 每页条数
     "result": {
         "pages": 1,
         "records": [
-            {  # 用户作为消费这, 点击广告收入
+            {  # 用户作为消费者, 点击广告收入
                 "author": "yyy",
                 "claim_id": "798aedf4fab2fa77a77b56528abe6e50afce37e6",
                 "create_timed": "2018-04-21T13:37:41.983595+00:00",
@@ -710,7 +738,7 @@ num: 每页条数
         "pages": 1,
         "records": [
             {  # 作为发布者, price正为资源收入
-                "author": "uuu",
+                "author": "719355782",
                 "claim_id": "1eaeee8108d2ddeefebd5dc811c3722857e32165",
                 "create_timed": "2018-04-21T08:40:07.045958+00:00",
                 "customer": "935827234",
@@ -719,7 +747,7 @@ num: 每页条数
                 "txid": "346bb03f63287b8c19ff0deee42ffe561d266beaeea80cff58f8098c4a4f42ab"
             },
             {  # 作为发布者, price负为广告支出
-                "author": "ttt",
+                "author": "719355782",
                 "claim_id": "ca067e452618915fab2d33cdb6cecca83ae95659",
                 "create_timed": "2018-04-20T16:10:25.831104+00:00",
                 "customer": "uuu",
@@ -830,7 +858,7 @@ num: 每页条数
                 "author": "justin",
                 "claim_id": "45cdb43d78bd12ee3acfa9be7c56ae02d6c88d3e",
                 "content_type": ".txt",
-                "create_timed": "2018-04-12T15:47:34.446858+00:00",
+                "create_timed": "2018-04-12T15:47:34",
                 "create_timed_timestamp": 1525312874,
                 "currency": "UT",
                 "des": "这是使用UDFS和区块链生成的第2篇博客的描述信息",
@@ -874,7 +902,7 @@ num: 每页条数
                 "claim_id": 资源在链上的claim_id,
                 "create_timed": 消费时间,
                 "create_timed_timestamp": 1525313348,
-                "enabled": 资源是否删除,
+                "enabled": 资源是否可用,
                 "id": 资源在DB中id,
                 "price": 0.5, # 价格为正时, 是消费者的支出
                 "title": 资源标题,
@@ -908,7 +936,7 @@ num: 每页条数
                 "create_timed": 此条消费的时间,
                 "create_timed_timestamp": 1525313348,
                 "customer": 消费者,
-                "enabled": 资源是否删除,
+                "enabled": 资源是否可用,
                 "id": 资源在DB中的id,
                 "price": 0.6,  # 价格为正, 是发布者的收入
                 "title": 资源标题,

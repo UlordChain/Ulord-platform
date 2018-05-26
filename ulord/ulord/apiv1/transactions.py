@@ -5,13 +5,16 @@
 from . import bpv1, appkey_check, get_jsonrpc_server
 from ulord.utils import return_result
 from ulord.utils.formatter import add_timestamp
-from flask import request, g, current_app
+from flask import request, g, current_app as app
 from ulord.models import Content, Tag, ContentHistory, Consume, AppUser, User
 from ulord.extensions import db
 from ulord.utils.generate import generate_appkey
-from ulord.forms import (validate_form, CreateWalletForm, PayToUserForm, BalanceForm, PublishForm,
-                        CheckForm,ConsumeForm,AccountInForm,AccountOutForm,AccountInOutForm,
-                        PublishCountForm,AccountForm)
+from ulord.forms import (
+    validate_form, CreateWalletForm, PayToUserForm, BalanceForm, PublishForm, CheckForm, ConsumeForm, AccountInForm,
+    AccountOutForm, AccountInOutForm, PublishCountForm, AccountForm)
+from ulord.utils import log
+
+import logging
 
 
 @bpv1.route('/transactions/createwallet', methods=['POST'])
@@ -25,16 +28,14 @@ def create_wallet():
 
     try:
         server = get_jsonrpc_server()
-        print(username, pay_password)
         result = server.create(username, pay_password)
-        if result.get('success') is not True:
-            print(result)
-            return return_result(20204, result=result)
+        if result.get('errcode') != 0:
+            return result
         app_user = AppUser(appkey=appkey, app_username=username)
         db.session.add(app_user)
     except Exception as e:
-        print(type(e), e)
-        return return_result(20204, result=dict(wallet_reason=str(e)))
+        app.logger.error('remote_addr<{}> - {}'.format(request.remote_addr, str(e)))
+        return return_result(20204)
 
     return return_result()
 
@@ -62,13 +63,11 @@ def pay_to_user():
     try:
         server = get_jsonrpc_server()
         result = server.pay(send_user_wallet, pay_password, recv_wallet_username, amount)
-        print(result)
-        if result.get('success') is not True:
-            print(result)
-            return return_result(20206, result=result)
+        if result.get('errcode') != 0:
+            return result
     except Exception as e:
-        print(e)
-        return return_result(20206, result=dict(wallet_reason=str(e)))
+        app.logger.error('remote_addr<{}> - {}'.format(request.remote_addr, str(e)))
+        return return_result(20206)
     return return_result()
 
 
@@ -88,12 +87,11 @@ def balance():
     try:
         server = get_jsonrpc_server()
         result = server.getbalance(username_wallet, pay_password)
-        if result.get('success') is not True:
-            print(result)
-            return return_result(20203, result=result)
+        if result.get('errcode') != 0:
+            return result
     except Exception as e:
-        print(e)
-        return return_result(20203, result=dict(wallet_reason=str(e)))
+        app.logger.error('remote_addr<{}> - {}'.format(request.remote_addr, str(e)))
+        return return_result(20203)
     result = result.get('result')
     confirmed = result.get('confirmed', '0')
     unconfirmed = result.get('unconfirmed', '0')
@@ -109,7 +107,7 @@ def publish():
     """Release resources"""
     appkey = g.appkey
     author = g.form.author.data
-    username_wallet=get_wallet_name(author)
+    username_wallet = get_wallet_name(author)
     pay_password = g.form.pay_password.data
     title = g.form.title.data
     tags = g.form.tags.data
@@ -128,16 +126,15 @@ def publish():
         server = get_jsonrpc_server()
         result = server.publish(username_wallet, pay_password, sourcename, metadata, content_type, udfs_hash, currency,
                                 price, bid, None, None, True)
-        if result.get('success') is not True:
-            print(result)
-            return return_result(20201, result=result)
+        if result.get('errcode') != 0:
+            return result
     except Exception as e:
-        print(e)
-        return return_result(20201, result=dict(wallet_reason=str(e)))
+        app.logger.error('remote_addr<{}> - {}'.format(request.remote_addr, str(e)))
+        return return_result(20201)
     result = result.get('result')
     claim_id = result.get('claim_id')
     txid = result.get('txid')
-    if len(txid)!=64:
+    if len(txid) != 64:
         return return_result(20201, result=result)
     status = 1
     tags = save_tag(tags)
@@ -166,8 +163,8 @@ def check():
         udfs_hash: Paid, file hash
     """
     appkey = g.appkey
-    customer = request.json.get('customer')
-    claim_ids = request.json.get('claim_ids')
+    customer = g.form.customer.data
+    claim_ids = g.form.claim_ids.data
 
     result = dict(zip(claim_ids, [None for claim_id in claim_ids]))
     contents = Content.query.filter(Content.claim_id.in_(claim_ids), appkey == appkey).all()
@@ -207,15 +204,13 @@ def consume():
                 else:  # Ad
                     send_wallet_username = get_wallet_name(content.author)
                     abs_price = abs(float(price))  # decimal to float
-                    # print(send_wallet_username, author_pay_password, wallet_username, abs_price)
                     result = server.pay(send_wallet_username, author_pay_password, wallet_username, abs_price)
-                if result.get('success') is not True:
-                    print(result)
-                    return return_result(20202, result=result)
+                if result.get('errcode') != 0:
+                    return result
             except Exception as e:
-                print(e)
-                return return_result(20202, result=dict(wallet_reason=str(e)))
-            print(result)
+                app.logger.error('remote_addr<{}> - {}'.format(request.remote_addr, str(e)))
+                return return_result(20202)
+            app.logger.debug(result)
             result = result.get('result')
             txid = result.get('txid')
             if len(txid) != 64:
@@ -237,12 +232,13 @@ def account_in(page, num):
     appkey = g.appkey
     username = g.form.username.data
     records = Content.query.with_entities(Content.claim_id, Content.author, Content.title, Consume.txid,
-                  Consume.customer, db.func.abs(Consume.price).label('price'),
-                  Consume.create_timed).join(Consume, Content.claim_id == Consume.claim_id). \
-                  filter(Content.appkey == appkey). \
-                  filter(db.and_(Content.author == username, Consume.price > 0) |
-                  db.and_(Consume.customer == username, Consume.price < 0)). \
-                  order_by(Consume.create_timed.desc()).paginate(page, num, error_out=False)
+                                          Consume.customer, db.func.abs(Consume.price).label('price'),
+                                          Consume.create_timed).join(Consume,
+                                                                     Content.claim_id == Consume.claim_id).filter(
+        Content.appkey == appkey).filter(
+        db.and_(Content.author == username, Consume.price > 0) | db.and_(Consume.customer == username,
+                                                                         Consume.price < 0)).order_by(
+        Consume.create_timed.desc()).paginate(page, num, error_out=False)
     total = records.total
     pages = records.pages
     records = add_timestamp(records.items)
@@ -258,14 +254,15 @@ def account_out(page, num):
     Consumer Resource Expenditure and Publisher Ad Spending
     """
     appkey = g.appkey
-    username = request.json.get('username')
+    username = g.form.username.data
     records = Content.query.with_entities(Content.claim_id, Content.author, Content.title, Consume.txid,
-                  Consume.customer, db.func.abs(Consume.price).label('price'),
-                  Consume.create_timed).join(Consume, Content.claim_id == Consume.claim_id). \
-                  filter(Content.appkey == appkey). \
-                  filter(db.and_(Content.author == username, Consume.price < 0) |
-                  db.and_(Consume.customer == username, Consume.price > 0)). \
-                  order_by(Consume.create_timed.desc()).paginate(page, num, error_out=False)
+                                          Consume.customer, db.func.abs(Consume.price).label('price'),
+                                          Consume.create_timed).join(Consume,
+                                                                     Content.claim_id == Consume.claim_id).filter(
+        Content.appkey == appkey).filter(
+        db.and_(Content.author == username, Consume.price < 0) | db.and_(Consume.customer == username,
+                                                                         Consume.price > 0)).order_by(
+        Consume.create_timed.desc()).paginate(page, num, error_out=False)
     total = records.total
     pages = records.pages
     records = add_timestamp(records.items)
@@ -281,13 +278,12 @@ def account_inout(page, num):
     account_in and account_out in one
     """
     appkey = g.appkey
-    username = request.json.get('username')
+    username = g.form.username.data
     records = Content.query.with_entities(Content.claim_id, Content.author, Content.title, Consume.txid,
-                  Consume.customer, Consume.price, Consume.create_timed). \
-                  join(Consume,Content.claim_id == Consume.claim_id). \
-                  filter(Content.appkey == appkey). \
-                  filter((Content.author == username) | (Consume.customer == username)). \
-                  order_by(Consume.create_timed.desc()).paginate(page, num, error_out=False)
+                                          Consume.customer, Consume.price, Consume.create_timed).join(Consume,
+                                                                                                      Content.claim_id == Consume.claim_id).filter(
+        Content.appkey == appkey).filter((Content.author == username) | (Consume.customer == username)).order_by(
+        Consume.create_timed.desc()).paginate(page, num, error_out=False)
     total = records.total
     pages = records.pages
     records = add_timestamp(records.items)
@@ -311,23 +307,25 @@ def publish_count():
 def account():
     """ Total user income and resource statistics."""
     appkey = g.appkey
-    username = request.json.get('username')
+    username = g.form.username.data
     # Publisher income
     publisher_in = Consume.query.with_entities(db.func.sum(Consume.price).label('sum'),
-        db.func.count(Consume.price).label('count')).join(Content, Content.claim_id == Consume.claim_id).filter(
+                                               db.func.count(Consume.price).label('count')).join(Content,
+                                                                                                 Content.claim_id == Consume.claim_id).filter(
         Content.appkey == appkey, Content.author == username, Consume.price > 0).first()
     # Publisher expenditure
     publisher_out = Consume.query.with_entities(db.func.abs(db.func.sum(Consume.price)).label('sum'),
-        db.func.count(Consume.price).label('count')).join(Content, Content.claim_id == Consume.claim_id).filter(
+                                                db.func.count(Consume.price).label('count')).join(Content,
+                                                                                                  Content.claim_id == Consume.claim_id).filter(
         Content.appkey == appkey, Content.author == username, Consume.price < 0).first()
     # Consumer income
     customer_in = Consume.query.with_entities(db.func.abs(db.func.sum(Consume.price)).label('sum'),
-        db.func.count(Consume.price).label('count')).filter(Consume.appkey == appkey, Consume.customer == username,
-                                                            Consume.price < 0).first()
+                                              db.func.count(Consume.price).label('count')).filter(
+        Consume.appkey == appkey, Consume.customer == username, Consume.price < 0).first()
     # Consumer expenditure
     customer_out = Consume.query.with_entities(db.func.sum(Consume.price).label('sum'),
-        db.func.count(Consume.price).label('count')).filter(Consume.appkey == appkey, Consume.customer == username,
-                                                            Consume.price > 0).first()
+                                               db.func.count(Consume.price).label('count')).filter(
+        Consume.appkey == appkey, Consume.customer == username, Consume.price > 0).first()
 
     return return_result(result=dict(publisher_in=publisher_in, publisher_out=publisher_out, customer_in=customer_in,
                                      customer_out=customer_out))

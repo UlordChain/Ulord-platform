@@ -17,7 +17,7 @@ __all__ = ['CreateWalletForm', 'PayToUserForm', 'BalanceForm', 'PublishForm', 'C
 
 
 class CreateWalletForm(FlaskForm):
-    username = StringField('username', validators=[DataRequired(), WalletUnique()])
+    username = StringField('username', validators=[DataRequired()])
     pay_password = StringField('pay_password', validators=[DataRequired()])
 
 

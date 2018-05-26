@@ -3,7 +3,7 @@
 # @Author  : Shu
 # @Email   : httpservlet@yeah.net
 from . import bpv1,admin_required,blocked_check
-from flask import request,g
+from flask import g
 from ulord.extensions import db,auth
 from ulord.models.users import Role
 from ulord.utils import return_result
@@ -27,6 +27,7 @@ def role_add():
 @bpv1.route('/role/list/<int:page>/<int:num>')
 @auth.login_required
 @blocked_check
+@admin_required
 def role_list(page,num):
     roles = Role.query.order_by(Role.id.asc()).paginate(page,num,error_out=False)
     total=roles.total
@@ -41,10 +42,11 @@ def role_list(page,num):
 @admin_required
 @validate_form(form_class=EditRoleForm)
 def role_edit():
-    id = request.json.get('id')
-    des = request.json.get('des')
+    id = g.form.id.data
+    des = g.form.des.data
     role=Role.query.get(id)
     role.des=des
+    db.session.commit()
     return return_result()
 
 
@@ -54,7 +56,6 @@ def role_edit():
 @admin_required
 @validate_form(form_class=RemoveRoleForm)
 def role_remove():
-    _id = request.json.get('id')
-    # db.session.delete(role)  # Check first, then delete.
-    num = Role.query.filter_by(id=_id).delete()  # Delete directly
+    num = Role.query.filter_by(id=g.form.id.data).delete()  # Delete directly
+    db.session.commit()
     return return_result(result=dict(num=num))

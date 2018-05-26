@@ -9,7 +9,7 @@ from wtforms.validators import Email, DataRequired, Length, Optional
 from .validators import Unique, Exists,RsaCheck
 from ulord.models import User, Role
 
-__all__ = ['RegForm', 'LoginForm', 'EditForm', 'ChangePasswordForm','EditUserRoleForm']
+__all__ = ['RegForm', 'LoginForm', 'EditForm', 'ChangePasswordForm','EditUserRoleForm','UserListForm']
 
 
 class RegForm(FlaskForm):
@@ -48,3 +48,6 @@ class ChangePasswordForm(FlaskForm):
 class EditUserRoleForm(FlaskForm):
     id = IntegerField('id', validators=[DataRequired(), Exists(User, User.id)])
     role_id = IntegerField('id', validators=[DataRequired(), Exists(Role, Role.id)])
+
+class UserListForm(FlaskForm):
+    username = StringField('username', validators=[Optional(), Length(max=32)])

@@ -15,6 +15,7 @@ Flask-SQLAlchemy
 Flask-HTTPAuth
 Flask-marshmallow
 Flask-Login
+Flask-Cors
 marshmallow-sqlalchemy
 simplejson
 jsonrpclib-pelix

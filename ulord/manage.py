@@ -11,6 +11,7 @@
 import sys
 from flask_script import Manager, Shell
 from ulord import config_app, dispatch_apps, dispatch_handlers, db, app
+
 # import logging
 # logging.basicConfig(level=logging.INFO)
 manager = Manager(app)
@@ -23,18 +24,19 @@ def make_shell_context():
 manager.add_command("shell", Shell(make_context=make_shell_context))
 
 
-@manager.command
-def runserver():
+@manager.option('-H', '--host', dest='host',help='host', default='0.0.0.0')
+@manager.option('-P', '--port', dest='port',help='port', default=4999, type=int)
+def runserver(host,port):
     config_app(app, 'development')
     dispatch_handlers(app)
     dispatch_apps(app)
     # print(app.url_map)
-    app.run(host='0.0.0.0')
+    app.run(host=host, port=port)
 
 
 @manager.command
 def initdb():
-    config_app(app,'development')
+    config_app(app, 'development')
     try:
         # db.drop_all()
         db.create_all()
@@ -45,7 +47,7 @@ def initdb():
 
 
 if __name__ == '__main__':
-    if len(sys.argv)==1:
-        sys.argv=sys.argv[:1]
+    if len(sys.argv) == 1:
+        sys.argv = sys.argv[:1]
         sys.argv.append('runserver')
     manager.run()

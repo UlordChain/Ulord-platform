@@ -2,10 +2,10 @@
 # @Date    : 2018/4/27
 # @Author  : Shu
 # @Email   : httpservlet@yeah.net
-# 自定义验证
-
+# Custom validation
+import traceback
+from flask import g,current_app as app
 from wtforms.validators import ValidationError
-from flask import g
 from ulord.utils.rsa import rsahelper
 from ulord.apiv1 import get_jsonrpc_server
 
@@ -44,7 +44,7 @@ class RsaCheck(object):
         try:
             password = rsahelper.decrypt(field.data).decode('u8')
         except Exception as e:
-            print(e)
+            app.logger.error(traceback.format_exc())
             self.message="The encryption format is not correct."
             raise ValidationError(self.message)
         if len(password) < 3 or len(password) > 128:
@@ -63,9 +63,9 @@ class WalletUnique(object):
         try:
             result = server.is_wallet_exists(username_wallet)
         except Exception as e:
-            print(type(e),e)
+            app.logger.error(traceback.format_exc())
             raise ValidationError('Wallet service exception.')
-        if result.get('result'):
+        if result.get('result') is True:
             raise ValidationError(self.message)
         if self.is_wallet_name is True:
             field.data = username_wallet
@@ -82,9 +82,9 @@ class WalletExists(object):
         try:
             result = server.is_wallet_exists(username_wallet)
         except Exception as e:
-            print(type(e),e)
+            app.logger.error(traceback.format_exc())
             raise ValidationError('Wallet service exception.')
-        if not result.get('result'):
+        if result.get('result') is not True:
             raise ValidationError(self.message)
         if self.is_wallet_name is True:
             field.data = username_wallet
