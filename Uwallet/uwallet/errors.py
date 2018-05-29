@@ -1,4 +1,7 @@
 # -*- coding: UTF-8 -*-
+from uwallet.util import join_str
+
+
 class Timeout(Exception):
     pass
 
@@ -17,7 +20,7 @@ class ReturnError(Exception):
         super(ReturnError, self).__init__()
         self.error_code =  error_code
         if desc is not None:
-            self.reason = self.error_desc[self.error_code] + ': {}'.format(desc)
+            self.reason = join_str(self.error_desc[self.error_code], ':', desc)
         else:
             self.reason = self.error_desc[self.error_code]
 
@@ -32,7 +35,7 @@ class ParamsError(ReturnError):
         '51006': "claim not find",
         '51007': "the bid must > 0",
         '51008': "the tx_fee must >= 0",
-        '51009': "val and metadata can't both empty",
+        '51009': "val sand metadata can't both empty",
         '51010': 'It cannot be converted to int'
     }
 

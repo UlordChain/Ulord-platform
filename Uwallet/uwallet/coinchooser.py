@@ -232,7 +232,7 @@ class CoinChooserOldestFirst(CoinChooserBase):
             selected.append(bucket)
             if sufficient_funds(selected):
                 return strip_unneeded(selected, sufficient_funds)
-        raise ServerError('52004')
+        raise ServerError('52004', '1')
 
 
 class CoinChooserRandom(CoinChooserBase):

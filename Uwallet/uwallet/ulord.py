@@ -100,6 +100,13 @@ def pw_encode(s, password):
 
 
 def pw_decode(s, password):
+    """
+    >>> a = 'R09PQ7uCCH1tZXt04MbDQOHnjh7kOMaH0vf3EKleze97XIpcB/iwt1DwcEcPkDh7+d6mCxBxmHQ72UJ1YUzJueYnFW3zsR1SIddZSheSavw1ee3tcb3eCvqpOZae+lDW74UlTqrusj50O3deSayC0Q=='
+    >>> pw_decode(a, '123')
+    :param s:
+    :param password:
+    :return:
+    """
     if password is not None:
         secret = Hash(password)
         try:

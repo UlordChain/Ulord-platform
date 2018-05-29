@@ -14,7 +14,7 @@ from threading import Lock
 from uwallet import __version__ as UWALLET_VERSION
 from uwallet.constants import COIN, BLOCKS_PER_CHUNK, DEFAULT_PORTS, proxy_modes
 from uwallet.constants import SERVER_RETRY_INTERVAL, NODES_RETRY_INTERVAL
-from uwallet.util import DaemonThread, normalize_version
+from uwallet.util import DaemonThread, normalize_version, important_print
 from uwallet.blockchain import get_blockchain
 from uwallet.interface import Connection, Interface
 from uwallet.simple_config import SimpleConfig
@@ -519,7 +519,6 @@ class Network(DaemonThread):
         # we cannot process them.
         if not self.interface:
             return
-
         with self.lock:
             sends = self.pending_sends
             self.pending_sends = []

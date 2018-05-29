@@ -26,7 +26,7 @@ from uwallet.ulord import deserialize_xkey, pw_decode, pw_encode, bip32_root, bi
     public_key_to_bc_address, is_address, hash_160_to_bc_address, bip32_private_key, encode_claim_id_hex, claim_id_hash
 from uwallet.settings import DATABASE_HOST, DATABASE_PORT, WALLET_FIELD, NOR_FIELD, LIST_DB_FIELD, LIST_BOTH_FIELD, \
     DICT_DB_FIELD, DICT_BOTH_FIELD
-from uwallet.util import profiler, rev_hex, Timekeeping
+from uwallet.util import profiler, rev_hex, Timekeeping, important_print
 from uwallet.verifier import SPV
 from uwallet.version import UWALLET_VERSION, NEW_SEED_VERSION
 
@@ -163,9 +163,18 @@ class Wallet_Storage(object):
         res = self.__col.update_one({'_id': self.id}, {operate: update_data}, True)
         return res
 
+    @classmethod
+    def del_wallet(cls, user):
+        if '_' in user:
+            app_key, id = user.split('_')
+        else:
+            app_key, id = 'ulord', user
+        col = Connection.mongo_con()['uwallet_user'][app_key]
+        # todo: except
+        res = col.delete_one({'_id': id})
+        if res is None:
+            raise ParamsError('51003', user)
 
-    def del_wallet(self):
-        res = self.__col.delete_one({'_id': self.id})
         return res
 
     def check_password(self):
@@ -591,8 +600,9 @@ class Abstract_Wallet(Wallet_Storage):
                 try:
                     tx.deserialize()
                 except AttributeError:
+                    # todo:
                     log.error("************* tx_transactions has no key %s", prevout_hash)
-                    continue
+                    raise ServerError('52008')
                 txout = tx.outputs()[int(prevout_n)]
                 if txout[0] & (TYPE_CLAIM | TYPE_SUPPORT | TYPE_UPDATE) == 0 or (
                         abandon_txid is not None and prevout_hash == abandon_txid):
@@ -693,7 +703,8 @@ class Abstract_Wallet(Wallet_Storage):
 
         # Avoid index-out-of-range with coins[0] below
         if not coins:
-            raise ServerError('52004')
+            log.error('not coins')
+            raise ServerError('52004', "cant't find input")
 
         for item in coins:
             self.add_input_info(item)
@@ -1084,7 +1095,6 @@ class Wallet(Abstract_Wallet):
             # save
             self.tx_transactions[tx_hash] = tx
             self.transactions[tx_hash] = str(tx)
-            # todo: 这里是否可以优化, 一次性更新全部的值数据量大的话是不是有点慢
             self.txi = temp_txi
             self.txo = temp_txo
             log.info("Saved transaction, txi and txo")
@@ -1154,6 +1164,7 @@ class Wallet(Abstract_Wallet):
             return self.up_to_date
 
     def receive_tx_callback(self, tx_hash, tx, tx_height):
+        important_print('receive tx callback')
         self.add_transaction(tx_hash, tx)
         self.add_unverified_tx(tx_hash, tx_height)
 
