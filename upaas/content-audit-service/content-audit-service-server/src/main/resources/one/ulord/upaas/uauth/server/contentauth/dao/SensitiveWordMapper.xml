@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="one.ulord.upaas.uauth.server.contentauth.dao.SensitiveWordMapper">
+    <resultMap type="one.ulord.upaas.uauth.server.contentauth.vo.SensitiveWordItem" id="SensitiveWordMap">
+        <id column="uid" property="uid"/>
+        <result column="keyword" property="keyword"/>
+        <result column="level" property="level"/>
+        <result column="disabled" property="disabled"/>
+    </resultMap>
+
+    <sql id="fieldSql">
+        uid, keyword, `level`, disabled
+    </sql>
+
+    <select id="retrieveItem" resultMap="SensitiveWordMap">
+        SELECT
+        <include refid="fieldSql"/>
+        FROM `upaas-uauth-server`.`sensitivewords` WHERE uid = #{id}
+    </select>
+
+    <select id="loadActive" resultMap="SensitiveWordMap">
+        SELECT
+        <include refid="fieldSql"/>
+        FROM `upaas-uauth-server`.`sensitivewords` WHERE disabled = 0 OR disabled is null
+    </select>
+
+    <select id="retrieve" resultMap="SensitiveWordMap">
+        SELECT
+        <include refid="fieldSql"/>
+        FROM `upaas-uauth-server`.`sensitivewords`
+        WHERE (1 = 1)
+        <if test="ALL != null">
+            AND (
+            <if test="ALL.size() == 1">
+                <foreach collection="ALL" item="item" separator=" OR " open="(" close=")">
+                    <bind name="pattern_all_keyword" value="'%' + item + '%'" />
+                    `keyword` like #{pattern_all_keyword}
+                </foreach>
+            </if>
+            <if test="ALL.size() > 1">
+                <foreach collection="ALL" item="item" separator=" OR " open="(" close=")">
+                    `keyword` = #{item}
+                </foreach>
+            </if>
+            )
+        </if>
+        <if test="keyword != null">
+            AND
+            <if test="keyword.size() == 1">
+                <foreach collection="keyword" item="item" separator="OR" open="(" close=")">
+                    <bind name="pattern_keyword" value="'%' + item + '%'" />
+                    `keyword` like #{pattern_keyword}
+                </foreach>
+            </if>
+            <if test="keyword.size() > 1">
+                `keyword` in
+                <foreach collection="keyword" item="item" separator="," open="(" close=")">
+                    #{keyword}
+                </foreach>
+            </if>
+        </if>
+        <if test="level != null">
+            AND
+            <if test="level.size() == 1">
+                <foreach collection="level" item="item" separator="OR" open="(" close=")">
+                    <bind name="pattern_level" value="'%' + item + '%'" />
+                    `level` like #{pattern_level}
+                </foreach>
+            </if>
+            <if test="level.size() > 1">
+                `level` in
+                <foreach collection="level" item="item" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </if>
+        <if test="disabled != null">
+            AND
+            <if test="disabled.size() == 1">
+                <foreach collection="disabled" item="item" separator="OR" open="(" close=")">
+                    disabled like #{item}
+                </foreach>
+            </if>
+        </if>
+    </select>
+
+    <insert id="createItem" parameterType="one.ulord.upaas.uauth.server.contentauth.vo.SensitiveWordItem"
+            useGeneratedKeys="true" keyProperty="uid">
+        INSERT INTO `upaas-uauth-server`.`sensitivewords` (keyword, `level`, disabled)
+                VALUES (#{keyword}, #{level}, #{disabled})
+    </insert>
+
+    <update id="updateItem">
+        UPDATE `upaas-uauth-server`.`sensitivewords`
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="keyword != null">
+                keyword = #{keyword},
+            </if>
+            <if test="level != null">
+                `level` = #{level},
+            </if>
+        </trim>
+        WHERE uid = #{uid}
+    </update>
+
+    <delete id="deleteItem">
+        DELETE FROM `upaas-uauth-server`.`sensitivewords` WHERE uid = #{id}
+    </delete>
+
+    <update id="disableItem">
+        UPDATE `upaas-uauth-server`.`sensitivewords` SET disabled = 1 WHERE uid = #{id}
+    </update>
+
+    <update id="enableItem">
+        UPDATE `upaas-uauth-server`.`sensitivewords` SET disabled = 0 WHERE uid = #{id}
+    </update>
+
+
+</mapper>

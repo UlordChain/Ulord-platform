@@ -6,6 +6,7 @@ package one.ulord.upaas.uauth.server.contentauth.business;
 
 import lombok.extern.slf4j.Slf4j;
 import one.ulord.upaas.common.BaseMessage;
+import one.ulord.upaas.common.UPaaSErrorCode;
 import one.ulord.upaas.common.communication.*;
 
 import one.ulord.upaas.common.sync.SyncOpItem;
@@ -52,7 +53,7 @@ public class CAuthSyncCommandHandler extends UPaaSCommandHandlerAdapter {
             if (message.getObject() instanceof UAuthSyncRequest){
                 UAuthSyncRequest syncRequest = (UAuthSyncRequest)message.getObject();
                 if (syncRequest != null){
-                    List<SensitiveWords> items = sensitiveWordsRepo.getFullSensitiveWords();
+                    List<SensitiveWord> items = sensitiveWordsRepo.getFullSensitiveWords();
                     fullResponse.setItems(items);
                     fullResponse.setVersion(syncRequest.getVersion());
                     return UPaaSCommandUtils.respMessage(message, UPaaSCommandCode.CAUTH_SYNC_VER_RESP, fullResponse);
@@ -77,7 +78,7 @@ public class CAuthSyncCommandHandler extends UPaaSCommandHandlerAdapter {
             if (message.getObject() instanceof UAuthSyncRequest){
                 UAuthSyncRequest syncRequest = (UAuthSyncRequest)message.getObject();
                 if (syncRequest != null){
-                    List<SyncOpItem<SensitiveWords>> syncOpItems = sensitiveWordsRepo.getIncrementSensitiveWords(syncRequest.getVersion());
+                    List<SyncOpItem<SensitiveWord>> syncOpItems = sensitiveWordsRepo.getIncrementSensitiveWords(syncRequest.getVersion());
                     incrResponse.setSyncOpItems(syncOpItems);
                     incrResponse.setVersion(syncRequest.getVersion());
                     return UPaaSCommandUtils.respMessage(message, UPaaSCommandCode.CAUTH_SYNC_VER_RESP, incrResponse);

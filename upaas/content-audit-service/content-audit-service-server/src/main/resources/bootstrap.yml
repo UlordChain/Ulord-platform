@@ -9,9 +9,10 @@ spring:
 
   cloud:
     config:
+      profile: dev
       discovery:
         enabled: true
-        service-id: ushare-config-server
+        service-id: upaas-config-server
 
 eureka:
   instance:
@@ -41,6 +42,7 @@ spring:
 #    uri: http://localhost:8888/
   cloud:
     config:
+      profile: test
       discovery:
         enabled: true
         service-id: ulord-config-server
@@ -79,6 +81,7 @@ spring:
 #    uri: http://localhost:8888/
   cloud:
     config:
+      profile: prod
       discovery:
         enabled: true
         service-id: ulord-config-server
