@@ -8,12 +8,10 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from flask import current_app
 
-class AppUser(db.Model):
-    """ 用于记录应用的用户, 仅作备份
 
-    当应用给其用户请求生成钱包时,插入一条数据
-    """
-    __tablename__ = 'app_user'
+class StatisticsAppUser(db.Model):
+    """ Statistical user """
+    __tablename__ = 'statistics_appuser'
     __table_args__ = (db.UniqueConstraint('appkey', 'app_username'),)
 
     id = db.Column(db.Integer, primary_key=True, comment=u'自增id')
@@ -23,7 +21,7 @@ class AppUser(db.Model):
 
 
 class Application(db.Model):
-    """ 应用表 """
+    """ User type table, administrator insert """
     __tablename__ = 'apps'
     __table_args__ = (db.UniqueConstraint('user_id', 'appname'),)
 
@@ -35,11 +33,11 @@ class Application(db.Model):
     appkey = db.Column(db.String(32), unique=True, index=True, nullable=False, comment=u'应用的标识')
     secret = db.Column(db.String(32), unique=True, nullable=False, comment=u'私钥, 用来签名请求')
     create_timed = db.Column(db.DateTime, server_default=db.func.now(), comment=u'创建时间')
-    update_timed = db.Column(db.DateTime,  onupdate=db.func.now(), comment=u'最后更新时间')
+    update_timed = db.Column(db.DateTime, onupdate=db.func.now(), comment=u'最后更新时间')
 
 
 class Type(db.Model):
-    """ 应用分类表,由管理员插入数据 """
+    """ app type table, admin """
     __tablename__ = 'app_type'
 
     id = db.Column(db.Integer, primary_key=True, comment=u'自增id')
@@ -52,7 +50,7 @@ class Type(db.Model):
 
 
 class User(db.Model):
-    """ 开发者用户表 """
+    """ Developer user table """
     __tablename__ = 'user'
 
     id = db.Column(db.Integer, primary_key=True, comment=u'自增id')
@@ -71,8 +69,8 @@ class User(db.Model):
         raise AttributeError("Password don't allow read.")
 
     @password.setter
-    def password(self,password):
-        self.password_hash=password
+    def password(self, password):
+        self.password_hash = password
 
     def __repr__(self):
         return '<User {}>'.format(self.username)
@@ -83,7 +81,7 @@ class User(db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-    def generate_auth_token(self, expiration=60*60*3):
+    def generate_auth_token(self, expiration=60 * 60 * 3):
         s = Serializer(current_app.config['SECRET_KEY'], expires_in=expiration)
         return s.dumps({'id': self.id})
 
@@ -97,22 +95,19 @@ class User(db.Model):
             user = User.query.get(data['id'])
             return user
         except Exception as e:
-            print('e: ',e)
+            print('e: ', e)
             return None
 
     @property
     def create_timed_str(self):
-        """输出日期字符串"""
         return self.create_timed.strftime("%Y-%m-%d %H:%M:%S")
 
     @property
     def create_timed_timestamp(self):
-        """输出时间戳"""
         return int(time.mktime(self.create_timed.timetuple()))
 
     @property
     def update_timed_str(self):
-        """输出日期字符串"""
         if self.update_timed:
             return self.update_timed.strftime("%Y-%m-%d %H:%M:%S")
         else:
@@ -120,7 +115,6 @@ class User(db.Model):
 
     @property
     def update_timed_timestamp(self):
-        """输出时间戳"""
         if self.update_timed:
             return int(time.mktime(self.update_timed.timetuple()))
         else:
@@ -128,7 +122,7 @@ class User(db.Model):
 
 
 class Role(db.Model):
-    """ 用户角色权限表
+    """ User role permissions table
 
     normal, blocked, admin
     """
@@ -136,6 +130,6 @@ class Role(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, comment=u'角色id')
     name = db.Column(db.String(32), unique=True, nullable=False, comment=u'角色名')
-    des = db.Column(db.String(500), nullable=False,comment=u'角色描述')
+    des = db.Column(db.String(500), nullable=False, comment=u'角色描述')
 
     user = db.relationship('User', backref='role', lazy='dynamic')

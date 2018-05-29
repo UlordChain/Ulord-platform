@@ -13,16 +13,19 @@ from .app_type import *
 from .transactions import *
 from .content import *
 
+
 def validate_form(form_class):
     def decorator(f):
         @functools.wraps(f)
-        def inner(*args,**kwargs):
+        def inner(*args, **kwargs):
             # The method for wrap_formdata of the FlaskForm class
             # implements the values from request.form and json.
-            form=form_class()
+            form = form_class()
             if not form.validate():
                 return return_result(errcode=20100, result=form.errors)
-            g.form=form
-            return f(*args,**kwargs)
+            g.form = form
+            return f(*args, **kwargs)
+
         return inner
+
     return decorator

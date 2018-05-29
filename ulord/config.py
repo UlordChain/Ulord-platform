@@ -18,7 +18,7 @@ class Config(object):
     PUBLISH_CURRENCY = 'UT'  # Token unit
     EXPIRATION = 60 * 60 * 6  # Login token expiration time
     UAPP_MAX_COUNT = 10  # The maximum number of new applications available.
-    SIGN_EXPIRES = 60 * 1000  # API signature expiration time.
+    SIGN_EXPIRES = 60 * 1000*1000  # API signature expiration time.
     ERROR_LOG = "logs/error.log"
     INFO_LOG = "logs/info.log"
 

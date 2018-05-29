@@ -10,7 +10,7 @@ from ulord.extensions import db, auth
 from ulord.utils.generate import generate_appkey
 from ulord.utils.formatter import add_timestamp
 from ulord.schema import apps_schema
-from ulord.forms import validate_form, AddAppForm, RebuildAppForm, RemoveAppForm,EditAppForm
+from ulord.forms import validate_form, AddAppForm, RebuildAppForm, RemoveAppForm, EditAppForm
 
 
 @bpv1.route("/app/add", methods=['POST'])
@@ -18,7 +18,7 @@ from ulord.forms import validate_form, AddAppForm, RebuildAppForm, RemoveAppForm
 @blocked_check
 @validate_form(form_class=AddAppForm)
 def app_add():
-    uapp_max_count=current_app.config['UAPP_MAX_COUNT']
+    uapp_max_count = current_app.config['UAPP_MAX_COUNT']
     if g.user.app.count() >= uapp_max_count:
         return return_result(10016, reason='用户可新建的应用数已达最大值({})'.format(uapp_max_count))
 
@@ -32,10 +32,10 @@ def app_add():
 @auth.login_required
 @blocked_check
 def app_list(page, num):
-    uapps = g.user.app.order_by(Application.id.desc()).paginate(page,num,error_out=False)
-    records=apps_schema.dump(uapps.items).data
-    records=add_timestamp(records)
-    return return_result(result=dict(total=uapps.total,pages=uapps.pages,records=records))
+    uapps = g.user.app.order_by(Application.id.desc()).paginate(page, num, error_out=False)
+    records = apps_schema.dump(uapps.items).data
+    records = add_timestamp(records)
+    return return_result(result=dict(total=uapps.total, pages=uapps.pages, records=records))
 
 
 @bpv1.route("/app/rebuild", methods=['POST'])
@@ -44,7 +44,7 @@ def app_list(page, num):
 @validate_form(form_class=RebuildAppForm)
 def app_rebuild():
     """To regenerate the secret"""
-    uapp=Application.query.filter_by(id=g.form.id.data, user_id=g.user.id).first()
+    uapp = Application.query.filter_by(id=g.form.id.data, user_id=g.user.id).first()
     if not uapp:
         return return_result(20005)
     secret = generate_appkey()
@@ -60,10 +60,10 @@ def app_rebuild():
 def app_edit():
     """To regenerate the secret"""
 
-    uapp=Application.query.filter_by(id=g.form.id.data, user_id=g.user.id).first()
+    uapp = Application.query.filter_by(id=g.form.id.data, user_id=g.user.id).first()
     if not uapp:
         return return_result(20005)
-    uapp.appdes=g.form.appdes.data
+    uapp.appdes = g.form.appdes.data
     db.session.commit()
     return return_result()
 
@@ -73,9 +73,6 @@ def app_edit():
 @blocked_check
 @validate_form(form_class=RemoveAppForm)
 def app_remove():
-    num = Application.query.filter_by(id=g.form.id.data,user_id=g.user.id).delete()
+    num = Application.query.filter_by(id=g.form.id.data, user_id=g.user.id).delete()
     db.session.commit()
     return return_result(result=dict(num=num))
-
-
-

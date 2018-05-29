@@ -41,6 +41,7 @@ class Consume(db.Model):
         """输出时间戳"""
         return int(time.mktime(self.create_timed.timetuple()))
 
+
 class Content(db.Model):
     """ 发布资源内容表
 
@@ -51,23 +52,30 @@ class Content(db.Model):
     """
     __tablename__ = 'content'
 
-    id = db.Column(db.Integer, primary_key=True, comment=u'自增id')
-    claim_id = db.Column(db.String(40), unique=True, nullable=False, comment=u'元数据在ulord链上的claim_id(资源的唯一标识)')
-    author = db.Column(db.String(64), nullable=False, index=True, comment=u'资源发布者(某个应用的用户名)')
-    appkey = db.Column(db.String(32), db.ForeignKey('apps.appkey'), nullable=False, index=True, comment=u'应用的appkey')
-    txid = db.Column(db.String(64), unique=True, nullable=False, comment=u'元数据上链交易id')
-    title = db.Column(db.String(64), nullable=False, comment=u'资源标题')
-    udfs_hash = db.Column(db.String(46), nullable=False, comment=u'内容文件在UDFS中的hash')
-    price = db.Column(db.Numeric(20, 8), nullable=False, default=0, comment=u'定价')
-    content_type = db.Column(db.String(16), nullable=False, comment=u'资源类型(后缀)')
-    currency = db.Column(db.String(8), default='UT', nullable=False, comment=u'货币类型')
-    sourcename = db.Column(db.String(32), nullable=False, comment=u'资源在链上的更新标识')
-    des = db.Column(db.String(1024), comment=u'资源描述')
-    status = db.Column(db.Integer, nullable=False, index=True, default=1, comment=u'状态:1.新增 2.更新 3.删除')
-    enabled = db.Column(db.Boolean, nullable=False, default=True, comment=u'标识资源是否可用')
-    create_timed = db.Column(db.DateTime, server_default=db.func.now(), comment=u'资源创建时间, 默认为当前时间')
-    update_timed = db.Column(db.DateTime, onupdate=db.func.now(), comment=u'最后更新时间')
-    views = db.Column(db.Integer, default=0, comment=u'浏览量')
+    id = db.Column(db.Integer, primary_key=True, comment='自增id')
+    claim_id = db.Column(db.String(40), unique=True, nullable=False, comment='元数据在ulord链上的claim_id(资源的唯一标识)')
+    claim_name = db.Column(db.String(32), nullable=False, comment='资源在链上的更新标识')
+    txid = db.Column(db.String(64), unique=True, nullable=False, comment='元数据上链交易id')
+    fee = db.Column(db.Float, default=0, comment='手续费')
+    nout = db.Column(db.Integer, default=0, comment='此次交易中的第几个交易')
+    author = db.Column(db.String(64), nullable=False, index=True, comment='资源发布者(某个应用的用户名)')
+    appkey = db.Column(db.String(32), db.ForeignKey('apps.appkey'), nullable=False, index=True, comment='应用的appkey')
+    title = db.Column(db.String(64), nullable=False, comment='资源标题')
+    udfs_hash = db.Column(db.String(46), nullable=False, comment='内容文件在UDFS中的hash')
+    price = db.Column(db.Numeric(20, 8), nullable=False, default=0, comment='定价')
+    content_type = db.Column(db.String(16), nullable=False, comment='资源类型(后缀)')
+    currency = db.Column(db.String(8), default='UT', nullable=False, comment='货币类型')
+    des = db.Column(db.String(1024), comment='资源描述')
+    status = db.Column(db.Integer, nullable=False, index=True, default=1, comment='状态:1.新增 2.更新 3.删除')
+    enabled = db.Column(db.Boolean, nullable=False, default=True, comment='标识资源是否可用')
+    create_timed = db.Column(db.DateTime, server_default=db.func.now(), comment='资源创建时间, 默认为当前时间')
+    update_timed = db.Column(db.DateTime, onupdate=db.func.now(), comment='最后更新时间')
+    thumbnail = db.Column(db.String(1024), comment='缩略图')
+    preview = db.Column(db.String(1024), comment='预览')
+    language = db.Column(db.String(8), comment='语言')
+    license = db.Column(db.String(16), comment='许可证')
+    license = db.Column(db.String(16), comment='许可证')
+    license_url = db.Column(db.String(128), comment='许可证url')
     tags = db.relationship('Tag', secondary='content_tag', backref=db.backref('content', lazy='dynamic'))
     consumes = db.relationship('Consume', backref=db.backref('content'), lazy='dynamic')
 
@@ -98,24 +106,31 @@ class Content(db.Model):
             return None
 
 
-
 class ContentHistory(db.Model):
     """资源历史记录(新增/更新/删除)"""
     __tablename__ = 'content_history'
 
-    txid = db.Column(db.String(64), primary_key=True, comment=u'元数据上链交易id')
-    claim_id = db.Column(db.String(40), nullable=False, comment=u'元数据在ulord链上的claim_id(资源的唯一标识)')
-    author = db.Column(db.String(64), nullable=False, index=True, comment=u'资源发布者(某个应用的用户名)')
-    appkey = db.Column(db.String(32), db.ForeignKey('apps.appkey'), nullable=False, index=True, comment=u'应用的appkey')
-    title = db.Column(db.String(64), nullable=False, comment=u'资源标题')
-    udfs_hash = db.Column(db.String(46), nullable=False, comment=u'内容文件在UDFS中的hash')
-    price = db.Column(db.Numeric(20, 8), nullable=False, default=0, comment=u'定价')
-    content_type = db.Column(db.String(16), nullable=False, comment=u'资源类型(后缀)')
-    currency = db.Column(db.String(8), default='UT', nullable=False, comment=u'货币类型')
-    sourcename = db.Column(db.String(32), nullable=False, comment=u'资源在链上的更新标识')
-    des = db.Column(db.String(1024), comment=u'资源描述')
-    status = db.Column(db.Integer, nullable=False, index=True, default=1, comment=u'状态:1.新增 2.更新 3.删除')
-    create_timed = db.Column(db.DateTime, server_default=db.func.now(), comment=u'资源创建时间, 默认为当前时间')
+    txid = db.Column(db.String(64), primary_key=True, comment='元数据上链交易id')
+    claim_id = db.Column(db.String(40), unique=True, nullable=False, comment='元数据在ulord链上的claim_id(资源的唯一标识)')
+    claim_name = db.Column(db.String(32), nullable=False, comment='资源在链上的更新标识')
+    fee = db.Column(db.Float, default=0, comment='手续费')
+    nout = db.Column(db.Integer, default=0, comment='此次交易中的第几个交易')
+    author = db.Column(db.String(64), nullable=False, index=True, comment='资源发布者(某个应用的用户名)')
+    appkey = db.Column(db.String(32), db.ForeignKey('apps.appkey'), nullable=False, index=True, comment='应用的appkey')
+    title = db.Column(db.String(64), nullable=False, comment='资源标题')
+    udfs_hash = db.Column(db.String(46), nullable=False, comment='内容文件在UDFS中的hash')
+    price = db.Column(db.Numeric(20, 8), nullable=False, default=0, comment='定价')
+    content_type = db.Column(db.String(16), nullable=False, comment='资源类型(后缀)')
+    currency = db.Column(db.String(8), default='UT', nullable=False, comment='货币类型')
+    des = db.Column(db.String(1024), comment='资源描述')
+    status = db.Column(db.Integer, nullable=False, index=True, default=1, comment='状态:1.新增 2.更新 3.删除')
+    create_timed = db.Column(db.DateTime, server_default=db.func.now(), comment='资源创建时间, 默认为当前时间')
+    thumbnail = db.Column(db.String(1024), comment='缩略图')
+    preview = db.Column(db.String(1024), comment='预览')
+    language = db.Column(db.String(8), comment='语言')
+    license = db.Column(db.String(16), comment='许可证')
+    license = db.Column(db.String(16), comment='许可证')
+    license_url = db.Column(db.String(128), comment='许可证url')
 
     @property
     def create_timed_str(self):

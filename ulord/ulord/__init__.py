@@ -52,20 +52,25 @@ def dispatch_apps(app):
 def dispatch_handlers(app):
     @app.errorhandler(400)
     def Bad_request_error(error):
+        app.logger.error(error)
         return return_result(400), 400
 
     @app.errorhandler(403)
     def permission_error(error):
+        app.logger.error(error)
         return return_result(403), 403
 
     @app.errorhandler(404)
     def page_not_found(error):
+        app.logger.error(error)
         return return_result(404),404
 
     @app.errorhandler(405)
     def page_not_found(error):
+        app.logger.error(error)
         return return_result(405), 405
 
     @app.errorhandler(500)
     def page_error(error):
+        app.logger.error(error)
         return return_result(500), 500
