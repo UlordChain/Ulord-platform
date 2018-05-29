@@ -6,4 +6,4 @@
 
 from utasks.wallet_tasks import publish
 
-print(dir(publish))
+print(type(publish))

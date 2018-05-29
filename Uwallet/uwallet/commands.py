@@ -2637,6 +2637,9 @@ class Commands(object):
         self.wallet.create_main_account()
         self.wallet.fill_fields()
         self.wallet.synchronize()  # gen addresses
+        self.wallet = Wallet(user, password)
+        self.wallets[user] = self.wallet
+        self.wallet.start_threads(self.network)
         return {
             'user': user,
             'seed': seed,
@@ -2744,7 +2747,7 @@ class Commands(object):
 
     @command('un')
     def publish(self, name, metadata, content_type, source_hash, currency, amount,
-                bid=1, address=None, tx_fee=None, skip_update_check=False):
+                bid=1, address=None, tx_fee=None, skip_update_check=True):
         # todo: 虽然预计是去掉name这个参数, 但是去掉这个参数之后钱包就没法对检验这个资源是不是重复发送  --hetao
         # res = self.claim(name, val, bid, claim_addr=address, change_addr=address, raw=True, tx_fee=tx_fee)
         # return res
