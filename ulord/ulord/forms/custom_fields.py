@@ -5,6 +5,7 @@
 from wtforms import Field
 from wtforms.widgets import TextInput
 
+
 class TagListField(Field):
     widget = TextInput()
 

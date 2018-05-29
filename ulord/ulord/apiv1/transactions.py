@@ -283,14 +283,17 @@ def account_in(page, num):
     """
     appkey = g.appkey
     username = g.form.username.data
-    records = Content.query.with_entities(Content.claim_id, Content.author, Content.title, Consume.txid,
-                                          Consume.customer, db.func.abs(Consume.price).label('price'),
-                                          Consume.create_timed).join(Consume,
-                                                                     Content.claim_id == Consume.claim_id).filter(
-        Content.appkey == appkey).filter(
-        db.and_(Content.author == username, Consume.price > 0) | db.and_(Consume.customer == username,
-                                                                         Consume.price < 0)).order_by(
-        Consume.create_timed.desc()).paginate(page, num, error_out=False)
+    category = g.form.category.data
+    query = Content.query.with_entities(Content.id, Content.claim_id, Content.author, Content.title, Content.enabled, Consume.txid,
+                            Consume.customer, db.func.abs(Consume.price).label('price'), Consume.create_timed).join(
+                            Consume, Content.claim_id == Consume.claim_id).filter(
+                            Content.appkey == appkey).filter(db.and_(Content.author == username, Consume.price > 0) |
+                                                             db.and_(Consume.customer == username, Consume.price < 0))
+    if category == 0:
+        query = query.filter(Consume.price > 0)
+    if category == 1:
+        query = query.filter(Consume.price < 0)
+    records = query.order_by(Consume.create_timed.desc()).paginate(page, num, error_out=False)
     total = records.total
     pages = records.pages
     records = add_timestamp(records.items)
@@ -307,14 +310,17 @@ def account_out(page, num):
     """
     appkey = g.appkey
     username = g.form.username.data
-    records = Content.query.with_entities(Content.claim_id, Content.author, Content.title, Consume.txid,
-                                          Consume.customer, db.func.abs(Consume.price).label('price'),
-                                          Consume.create_timed).join(Consume,
-                                                                     Content.claim_id == Consume.claim_id).filter(
-        Content.appkey == appkey).filter(
-        db.and_(Content.author == username, Consume.price < 0) | db.and_(Consume.customer == username,
-                                                                         Consume.price > 0)).order_by(
-        Consume.create_timed.desc()).paginate(page, num, error_out=False)
+    category = g.form.category.data
+    query = Content.query.with_entities(Content.claim_id, Content.author, Content.title, Consume.txid,
+              Consume.customer, db.func.abs(Consume.price).label('price'), Consume.create_timed).join(
+              Consume, Content.claim_id == Consume.claim_id).filter(Content.appkey == appkey).filter(
+              db.and_(Content.author == username, Consume.price < 0) |
+              db.and_(Consume.customer == username, Consume.price > 0))
+    if category == 0:
+        query = query.filter(Consume.price > 0)
+    if category == 1:
+        query = query.filter(Consume.price < 0)
+    records = query.order_by(Consume.create_timed.desc()).paginate(page, num, error_out=False)
     total = records.total
     pages = records.pages
     records = add_timestamp(records.items)
@@ -332,10 +338,10 @@ def account_inout(page, num):
     appkey = g.appkey
     username = g.form.username.data
     records = Content.query.with_entities(Content.claim_id, Content.author, Content.title, Consume.txid,
-                                          Consume.customer, Consume.price, Consume.create_timed).join(Consume,
-                                                                                                      Content.claim_id == Consume.claim_id).filter(
-        Content.appkey == appkey).filter((Content.author == username) | (Consume.customer == username)).order_by(
-        Consume.create_timed.desc()).paginate(page, num, error_out=False)
+                              Consume.customer, Consume.price, Consume.create_timed).join(Consume,
+                              Content.claim_id == Consume.claim_id).filter(Content.appkey == appkey).filter(
+                              (Content.author == username) | (Consume.customer == username)).order_by(
+                              Consume.create_timed.desc()).paginate(page, num, error_out=False)
     total = records.total
     pages = records.pages
     records = add_timestamp(records.items)
