@@ -2,13 +2,13 @@
 # @Date    : 2018/4/10
 # @Author  : Shu
 # @Email   : httpservlet@yeah.net
-from . import bpv1,admin_required,blocked_check
+from . import bpv1, admin_required, blocked_check
 from flask import g
-from ulord.extensions import db,auth
+from ulord.extensions import db, auth
 from ulord.models.users import Role
 from ulord.utils import return_result
 from ulord.schema import roles_schema
-from ulord.forms import validate_form,AddRoleForm,EditRoleForm,RemoveRoleForm
+from ulord.forms import validate_form, AddRoleForm, EditRoleForm, RemoveRoleForm
 
 
 @bpv1.route('/role/add', methods=['POST'])
@@ -28,12 +28,12 @@ def role_add():
 @auth.login_required
 @blocked_check
 @admin_required
-def role_list(page,num):
-    roles = Role.query.order_by(Role.id.asc()).paginate(page,num,error_out=False)
-    total=roles.total
-    pages=roles.pages
-    result=roles_schema.dump(roles.items).data
-    return return_result(result=dict(total=total,pages=pages,records=result))
+def role_list(page, num):
+    roles = Role.query.order_by(Role.id.asc()).paginate(page, num, error_out=False)
+    total = roles.total
+    pages = roles.pages
+    result = roles_schema.dump(roles.items).data
+    return return_result(result=dict(total=total, pages=pages, records=result))
 
 
 @bpv1.route('/role/edit', methods=['POST'])
@@ -44,8 +44,8 @@ def role_list(page,num):
 def role_edit():
     id = g.form.id.data
     des = g.form.des.data
-    role=Role.query.get(id)
-    role.des=des
+    role = Role.query.get(id)
+    role.des = des
     db.session.commit()
     return return_result()
 

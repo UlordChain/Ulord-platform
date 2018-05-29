@@ -3,12 +3,12 @@
 # @Author  : Shu
 # @Email   : httpservlet@yeah.net
 from . import bpv1, appkey_check
-from flask import request, g,current_app
+from flask import request, g, current_app
 from ulord.models import Content, Consume
 from ulord.schema import contents_schema
 from ulord import return_result
 from ulord.utils.formatter import add_timestamp
-from ulord.forms import validate_form,ConsumedForm,PublishedForm,PurchaseForm
+from ulord.forms import validate_form, ConsumedForm, PublishedForm, PublishConsumeForm, PurchaseForm
 
 
 @bpv1.route("/content/list/<int:page>/<int:num>")
@@ -28,7 +28,7 @@ def content_list(page, num):
     total = contents.total
     pages = contents.pages
     result = contents_schema.dump(contents.items).data
-    records=add_timestamp(result)
+    records = add_timestamp(result)
     return return_result(result=dict(total=total, pages=pages, records=records))
 
 
@@ -41,10 +41,9 @@ def consumed(page, num):
     customer = g.form.customer.data
     category = g.form.category.data  # 0: Consumer spending 1: Advertising revenue other:all
     query = Content.query.with_entities(Content.id, Content.author, Content.title, Consume.txid, Content.enabled,
-                                        Content.claim_id, Consume.price,
-                                        Consume.create_timed). \
-                        join(Consume,Content.claim_id==Consume.claim_id). \
-                        filter(Content.appkey == appkey, Consume.customer == customer)
+                                        Content.claim_id, Consume.price, Consume.create_timed).join(Consume,
+                                                                                                    Content.claim_id == Consume.claim_id).filter(
+        Content.appkey == appkey, Consume.customer == customer)
     if category == 0:
         query = query.filter(Consume.price > 0)
     if category == 1:
@@ -54,7 +53,7 @@ def consumed(page, num):
     total = records.total
     pages = records.pages
 
-    records=add_timestamp(records.items)
+    records = add_timestamp(records.items)
     return return_result(result=dict(total=total, pages=pages, records=records))
 
 
@@ -62,15 +61,30 @@ def consumed(page, num):
 @appkey_check
 @validate_form(form_class=PublishedForm)
 def published(page, num):
-    """作者已发布资源被消费记录"""
+    """List of published resources"""
+    appkey = g.appkey
+    author = g.form.author.data
+    contents = Content.query.filter_by(author=author, appkey=appkey).paginate(page, num, error_out=False)
+    total = contents.total
+    pages = contents.pages
+    records = contents_schema.dump(contents.items).data
+    records = add_timestamp(records)
+    return return_result(result=dict(total=total, pages=pages, records=records))
+
+
+@bpv1.route("/content/publish/consume/list/<int:page>/<int:num>", methods=['POST'])
+@appkey_check
+@validate_form(form_class=PublishConsumeForm)
+def publish_consume(page, num):
+    """List of resources that have been published for consumption"""
     appkey = g.appkey
     author = g.form.author.data
     category = g.form.category.data  # 0: Publish income 1: Advertising spending other:all
 
-    query = Content.query.with_entities(Content.id, Content.title, Consume.txid, Content.enabled,
-                                        Content.claim_id, Consume.customer,Consume.price, Consume.create_timed). \
-                        join(Consume,Content.claim_id==Consume.claim_id). \
-                        filter(Content.appkey == appkey, Content.author==author)
+    query = Content.query.with_entities(Content.id, Content.title, Consume.txid, Content.enabled, Content.claim_id,
+                                        Consume.customer, Consume.price, Consume.create_timed).join(Consume,
+                                        Content.claim_id == Consume.claim_id).filter(
+                                        Content.appkey == appkey, Content.author == author)
     if category == 0:
         query = query.filter(Consume.price > 0)
     if category == 1:
@@ -79,7 +93,7 @@ def published(page, num):
     records = query.order_by(Consume.create_timed.desc()).paginate(page, num, error_out=False)
     total = records.total
     pages = records.pages
-    records=add_timestamp(records.items)
+    records = add_timestamp(records.items)
     return return_result(result=dict(total=total, pages=pages, records=records))
 
 
@@ -88,7 +102,7 @@ def published(page, num):
 @validate_form(form_class=PurchaseForm)
 def purchase():
     """资源购买量"""
-    appkey=g.appkey
+    appkey = g.appkey
     claim_id = g.form.claim_id.data
-    count = Consume.query.filter_by(claim_id=claim_id,appkey=appkey).count()
+    count = Consume.query.filter_by(claim_id=claim_id, appkey=appkey).count()
     return return_result(result=dict(count=count))

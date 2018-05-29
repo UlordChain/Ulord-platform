@@ -3,15 +3,15 @@
 # @Author  : Shu
 # @Email   : httpservlet@yeah.net
 
-from . import bpv1,admin_required,blocked_check
+from . import bpv1, admin_required, blocked_check
 from flask import g
 from ulord.models import Type
-from ulord.extensions import db,auth
+from ulord.extensions import db, auth
 from . import return_result
 from ulord.models import Type
 from ulord.schema import types_schema
 from ulord.utils.formatter import get_tree
-from ulord.forms import validate_form,AddTypeForm,EditTypeForm,RemoveTypeForm
+from ulord.forms import validate_form, AddTypeForm, EditTypeForm, RemoveTypeForm
 
 
 @bpv1.route('/type/add', methods=['POST'])
@@ -42,18 +42,19 @@ def type_list():
 @admin_required
 @validate_form(form_class=EditTypeForm)
 def type_edit():
-    t=Type.query.get_or_404(g.form.id.data)
-    t.des=g.form.des.data
-    t.parent_id=g.form.parent_id.data
+    t = Type.query.get_or_404(g.form.id.data)
+    t.des = g.form.des.data
+    t.parent_id = g.form.parent_id.data
     db.session.commit()
     return return_result()
 
-@bpv1.route('/type/remove',methods=['POST'])
+
+@bpv1.route('/type/remove', methods=['POST'])
 @auth.login_required
 @blocked_check
 @admin_required
 @validate_form(form_class=RemoveTypeForm)
 def type_remove():
-    num=Type.query.filter_by(id=g.form.id.data).delete()
+    num = Type.query.filter_by(id=g.form.id.data).delete()
     db.session.commit()
     return return_result(result=dict(num=num))

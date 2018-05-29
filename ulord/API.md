@@ -873,14 +873,13 @@ num: 每页条数
                 "title": "第2篇技术博客",
                 "update_timed": null
                 "update_timed_timestamp": null,
-                "views": 0
             }
         ]
     }
 }
 ```
 
-##### 2. 单用户已消费资源列表  `POST`    `/v1/content/consume/list/<page>/<num>`
+##### 2. 用户已消费资源列表  `POST`    `/v1/content/consume/list/<page>/<num>`
 ```
 # 请求参数:
 {
@@ -914,13 +913,55 @@ num: 每页条数
 }
 ```
 
-##### 3. 单用户已发布资源列表  `POST`    `/v1/content/publish/list/<page>/<num>`
+
+##### 3. 用户已发布资源列表  `POST`    `/v1/content/publish/list/<page>/<num>`
 ```
 # 请求参数:
 {
     'author':消费者,
-    '
-    "create_timed_timestamp": 1525313348,':条件查询 # 0: 资源收入 1: 广告支出 其他:all
+}
+
+# 返回值:
+
+成功
+{
+    "errcode": 0,
+    "reason": "success",
+    "result": {
+        "pages": 1,
+        "records": [
+            {
+                "author": "uuui",
+                "claim_id": "d4bf1290eb6cd4ad7f1f699b555aeaf3c44d4170",
+                "content_type": ".txt",
+                "create_timed": "2018-05-29 09:37:53",
+                "create_timed_timestamp": 1527557873,
+                "currency": "UT",
+                "des": "description",
+                "enabled": true,  # 资源是否可用
+                "id": 3,
+                "price": 0.2,
+                "status": 1,
+                "tags": [
+                    "python"
+                ],
+                "title": "first blog",
+                "update_timed": null,
+                "update_timed_timestamp": null
+            }
+        ],
+        "total": 1
+    }
+}
+```
+
+
+##### 4. 用户已发布的资源被消费列表  `POST`    `/v1/content/publish/consume/list/<page>/<num>`
+```
+# 请求参数:
+{
+    'author':消费者,
+    "category": 0  # 条件查询 # 0: 资源收入 1: 广告支出 其他:all
 }
 
 # 返回值:
@@ -933,7 +974,7 @@ num: 每页条数
         "data": [
             {
                 "claim_id": 资源的claim_id,
-                "create_timed": 此条消费的时间,
+                "create_timed": "2010-05-29 10:23:01",
                 "create_timed_timestamp": 1525313348,
                 "customer": 消费者,
                 "enabled": 资源是否可用,
@@ -944,12 +985,12 @@ num: 每页条数
             }
         ],
         "pages": 1,
-        "total": 4
+        "total": 1
     }
 }
 ```
 
-##### 4. 购买量  `POST`    `/v1/content/purchase`
+##### 5. 购买量  `POST`    `/v1/content/purchase`
 ```
 # 请求参数:
 {

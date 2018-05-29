@@ -2,19 +2,19 @@
 # @Date    : 2018/3/30
 # @Author  : Shu
 # @Email   : httpservlet@yeah.net
+import inspect
+import traceback
+
 from . import bpv1, appkey_check, get_jsonrpc_server
 from ulord.utils import return_result
 from ulord.utils.formatter import add_timestamp
 from flask import request, g, current_app as app
-from ulord.models import Content, Tag, ContentHistory, Consume, AppUser, User
+from ulord.models import Content, Tag, ContentHistory, Consume, StatisticsAppUser, User
 from ulord.extensions import db
 from ulord.utils.generate import generate_appkey
 from ulord.forms import (
     validate_form, CreateWalletForm, PayToUserForm, BalanceForm, PublishForm, CheckForm, ConsumeForm, AccountInForm,
-    AccountOutForm, AccountInOutForm, PublishCountForm, AccountForm)
-from ulord.utils import log
-
-import logging
+    AccountOutForm, AccountInOutForm, PublishCountForm, AccountForm, UpdateForm)
 
 
 @bpv1.route('/transactions/createwallet', methods=['POST'])
@@ -22,6 +22,8 @@ import logging
 @validate_form(form_class=CreateWalletForm)
 def create_wallet():
     """Generate wallets for app users."""
+    # app.logger.error('hahahahahaha')
+    # raise ValueError('shuxudong de error')
     appkey = g.appkey
     username = g.form.username.data
     pay_password = g.form.pay_password.data
@@ -31,10 +33,12 @@ def create_wallet():
         result = server.create(username, pay_password)
         if result.get('errcode') != 0:
             return result
-        app_user = AppUser(appkey=appkey, app_username=username)
+        app_user = StatisticsAppUser(appkey=appkey, app_username=username)
         db.session.add(app_user)
-    except Exception as e:
-        app.logger.error('remote_addr<{}> - {}'.format(request.remote_addr, str(e)))
+        db.session.commit()
+    except:
+        app.logger.error('{}.{}: remote_addr<{}> - {}'.format(__name__, inspect.stack()[0][3], request.remote_addr,
+                                                              traceback.format_exc()))
         return return_result(20204)
 
     return return_result()
@@ -65,8 +69,9 @@ def pay_to_user():
         result = server.pay(send_user_wallet, pay_password, recv_wallet_username, amount)
         if result.get('errcode') != 0:
             return result
-    except Exception as e:
-        app.logger.error('remote_addr<{}> - {}'.format(request.remote_addr, str(e)))
+    except:
+        app.logger.error('{}.{}: remote_addr<{}> - {}'.format(__name__, inspect.stack()[0][3], request.remote_addr,
+                                                              traceback.format_exc()))
         return return_result(20206)
     return return_result()
 
@@ -89,8 +94,9 @@ def balance():
         result = server.getbalance(username_wallet, pay_password)
         if result.get('errcode') != 0:
             return result
-    except Exception as e:
-        app.logger.error('remote_addr<{}> - {}'.format(request.remote_addr, str(e)))
+    except:
+        app.logger.error('{}.{}: remote_addr<{}> - {}'.format(__name__, inspect.stack()[0][3], request.remote_addr,
+                                                              traceback.format_exc()))
         return return_result(20203)
     result = result.get('result')
     confirmed = result.get('confirmed', '0')
@@ -115,37 +121,81 @@ def publish():
     price = g.form.price.data
     content_type = g.form.content_type.data
     description = g.form.description.data
-    bid = current_app.config['PUBLISH_BID']
-    currency = current_app.config['PUBLISH_CURRENCY']
+    bid = app.config['PUBLISH_BID']
+    currency = app.config['PUBLISH_CURRENCY']
 
-    sourcename = generate_appkey()
+    claim_name = generate_appkey()
 
-    metadata = dict(title=title, author=author, tag=tags, description='', language='en', license='', licenseUrl='',
-                    nsfw=False, preview='', thumbnail='', )
+    metadata = dict(title=title, author=author, tag=tags, description=description, language='en', license='',
+                    licenseUrl='', nsfw=False, preview='', thumbnail='', )
     try:
         server = get_jsonrpc_server()
-        result = server.publish(username_wallet, pay_password, sourcename, metadata, content_type, udfs_hash, currency,
+        result = server.publish(username_wallet, pay_password, claim_name, metadata, content_type, udfs_hash, currency,
                                 price, bid, None, None, True)
         if result.get('errcode') != 0:
             return result
-    except Exception as e:
-        app.logger.error('remote_addr<{}> - {}'.format(request.remote_addr, str(e)))
+    except:
+        app.logger.error('{}.{}: remote_addr<{}> - {}'.format(__name__, inspect.stack()[0][3], request.remote_addr,
+                                                              traceback.format_exc()))
         return return_result(20201)
     result = result.get('result')
+    fee = float(result.get('fee', 0))
     claim_id = result.get('claim_id')
     txid = result.get('txid')
+    nout = int(result.get('nout', 0))
     if len(txid) != 64:
         return return_result(20201, result=result)
     status = 1
     tags = save_tag(tags)
     history = save_content_history(txid=txid, claim_id=claim_id, author=author, appkey=appkey, title=title,
                                    udfs_hash=udfs_hash, price=price, content_type=content_type, currency=currency,
-                                   sourcename=sourcename, des=description, status=status)
-    content = save_content(claim_id=claim_id, author=author, appkey=appkey, txid=txid, title=title, udfs_hash=udfs_hash,
-                           price=price, content_type=content_type, currency=currency, sourcename=sourcename,
-                           des=description, status=status, tags=tags)
+                                   claim_name=claim_name, des=description, status=status, fee=fee, nout=nout)
+    content = save_content(claim_id=claim_id, author=author, appkey=appkey, txid=txid, fee=fee, nout=nout, title=title,
+                           udfs_hash=udfs_hash, price=price, content_type=content_type, currency=currency,
+                           claim_name=claim_name, des=description, status=status, tags=tags)
     db.session.commit()
     return return_result(result=dict(id=content.id, claim_id=claim_id))
+
+
+@bpv1.route('/transactions/update', methods=['POST'])
+@appkey_check
+@validate_form(form_class=UpdateForm)
+def update():
+    """Update published resources"""
+    appkey = g.appkey
+    cid = g.form.id.data
+    content = Content.query.filter_by(id=cid, appkey=appkey)
+    if not content:
+        return return_result(20007)
+    txid = content.txid
+    nout = content.nout
+    author = content.author
+    username_wallet = get_wallet_name(author)
+    claim_id = content.claim_id
+    claim_name = content.sourcename
+
+    pay_password = g.form.pay_password.data
+    title = g.form.title.data
+    tags = g.form.tags.data
+    udfs_hash = g.form.udfs_hash.data
+    price = g.form.price.data
+    content_type = g.form.content_type.data
+    description = g.form.description.data
+    bid = app.config['PUBLISH_BID']
+    currency = app.config['PUBLISH_CURRENCY']
+
+    metadata = dict(title=title, author=author, tag=tags, description=description, language='en', license='',
+                    licenseUrl='', nsfw=False, preview='', thumbnail='', )
+    try:
+        server = get_jsonrpc_server()
+        result = server.update_claim(username_wallet, pay_password, claim_name, claim_id, txid, nout, metadata,
+                                     content_type, udfs_hash, currency, price, bid, None, None)
+        if result.get('errcode') != 0:
+            return result
+    except:
+        app.logger.error('{}.{}: remote_addr<{}> - {}'.format(__name__, inspect.stack()[0][3], request.remote_addr,
+                                                              traceback.format_exc()))
+        return return_result(20201)
 
 
 @bpv1.route('/transactions/check', methods=['POST'])
@@ -207,8 +257,10 @@ def consume():
                     result = server.pay(send_wallet_username, author_pay_password, wallet_username, abs_price)
                 if result.get('errcode') != 0:
                     return result
-            except Exception as e:
-                app.logger.error('remote_addr<{}> - {}'.format(request.remote_addr, str(e)))
+            except:
+                app.logger.error(
+                    '{}.{}: remote_addr<{}> - {}'.format(__name__, inspect.stack()[0][3], request.remote_addr,
+                                                         traceback.format_exc()))
                 return return_result(20202)
             app.logger.debug(result)
             result = result.get('result')
@@ -217,7 +269,7 @@ def consume():
                 return return_result(20202, result=result)
             c = Consume(txid=txid, claim_id=claim_id, customer=customer, appkey=appkey, price=price)
             db.session.add(c)
-
+            db.session.commit()
     return return_result(result=dict(udfs_hash=content.udfs_hash))
 
 

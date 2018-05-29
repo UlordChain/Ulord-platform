@@ -5,7 +5,7 @@
 
 from flask_wtf import FlaskForm
 from wtforms import StringField, IntegerField, BooleanField, FloatField
-from wtforms.validators import Email, DataRequired, Length, Optional, ValidationError,StopValidation
+from wtforms.validators import Email, DataRequired, Length, Optional, ValidationError, StopValidation
 from .validators import Unique, Exists, RsaCheck, WalletUnique, WalletExists
 from ulord.models import User, Role
 from .custom_fields import TagListField
@@ -13,11 +13,11 @@ from ulord.models import Content
 from flask import g
 
 __all__ = ['CreateWalletForm', 'PayToUserForm', 'BalanceForm', 'PublishForm', 'CheckForm', 'ConsumeForm',
-           'AccountInForm','AccountOutForm','AccountInOutForm','PublishCountForm','AccountForm']
+           'AccountInForm', 'AccountOutForm', 'AccountInOutForm', 'PublishCountForm', 'AccountForm', 'UpdateForm']
 
 
 class CreateWalletForm(FlaskForm):
-    username = StringField('username', validators=[DataRequired(),WalletUnique()])
+    username = StringField('username', validators=[DataRequired(), WalletUnique()])
     pay_password = StringField('pay_password', validators=[DataRequired()])
 
 
@@ -59,6 +59,18 @@ class PublishForm(FlaskForm):
     description = StringField('description', validators=[Optional()])
 
 
+class UpdateForm(FlaskForm):
+    id = StringField('id', validators=[DataRequired()])
+    author = StringField('author', validators=[DataRequired(), Length(max=64), WalletExists(is_wallet_name=False)])
+    pay_password = StringField('pay_password', validators=[DataRequired()])
+    title = StringField('title', validators=[DataRequired(), Length(max=64)])
+    tags = TagListField('tags', validators=[DataRequired()])
+    udfs_hash = StringField('udfs_hash', validators=[DataRequired(), Length(max=46)])
+    price = FloatField('price', validators=[DataRequired()])
+    content_type = StringField('content_type', validators=[DataRequired(), Length(max=16)])
+    description = StringField('description', validators=[Optional()])
+
+
 class CheckForm(FlaskForm):
     customer = StringField('customer', validators=[DataRequired(), WalletExists(is_wallet_name=False)])
     claim_ids = TagListField('claim_ids', validators=[DataRequired()])
@@ -80,9 +92,8 @@ class ConsumeForm(FlaskForm):
         else:
             self.is_ad = True
 
-
     def validate_customer_pay_password(self, field):
-        is_ad=getattr(self,'is_ad',None)
+        is_ad = getattr(self, 'is_ad', None)
         if is_ad is False:
             field.validate(self, [DataRequired()])
 
@@ -91,17 +102,22 @@ class ConsumeForm(FlaskForm):
         if is_ad is True:
             field.validate(self, [DataRequired()])
 
+
 class AccountInForm(FlaskForm):
-    username = StringField('username', validators=[DataRequired(),Length(max=64)])
+    username = StringField('username', validators=[DataRequired(), Length(max=64)])
+
 
 class AccountOutForm(FlaskForm):
     username = StringField('username', validators=[DataRequired(), Length(max=64)])
 
+
 class AccountInOutForm(FlaskForm):
     username = StringField('username', validators=[DataRequired(), Length(max=64)])
 
+
 class PublishCountForm(FlaskForm):
     author = StringField('author', validators=[DataRequired(), Length(max=64)])
+
 
 class AccountForm(FlaskForm):
     username = StringField('username', validators=[DataRequired(), Length(max=64)])
