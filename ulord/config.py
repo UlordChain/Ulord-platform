@@ -12,7 +12,7 @@ class Config(object):
     FLASKY_MAIL_SUBJECT_PREFIX = '[Ulord]'
     FLASKY_MAIL_SENDER = 'Ulord Admin <shuxudong@ulord.net>'
     FLASKY_ADMIN = 'Ulord'
-    WALLET_JSONRPC_HOST = '192.168.14.240'
+    WALLET_JSONRPC_HOST = '192.168.14.241'
     WALLET_JSONRPC_PORT = '8000'
     PUBLISH_BID = 0.01  # Amount paid to Ulord Platform
     PUBLISH_CURRENCY = 'UT'  # Token unit

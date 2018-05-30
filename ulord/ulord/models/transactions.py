@@ -74,7 +74,6 @@ class Content(db.Model):
     preview = db.Column(db.String(1024), comment='预览')
     language = db.Column(db.String(8), comment='语言')
     license = db.Column(db.String(16), comment='许可证')
-    license = db.Column(db.String(16), comment='许可证')
     license_url = db.Column(db.String(128), comment='许可证url')
     tags = db.relationship('Tag', secondary='content_tag', backref=db.backref('content', lazy='dynamic'))
     consumes = db.relationship('Consume', backref=db.backref('content'), lazy='dynamic')
@@ -128,7 +127,6 @@ class ContentHistory(db.Model):
     thumbnail = db.Column(db.String(1024), comment='缩略图')
     preview = db.Column(db.String(1024), comment='预览')
     language = db.Column(db.String(8), comment='语言')
-    license = db.Column(db.String(16), comment='许可证')
     license = db.Column(db.String(16), comment='许可证')
     license_url = db.Column(db.String(128), comment='许可证url')
 

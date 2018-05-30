@@ -110,7 +110,12 @@ def balance():
 @appkey_check
 @validate_form(form_class=PublishForm)
 def publish():
-    """Release resources"""
+    """Release resources
+
+
+    Args:
+        status: 1:add, 2:update, 3:delete(enabled=False)
+    """
     appkey = g.appkey
     author = g.form.author.data
     username_wallet = get_wallet_name(author)
@@ -161,10 +166,14 @@ def publish():
 @appkey_check
 @validate_form(form_class=UpdateForm)
 def update():
-    """Update published resources"""
+    """Update published resources
+
+    Args:
+        status: 1:add, 2:update, 3:delete(enabled=False)
+    """
     appkey = g.appkey
     cid = g.form.id.data
-    content = Content.query.filter_by(id=cid, appkey=appkey)
+    content = Content.query.filter_by(id=cid, appkey=appkey).first()
     if not content:
         return return_result(20007)
     txid = content.txid
@@ -172,7 +181,7 @@ def update():
     author = content.author
     username_wallet = get_wallet_name(author)
     claim_id = content.claim_id
-    claim_name = content.sourcename
+    claim_name = content.claim_name
 
     pay_password = g.form.pay_password.data
     title = g.form.title.data
@@ -195,7 +204,25 @@ def update():
     except:
         app.logger.error('{}.{}: remote_addr<{}> - {}'.format(__name__, inspect.stack()[0][3], request.remote_addr,
                                                               traceback.format_exc()))
-        return return_result(20201)
+        return return_result(20208)
+
+    result = result.get('result')
+    fee = float(result.get('fee', 0))
+    claim_id = result.get('claim_id')
+    txid = result.get('txid')
+    nout = int(result.get('nout', 0))
+    if len(txid) != 64:
+        return return_result(20208, result=result)
+    status = 2
+    tags = save_tag(tags)
+    history = save_content_history(txid=txid, claim_id=claim_id, author=author, appkey=appkey, title=title,
+                                   udfs_hash=udfs_hash, price=price, content_type=content_type, currency=currency,
+                                   claim_name=claim_name, des=description, status=status, fee=fee, nout=nout)
+    content = save_content(id=cid, claim_id=claim_id, author=author, appkey=appkey, txid=txid, fee=fee, nout=nout, title=title,
+                           udfs_hash=udfs_hash, price=price, content_type=content_type, currency=currency,
+                           claim_name=claim_name, des=description, status=status, tags=tags)
+    db.session.commit()
+    return return_result(result=dict(id=content.id, claim_id=claim_id))
 
 
 @bpv1.route('/transactions/check', methods=['POST'])

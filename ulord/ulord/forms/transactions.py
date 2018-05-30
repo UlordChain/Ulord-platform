@@ -61,13 +61,12 @@ class PublishForm(FlaskForm):
 
 
 class UpdateForm(FlaskForm):
-    id = StringField('id', validators=[DataRequired()])
-    author = StringField('author', validators=[DataRequired(), Length(max=64), WalletExists(is_wallet_name=False)])
+    id = IntegerField('id', validators=[DataRequired()])
     pay_password = StringField('pay_password', validators=[DataRequired()])
     title = StringField('title', validators=[DataRequired(), Length(max=64)])
     tags = TagListField('tags', validators=[DataRequired()])
     udfs_hash = StringField('udfs_hash', validators=[DataRequired(), Length(max=46)])
-    price = FloatField('price', validators=[DataRequired()])
+    price = FloatField('price', validators=[Optional()], filters=[lambda x: x or 0])
     content_type = StringField('content_type', validators=[DataRequired(), Length(max=16)])
     description = StringField('description', validators=[Optional()])
 
@@ -104,9 +103,7 @@ class ConsumeForm(FlaskForm):
             field.validate(self, [DataRequired()])
 
 
-class AccountInForm(FlaskForm):
-    username = StringField('username', validators=[DataRequired(), Length(max=64)])
-    category = IntegerField('category', validators=[Optional()])
+class _DateForm(FlaskForm):
     sdate = DateTimeField('start date', format='%Y-%m-%d', validators=[DataRequired()])
     edate = DateTimeField('end date', format='%Y-%m-%d', validators=[DataRequired()])
 
@@ -119,48 +116,23 @@ class AccountInForm(FlaskForm):
             raise ValidationError("The end date cannot be greater than the current date.")
 
 
-class AccountOutForm(FlaskForm):
+class AccountInForm(_DateForm):
     username = StringField('username', validators=[DataRequired(), Length(max=64)])
     category = IntegerField('category', validators=[Optional()])
-    sdate = DateTimeField('start date', format='%Y-%m-%d', validators=[DataRequired()])
-    edate = DateTimeField('end date', format='%Y-%m-%d', validators=[DataRequired()])
 
-    def validate_edate(self, field):
-        delta = timedelta(hours=23, seconds=59, minutes=59)
-        field.data = field.data + delta
-        if field.data < self.sdate.data:
-            raise ValidationError("The end time must be greater than the beginning time.")
-        if field.data.date() > datetime.now().date():
-            raise ValidationError("The end date cannot be greater than the current date.")
+
+class AccountOutForm(_DateForm):
+    username = StringField('username', validators=[DataRequired(), Length(max=64)])
+    category = IntegerField('category', validators=[Optional()])
 
 
 class AccountInOutForm(FlaskForm):
     username = StringField('username', validators=[DataRequired(), Length(max=64)])
 
 
-class PublishCountForm(FlaskForm):
+class PublishCountForm(_DateForm):
     author = StringField('author', validators=[DataRequired(), Length(max=64)])
-    sdate = DateTimeField('start date', format='%Y-%m-%d', validators=[DataRequired()])
-    edate = DateTimeField('end date', format='%Y-%m-%d', validators=[DataRequired()])
-
-    def validate_edate(self, field):
-        delta = timedelta(hours=23, seconds=59, minutes=59)
-        field.data = field.data + delta
-        if field.data < self.sdate.data:
-            raise ValidationError("The end time must be greater than the beginning time.")
-        if field.data.date() > datetime.now().date():
-            raise ValidationError("The end date cannot be greater than the current date.")
 
 
-class AccountForm(FlaskForm):
+class AccountForm(_DateForm):
     username = StringField('username', validators=[DataRequired(), Length(max=64)])
-    sdate = DateTimeField('start date', format='%Y-%m-%d', validators=[DataRequired()])
-    edate = DateTimeField('end date', format='%Y-%m-%d', validators=[DataRequired()])
-
-    def validate_edate(self, field):
-        delta = timedelta(hours=23, seconds=59, minutes=59)
-        field.data = field.data + delta
-        if field.data < self.sdate.data:
-            raise ValidationError("The end time must be greater than the beginning time.")
-        if field.data.date() > datetime.now().date():
-            raise ValidationError("The end date cannot be greater than the current date.")

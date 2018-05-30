@@ -596,6 +596,33 @@ num: 每页条数
 }
 ```
 
+##### 4.1. 更新资源  `POST`    `/v1/transactions/publish`
+```
+# 请求参数:
+{
+        "id" : "30",  # 资源在db中的id
+        "pay_password": "123",  # 支付密码
+        "title": "update blog",
+        "tags": ["C++","C#"],
+        "udfs_hash": "WmVcVaHhMeWNNetSLTZArmqaHMpu5ycqntx7mFZaci63VF",
+        "price": 1.2,
+        "content_type": ".exe",
+        "description":"update blog description"
+}
+
+# 返回值:
+
+成功
+{
+    "errcode": 0,
+    "reason": "success",
+    "result":{
+        "id":数据库id,
+        "claim_id":资源在链上的id,
+    }
+}
+```
+
 ##### 5. 检查是否付费  `POST`    `/v1/transactions/check`
 ```
 # 请求参数:
@@ -871,6 +898,7 @@ num: 每页条数
     }
 }
 ```
+
 
 
 ### 资源相关
