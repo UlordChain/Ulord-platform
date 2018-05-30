@@ -19,5 +19,5 @@ import java.util.List;
 @EqualsAndHashCode(callSuper=true)
 public class UAuthSyncIncrResponse extends Response {
     int version;
-    List<SyncOpItem<SensitiveWords>> syncOpItems;
+    List<SyncOpItem<SensitiveWord>> syncOpItems;
 }

@@ -6,6 +6,7 @@ package one.ulord.upaas.uauth.server.communication;
 
 import lombok.extern.slf4j.Slf4j;
 import one.ulord.upaas.common.BaseMessage;
+import one.ulord.upaas.common.UPaaSErrorCode;
 import one.ulord.upaas.common.communication.*;
 import one.ulord.upaas.common.communication.bo.LoginRequest;
 import one.ulord.upaas.common.communication.bo.LoginResponse;
