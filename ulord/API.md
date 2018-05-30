@@ -644,7 +644,8 @@ num: 每页条数
 ```
 # 请求参数:
 {
-    'username':719355782
+    'username':719355782, # 用户名称
+    'category':0  # 0:资源收入(发布), 1: 广告收入(消费). 不传参: 所有收入
 }
 
 # 返回值:
@@ -660,7 +661,10 @@ num: 每页条数
                 "author": "yyy",
                 "claim_id": "798aedf4fab2fa77a77b56528abe6e50afce37e6",
                 "create_timed": "2018-04-21T13:37:41.983595+00:00",
+                "create_timed_timestamp": 1527560581,
                 "customer": "719355782",
+                "enabled": true,
+                "id": 3,
                 "price": 0.6,
                 "title": "666",
                 "txid": "d162db3c4185720d287b7fabbe560546c9bce06f0812fadeb9d78c8d0fe2a2aa"
@@ -669,7 +673,10 @@ num: 每页条数
                 "author": "719355782",
                 "claim_id": "870c3a35a8b82f1d4f8e89b89b5c7d3b80d6bc5b",
                 "create_timed": "2018-04-21T09:47:05.902228+00:00",
+                "create_timed_timestamp": 1527560581,
                 "customer": "zyding",
+                "enabled": true,
+                "id": 3,
                 "price": 0.525,
                 "title": "123123123123",
                 "txid": "b781f7c12aa7b7a43c22a5bea2ac56d6d15a1dbde7eeea9e2774f7e5f168df56"
@@ -685,7 +692,8 @@ num: 每页条数
 ```
 # 请求参数:
 {
-    'username':719355782  # 用户
+    'username':719355782,  # 用户
+    'category':0  # 0:资源收入(发布), 1: 广告收入(消费). 不传参: 所有收入
 }
 
 # 返回值:
@@ -701,7 +709,10 @@ num: 每页条数
                 "author": "719355782",  # 发布者
                 "claim_id": "870c3a35a8b82f1d4f8e89b89b5c7d3b80d6bc5b",
                 "create_timed": "2018-04-21T08:39:25.883777+00:00",
+                "create_timed_timestamp": 1527560581,
                 "customer": "935827234",  # 消费者
+                "enabled": true,
+                "id": 3,
                 "price": 0.525,  # 交易金额
                 "title": "123123123123",
                 "txid": "31af05db89decfcd561ba79fbd130aacb8f02de4b75e55f4548626c1d9732c51"
@@ -710,7 +721,10 @@ num: 每页条数
                 "author": "tttttttttttt",
                 "claim_id": "010d23be8ce1e23da9dad94c61618d1e0b484c77",
                 "create_timed": "2018-04-21T11:55:43.680047+00:00",
+                "create_timed_timestamp": 1527560581,
                 "customer": "719355782",
+                "enabled": true,
+                "id": 3,
                 "price": 0.02,
                 "title": "the first blog",
                 "txid": "f672a32a11c1eb82a7a1b17e93bc823132c7bc75c3ed990fd1e797c8a11fbe50"
@@ -721,7 +735,7 @@ num: 每页条数
 }
 ```
 
-##### 9. 收支账单(上面两个接口2合1)  `POST`    `/v1/transactions/account/inout/<page>/<num>`
+##### 9. 收支账单(收入和支出账单合二为一)  `POST`    `/v1/transactions/account/inout/<page>/<num>`
 ```
 # 请求参数:
 {
@@ -741,7 +755,10 @@ num: 每页条数
                 "author": "719355782",
                 "claim_id": "1eaeee8108d2ddeefebd5dc811c3722857e32165",
                 "create_timed": "2018-04-21T08:40:07.045958+00:00",
+                "create_timed_timestamp": 1527559975,
                 "customer": "935827234",
+                "enabled": true,
+                "id": 2,
                 "price": 0.65255,
                 "title": "测试1111111",
                 "txid": "346bb03f63287b8c19ff0deee42ffe561d266beaeea80cff58f8098c4a4f42ab"
@@ -750,7 +767,10 @@ num: 每页条数
                 "author": "719355782",
                 "claim_id": "ca067e452618915fab2d33cdb6cecca83ae95659",
                 "create_timed": "2018-04-20T16:10:25.831104+00:00",
+                "create_timed_timestamp": 1527559975,
                 "customer": "uuu",
+                "enabled": true,
+                "id": 1,
                 "price": -0.5,
                 "title": "df",
                 "txid": "d70c00b042b0fabd9279290f72af233d7e50f3092a0c341b05b3a7fc5cd784be"
@@ -759,7 +779,10 @@ num: 每页条数
                 "author": "tttttttttttt",
                 "claim_id": "010d23be8ce1e23da9dad94c61618d1e0b484c77",
                 "create_timed": "2018-04-20T16:09:38.522716+00:00",
+                "create_timed_timestamp": 1527559975,
                 "customer": "uuu",
+                "enabled": true,
+                "id": 3,
                 "price": 0.02,
                 "title": "the first blog",
                 "txid": "1b05ff6234eb95f5836afe6e8caf2617206d1f0d540c3798d8a2004f1ac0e299"
@@ -768,7 +791,10 @@ num: 每页条数
                 "author": "yyy",
                 "claim_id": "798aedf4fab2fa77a77b56528abe6e50afce37e6",
                 "create_timed": "2018-04-20T15:55:16.285238+00:00",
+                "create_timed_timestamp": 1527559975,
                 "customer": "uuu",
+                "enabled": true,
+                "id": 4,
                 "price": -0.6,
                 "title": "666",
                 "txid": "851ecf55bd841322683a18a427fa69e6c6c49af8009c89ced6f0c1c12a620455"
@@ -835,13 +861,12 @@ num: 每页条数
 
 ### 资源相关
 
-##### 1. 资源列表查询  `GET`    `/v1/content/list/<page>/<num>`
+##### 1. id查询资源: 根据指定ID列表返回内容列表  `POST`    `/v1/content/gets`
 ```
 # 请求参数:
-    page: 页码
-    num: 每页条数
-
-无 (接下来可以实现条件查询以及分页)
+{
+  "ids":["3"]
+}
 
 # 返回值:
 
@@ -849,42 +874,38 @@ num: 每页条数
 {
     "errcode": 0,
     "reason": "success",
-    "result": {
-        total:总条数,
-        pages:总页数,
-        records:
-        [
-            {
-                "author": "justin",
-                "claim_id": "45cdb43d78bd12ee3acfa9be7c56ae02d6c88d3e",
-                "content_type": ".txt",
-                "create_timed": "2018-04-12T15:47:34",
-                "create_timed_timestamp": 1525312874,
-                "currency": "UT",
-                "des": "这是使用UDFS和区块链生成的第2篇博客的描述信息",
-                "id": 5,
-                "price": 1.3,
-                "status": 1,
-                "tags": [
-                    "C++",
-                    "java",
-                    "javascript",
-                ],
-                "title": "第2篇技术博客",
-                "update_timed": null
-                "update_timed_timestamp": null,
-            }
-        ]
-    }
+    "result": [
+        {
+            "author": "uuui",
+            "claim_id": "d4bf1290eb6cd4ad7f1f699b555aeaf3c44d4170",
+            "content_type": ".txt",
+            "create_timed": "2018-05-29 09:37:53",
+            "create_timed_timestamp": 1527557873,
+            "currency": "UT",
+            "des": "des",
+            "enabled": true,
+            "id": 3,
+            "price": 0.2,
+            "status": 1,
+            "tags": [
+                "ul"
+            ],
+            "title": "uui action",
+            "update_timed": null,
+            "update_timed_timestamp": null
+        }
+    ]
 }
 ```
 
-##### 2. 用户已消费资源列表  `POST`    `/v1/content/consume/list/<page>/<num>`
+
+##### 2. 资源列表查询  `GET`|`POST`    `/v1/content/list/<page>/<num>`
 ```
 # 请求参数:
+`GET`: 不传参, 查询所有资源
+`POST`: title模糊查询
 {
-    'customer':消费者,
-    'category':条件查询 (0:消费支出 1:广告收入 ,不传:all)
+  "keyword":"7"  # 查询关键字
 }
 
 # 返回值:
@@ -897,28 +918,35 @@ num: 每页条数
         "pages": 1,
         "records": [
             {
-                "author": 资源发布者,
-                "claim_id": 资源在链上的claim_id,
-                "create_timed": 消费时间,
-                "create_timed_timestamp": 1525313348,
-                "enabled": 资源是否可用,
-                "id": 资源在DB中id,
-                "price": 0.5, # 价格为正时, 是消费者的支出
-                "title": 资源标题,
-                "txid": 此条消费的txid
+                "author": "pppl",
+                "claim_id": "436b1ddfc3c662704d4795d16d3ac6be99505cec",
+                "content_type": ".txt",
+                "create_timed": "2018-05-29 11:26:34",
+                "create_timed_timestamp": 1527564394,
+                "currency": "UT",
+                "des": "74",
+                "enabled": true,
+                "id": 17,
+                "price": 0.01,
+                "status": 1,
+                "tags": [
+                    "8"
+                ],
+                "title": "774",
+                "update_timed": null,
+                "update_timed_timestamp": null
             }
         ],
-        "total": 7
+        "total": 2
     }
 }
 ```
-
 
 ##### 3. 用户已发布资源列表  `POST`    `/v1/content/publish/list/<page>/<num>`
 ```
 # 请求参数:
 {
-    'author':消费者,
+    'author':uuui  # 消费者
 }
 
 # 返回值:
@@ -956,12 +984,11 @@ num: 每页条数
 ```
 
 
-##### 4. 用户已发布的资源被消费列表  `POST`    `/v1/content/publish/consume/list/<page>/<num>`
+##### 4. 单个资源相关的所有消费记录  `POST`    `/v1/content/claim/list/<page>/<num>`
 ```
 # 请求参数:
 {
-    'author':消费者,
-    "category": 0  # 条件查询 # 0: 资源收入 1: 广告支出 其他:all
+  "claim_id":"d4bf1290eb6cd4ad7f1f699b555aeaf3c44d4170"
 }
 
 # 返回值:
@@ -971,22 +998,60 @@ num: 每页条数
     "errcode": 0,
     "reason": "success",
     "result": {
-        "data": [
+        "pages": 1,
+        "records": [
             {
-                "claim_id": 资源的claim_id,
-                "create_timed": "2010-05-29 10:23:01",
-                "create_timed_timestamp": 1525313348,
-                "customer": 消费者,
-                "enabled": 资源是否可用,
-                "id": 资源在DB中的id,
-                "price": 0.6,  # 价格为正, 是发布者的收入
-                "title": 资源标题,
-                "txid": 此条消费的txid
+                "create_timed": "2018-05-29 10:23:01",
+                "create_timed_timestamp": 1527560581,
+                "customer": "pppl",
+                "price": 0.2,
+                "txid": "96ebee14cde7dab123291479d7ac06a4bbacd17d475348970019e0ad063695a2"
+            },
+            {
+                "create_timed": "2018-05-29 10:12:55",
+                "create_timed_timestamp": 1527559975,
+                "customer": "user8",
+                "price": 0.2,
+                "txid": "48e328e3926faf2f56609651a26d4d4d1c51067699f65d6dfed737716c49725d"
             }
         ],
-        "pages": 1,
-        "total": 1
+        "total": 2
     }
+}
+```
+
+##### 4. 单个资源统计信息  `POST`    `/v1/content/claim/account`
+```
+# 请求参数:
+{
+  "claim_ids": ["d4bf1290eb6cd4ad7f1f699b555aeaf3c44d4170",
+                "89d66734481dc8f8279f0f3c724be78352d3f2c6",
+                "c0d9a0a410fa9c1872398791412c1f31e0b27519"]
+}
+
+# 返回值:
+
+成功
+{
+    "errcode": 0,
+    "reason": "success",
+    "result": [
+        {
+            "claim_id": "89d66734481dc8f8279f0f3c724be78352d3f2c6",
+            "count": 2,  # 消费次数
+            "sum": 0.88  # 收支总额
+        },
+        {
+            "claim_id": "c0d9a0a410fa9c1872398791412c1f31e0b27519",
+            "count": 1,
+            "sum": -0.5
+        },
+        {
+            "claim_id": "d4bf1290eb6cd4ad7f1f699b555aeaf3c44d4170",
+            "count": 5,
+            "sum": 1
+        }
+    ]
 }
 ```
 
