@@ -2,13 +2,16 @@
  * Copyright(c) 2018
  * Ulord core developers
  */
-package one.ulord.upaas.common.communication;
+package one.ulord.upaas.common;
 
 /**
  * @author haibo
  * @since 5/24/18
  */
 public class UPaaSErrorCode {
+    // Success
+    public static final int SUCCESS                   =     0; // Success
+
     // System error
     public static final int SYSERR_KEY_INVALID        = 10001; //Invalid request key
     public static final int SYSERR_KEY_NO_AUTH        = 10002; //Invalid request key

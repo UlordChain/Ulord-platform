@@ -54,7 +54,7 @@ class PublishForm(FlaskForm):
     title = StringField('title', validators=[DataRequired(), Length(max=64)])
     tags = TagListField('tags', validators=[DataRequired()])
     udfs_hash = StringField('udfs_hash', validators=[DataRequired(), Length(max=46)])
-    price = FloatField('price', validators=[DataRequired()])
+    price = FloatField('price', validators=[Optional()],filters=[lambda x: x or 0])
     content_type = StringField('content_type', validators=[DataRequired(), Length(max=16)])
     description = StringField('description', validators=[Optional()])
 
@@ -105,10 +105,12 @@ class ConsumeForm(FlaskForm):
 
 class AccountInForm(FlaskForm):
     username = StringField('username', validators=[DataRequired(), Length(max=64)])
+    category = IntegerField('category', validators=[Optional()])
 
 
 class AccountOutForm(FlaskForm):
     username = StringField('username', validators=[DataRequired(), Length(max=64)])
+    category = IntegerField('category', validators=[Optional()])
 
 
 class AccountInOutForm(FlaskForm):
