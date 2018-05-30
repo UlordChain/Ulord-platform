@@ -35,7 +35,7 @@ public class CAuthServerCommandHandler extends UPaaSCommandHandlerAdapter{
         needCloseClient = false;
         switch (message.getCommand()){
             case LOGIN_REQ:
-                resp = processLoginReq(message);
+                resp = processLoginReq(session, message);
                 break;
             case KEEPLIVE_REQ:
                 resp = UPaaSCommandUtils.respMessage(message, UPaaSCommandCode.KEEPLIVE_RESP);
@@ -55,10 +55,12 @@ public class CAuthServerCommandHandler extends UPaaSCommandHandlerAdapter{
     /**
      * Process login request and return a response.
      * We need to check authorization
-     * @param message
+     *
+     * @param session client session
+     * @param message client request message
      * @return
      */
-    private BaseMessage processLoginReq(BaseMessage message) {
+    private BaseMessage processLoginReq(UPaaSCommandSession session, BaseMessage message) {
         LoginResponse loginResponse = new LoginResponse();
         if (message.getType() == BaseMessage.DATA_TYPE.POJO
                 && message.getObject() != null){
@@ -69,6 +71,7 @@ public class CAuthServerCommandHandler extends UPaaSCommandHandlerAdapter{
                     if (loginRequest != null){
                         // TODO: auth user
 
+                        session.setClientId(message.getClientId());
                         loginResponse.setSuccess(true);
                         loginResponse.setMessage("Login success");
 
@@ -81,10 +84,10 @@ public class CAuthServerCommandHandler extends UPaaSCommandHandlerAdapter{
                 }
             }
             loginResponse.setMessage("Invalid request object.");
-            loginResponse.setErrorCode(UPaaSErrorCode.SRVERR_INVALID_PARAMETER);
+            loginResponse.setErrorCode(UPaaSErrorCode.SERVER_INVALID_PARAMETER);
         }else{
             loginResponse.setMessage("Invalid data type or no request object.");
-            loginResponse.setErrorCode(UPaaSErrorCode.SRVERR_INVALID_PARAMETER);
+            loginResponse.setErrorCode(UPaaSErrorCode.SERVER_INVALID_PARAMETER);
         }
 
         loginResponse.setSuccess(false);

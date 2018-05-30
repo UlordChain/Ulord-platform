@@ -32,20 +32,20 @@ public class UPaaSErrorCode {
     public static final int SYSERR_REQ_EXPIRED        = 10017; // Request has expired
 
     // Service error
-    public static final int SRVERR_USER_NAME_EXIST    = 20000; // Username has exist
-    public static final int SRVERR_MAIL_EXIST         = 20001; // Mail has exist
-    public static final int SRVERR_APP_NAME_EXIST     = 20002; // App name has exist
-    public static final int SRVERR_USER_NOT_EXIST     = 20003; // User not exist
-    public static final int SRVERR_PASSWORD_ERROR     = 20004; // Password error
-    public static final int SRVERR_NO_RECORD          = 20005; // Request's record does not exist
-    public static final int SRVERR_USER_DISABLED      = 20006; // User disabled
-    public static final int SRVERR_RESOURCE_NOT_PAY   = 20007; // Resource not pay
-    public static final int SRVERR_PASSWORD_WEAK      = 20008; // Password too weak
-    public static final int SRVERR_PASSWORD_LEN_ERROR = 20009; // Password length error, 3~128 chars
+    public static final int SERVER_USER_NAME_EXIST    = 20000; // Username has exist
+    public static final int SERVER_MAIL_EXIST         = 20001; // Mail has exist
+    public static final int SERVER_APP_NAME_EXIST     = 20002; // App name has exist
+    public static final int SERVER_USER_NOT_EXIST     = 20003; // User not exist
+    public static final int SERVER_PASSWORD_ERROR     = 20004; // Password error
+    public static final int SERVER_NO_RECORD          = 20005; // Request's record does not exist
+    public static final int SERVER_USER_DISABLED      = 20006; // User disabled
+    public static final int SERVER_RESOURCE_NOT_PAY   = 20007; // Resource not pay
+    public static final int SERVER_PASSWORD_WEAK      = 20008; // Password too weak
+    public static final int SERVER_PASSWORD_LEN_ERROR = 20009; // Password length error, 3~128 chars
 
     // Request and Validate error
-    public static final int SRVERR_INVALID_PARAMETER  = 20100; // Invalid parameter
-    public static final int SRVERR_INVALID_JSON_FMT   = 20101; // Invalid JSON format
-    public static final int SRVERR_SIGNATURE_ERROR    = 20102; // Signature error
+    public static final int SERVER_INVALID_PARAMETER  = 20100; // Invalid parameter
+    public static final int SERVER_INVALID_JSON_FMT   = 20101; // Invalid JSON format
+    public static final int SERVER_SIGNATURE_ERROR    = 20102; // Signature error
 
 }

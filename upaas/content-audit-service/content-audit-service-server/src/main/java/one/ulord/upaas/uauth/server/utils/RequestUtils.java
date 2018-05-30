@@ -34,11 +34,13 @@ public class RequestUtils {
 
     /**
      * Resolve criteria string.
-     * (1) value1,value2 ==> ALL=>value1, value2
-     * key1=value;key2=value ==> KEY1=>value1, KEY2=>value2
-     * key=value1,value2,value3 ==> KEY=>value1, value2, value3
-     * @param criteria
-     * @return
+     * <ul>
+     * <li>value1,value2 ==&gt; ALL=&gt;value1, value2</li>
+     * <li>key1=value;key2=value ==&gt; KEY1=&gt;value1, KEY2=&gt;value2</li>
+     * <li>key=value1,value2,value3 ==&gt; KEY=&gt;value1, value2, value3</li>
+     * </ul>
+     * @param criteria criteria string
+     * @return a Multi-value map
      */
     public static Map<String, List<String>> resolveCriteria(String criteria){
         Map<String, List<String>> criteriaMap = new HashMap<>();
@@ -83,8 +85,8 @@ public class RequestUtils {
 
     /**
      * Get client ip address, even back the nginx or apache
-     * @param request
-     * @return
+     * @param request http servlet request
+     * @return first ip address
      */
     public static String getClientIpAddr(HttpServletRequest request) {
         for (int i = 0; i < PROXY_HEADERS.length; i++){
@@ -105,6 +107,12 @@ public class RequestUtils {
         return request.getRemoteAddr();
     }
 
+    /**
+     * Copy http request header to @HttpHeaders object for rest request template
+     * @param request request
+     * @param httpHeaders http headers
+     * @return copy header item count
+     */
     public static int copyRequestIPHeader(HttpServletRequest request, HttpHeaders httpHeaders){
         int count = 0;
 
