@@ -55,11 +55,11 @@ public class SensitiveWordController {
     @DeleteMapping("/sensitiveword")
     public APIResult deleteSensitiveWord(@RequestBody SensitiveWordItem value){
         try {
-            int rv = sensitiveWordsRepo.removeSenstiveWord(value);
+            int rv = sensitiveWordsRepo.removeSensitiveWord(value);
             if (rv > 0) {
                 return APIResult.buildResult(rv);
             }else{
-                return APIResult.buildError(UPaaSErrorCode.SYSERR_SERVER_EXCEPTION, "Save exception");
+                return APIResult.buildError(UPaaSErrorCode.SERVER_NO_RECORD, "No record");
             }
         }catch (Exception e){
             return APIResult.buildError(UPaaSErrorCode.SYSERR_SERVER_EXCEPTION, e.getMessage());
@@ -73,18 +73,23 @@ public class SensitiveWordController {
             if (rv > 0) {
                 return APIResult.buildResult(rv);
             }else{
-                return APIResult.buildError(UPaaSErrorCode.SYSERR_SERVER_EXCEPTION, "Save exception");
+                return APIResult.buildError(UPaaSErrorCode.SERVER_NO_RECORD, "No record");
             }
         }catch (Exception e){
             return APIResult.buildError(UPaaSErrorCode.SYSERR_SERVER_EXCEPTION, e.getMessage());
         }
     }
 
-    @RequestMapping("/sensitiveword")
+    @GetMapping("/sensitiveword")
     private APIResult querySensitiveWord(@RequestParam(required = false, defaultValue = "10") int pageSize,
                                          @RequestParam(required = false, defaultValue = "1") int pageNum,
                                          @RequestParam(required = false) String criteria){
         Map<String, List<String>> criteriaMap = RequestUtils.resolveCriteria(criteria);
         return sensitiveWordsRepo.retrieve(pageNum, pageSize, criteriaMap);
+    }
+
+    @GetMapping("/sensitiverepo")
+    public APIResult querySensitiveRepo(){
+        return sensitiveWordsRepo.retrieveRepo();
     }
 }

@@ -16,6 +16,7 @@ import one.ulord.upaas.common.communication.bo.Response;
 @EqualsAndHashCode(callSuper=true)
 public class UAuthSyncVerResponse extends Response {
     boolean isNewest;
+    boolean isFullSync;
     int version;
 }
 

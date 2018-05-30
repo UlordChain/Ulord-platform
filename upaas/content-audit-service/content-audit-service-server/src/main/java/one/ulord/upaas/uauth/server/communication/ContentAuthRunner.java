@@ -32,7 +32,7 @@ public class ContentAuthRunner implements CommandLineRunner {
     public void run(String... args) throws Exception {
         // register command processer
         uPaaSCommandServer.getServerManager().registerCommandHandler(
-                String.valueOf(UPaaSCommandCode.BASE_TYPE),
+                String.valueOf(UPaaSCommandCode.BASE_TYPE.getValue()),
                 serverCommandHandler);
 
         // run tcp server
