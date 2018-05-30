@@ -5,8 +5,8 @@
 import logging
 
 logger = logging.getLogger(__name__)
-from flask import Flask, Response, jsonify, abort,request
-from .extensions import db,ma
+from flask import Flask, Response, jsonify, abort, request
+from .extensions import db, ma
 from config import dconfig
 from .utils import return_result
 from .apiv1 import bpv1
@@ -27,7 +27,8 @@ class ULORDFlask(Flask):
 
 
 app = ULORDFlask(__name__)
-CORS(app,supports_credentials=True)
+CORS(app, supports_credentials=True)
+
 
 def config_app(app, config_name):
     logger.info('Setting up application...')
@@ -41,7 +42,7 @@ def config_app(app, config_name):
     @app.before_request
     def before():
         # silent: if set to ``True`` this method will fail silently and return ``None``.
-        if request.method=='POST' and not request.get_json(silent=True):
+        if request.method == 'POST' and not request.get_json(silent=True):
             return return_result(20101)
 
 
@@ -51,7 +52,7 @@ def dispatch_apps(app):
 
 def dispatch_handlers(app):
     @app.errorhandler(400)
-    def Bad_request_error(error):
+    def bad_request_error(error):
         app.logger.error(error)
         return return_result(400), 400
 
@@ -62,8 +63,8 @@ def dispatch_handlers(app):
 
     @app.errorhandler(404)
     def page_not_found(error):
-        app.logger.error(error)
-        return return_result(404),404
+        app.logger.error(request.url+" - "+str(error))
+        return return_result(404), 404
 
     @app.errorhandler(405)
     def page_not_found(error):

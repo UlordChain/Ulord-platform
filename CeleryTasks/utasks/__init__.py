@@ -15,5 +15,7 @@ app = Celery(
     broker=configs.get('broker'),
     backend=configs.get('backend'),
     # The include argument is a list of modules to import when the worker starts. You need to add our tasks module here so that the worker is able to find our tasks.
-    include=['utasks.tasks'],
+    include=[
+        'utasks.wallet_tasks'
+    ],
 )

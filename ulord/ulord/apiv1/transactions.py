@@ -280,19 +280,28 @@ def account_in(page, num):
     """income statement
 
     Publisher resource income and consumer advertising revenue
+
+    Args:
+        page: Show the page
+        num: How many pages per page
+        category: 0 - Resource income, 1 - Advertising revenue
     """
     appkey = g.appkey
     username = g.form.username.data
     category = g.form.category.data
+    sdate = g.form.sdate.data
+    edate = g.form.edate.data
     query = Content.query.with_entities(Content.id, Content.claim_id, Content.author, Content.title, Content.enabled, Consume.txid,
                             Consume.customer, db.func.abs(Consume.price).label('price'), Consume.create_timed).join(
-                            Consume, Content.claim_id == Consume.claim_id).filter(
-                            Content.appkey == appkey).filter(db.and_(Content.author == username, Consume.price > 0) |
-                                                             db.and_(Consume.customer == username, Consume.price < 0))
+                            Consume, Content.claim_id == Consume.claim_id).filter(Content.appkey == appkey).\
+                            filter(Consume.create_timed >= sdate, Consume.create_timed <= edate)
     if category == 0:
-        query = query.filter(Consume.price > 0)
-    if category == 1:
-        query = query.filter(Consume.price < 0)
+        query = query.filter(Content.author == username, Consume.price > 0)
+    elif category == 1:
+        query = query.filter(Consume.customer == username, Consume.price < 0)
+    else:
+        query = query.filter(db.and_(Content.author == username, Consume.price > 0) |
+                             db.and_(Consume.customer == username, Consume.price < 0))
     records = query.order_by(Consume.create_timed.desc()).paginate(page, num, error_out=False)
     total = records.total
     pages = records.pages
@@ -307,19 +316,28 @@ def account_out(page, num):
     """expenditure statement
 
     Consumer Resource Expenditure and Publisher Ad Spending
+
+    Args:
+        page: Show the page
+        num: How many pages per page
+        category: 0 - Resource income, 1 - Advertising revenue
     """
     appkey = g.appkey
     username = g.form.username.data
     category = g.form.category.data
+    sdate = g.form.sdate.data
+    edate = g.form.edate.data
     query = Content.query.with_entities(Content.claim_id, Content.author, Content.title, Consume.txid,
               Consume.customer, db.func.abs(Consume.price).label('price'), Consume.create_timed).join(
-              Consume, Content.claim_id == Consume.claim_id).filter(Content.appkey == appkey).filter(
-              db.and_(Content.author == username, Consume.price < 0) |
-              db.and_(Consume.customer == username, Consume.price > 0))
+              Consume, Content.claim_id == Consume.claim_id).filter(Content.appkey == appkey).\
+              filter(Consume.create_timed >= sdate, Consume.create_timed <= edate)
     if category == 0:
-        query = query.filter(Consume.price > 0)
-    if category == 1:
-        query = query.filter(Consume.price < 0)
+        query = query.filter(Content.author == username, Consume.price < 0)
+    elif category == 1:
+        query = query.filter(Consume.customer == username, Consume.price > 0)
+    else:
+        query = query.filter(db.and_(Content.author == username, Consume.price < 0) |
+                             db.and_(Consume.customer == username, Consume.price > 0))
     records = query.order_by(Consume.create_timed.desc()).paginate(page, num, error_out=False)
     total = records.total
     pages = records.pages
@@ -348,17 +366,6 @@ def account_inout(page, num):
     return return_result(result=dict(total=total, pages=pages, records=records))
 
 
-@bpv1.route('/transactions/publish/count', methods=['POST'])
-@appkey_check
-@validate_form(form_class=PublishCountForm)
-def publish_count():
-    """Publish of resources"""
-    appkey = g.appkey
-    author = g.form.author.data
-    count = Content.query.filter_by(appkey=appkey, author=author).count()
-    return return_result(result=dict(count=count))
-
-
 @bpv1.route('/transactions/account', methods=['POST'])
 @appkey_check
 @validate_form(form_class=AccountForm)
@@ -366,27 +373,51 @@ def account():
     """ Total user income and resource statistics."""
     appkey = g.appkey
     username = g.form.username.data
+    sdate = g.form.sdate.data
+    edate = g.form.edate.data
+
     # Publisher income
-    publisher_in = Consume.query.with_entities(db.func.sum(Consume.price).label('sum'),
-                                               db.func.count(Consume.price).label('count')).join(Content,
-                                                                                                 Content.claim_id == Consume.claim_id).filter(
-        Content.appkey == appkey, Content.author == username, Consume.price > 0).first()
+    publisher_in = Consume.query.with_entities(
+                    db.func.sum(Consume.price).label('sum'), db.func.count(Consume.price).label('count')).\
+                    join(Content, Content.claim_id == Consume.claim_id). \
+                    filter(Content.appkey == appkey, Content.author == username, Consume.price > 0).\
+                    filter(Consume.create_timed >= sdate, Consume.create_timed <= edate).first()
+
     # Publisher expenditure
-    publisher_out = Consume.query.with_entities(db.func.abs(db.func.sum(Consume.price)).label('sum'),
-                                                db.func.count(Consume.price).label('count')).join(Content,
-                                                                                                  Content.claim_id == Consume.claim_id).filter(
-        Content.appkey == appkey, Content.author == username, Consume.price < 0).first()
+    publisher_out = Consume.query.with_entities(
+                    db.func.abs(db.func.sum(Consume.price)).label('sum'), db.func.count(Consume.price).label('count')).\
+                    join(Content, Content.claim_id == Consume.claim_id).\
+                    filter(Content.appkey == appkey, Content.author == username, Consume.price < 0).\
+                    filter(Consume.create_timed >= sdate, Consume.create_timed <= edate).first()
+
     # Consumer income
-    customer_in = Consume.query.with_entities(db.func.abs(db.func.sum(Consume.price)).label('sum'),
-                                              db.func.count(Consume.price).label('count')).filter(
-        Consume.appkey == appkey, Consume.customer == username, Consume.price < 0).first()
+    customer_in = Consume.query.with_entities(
+                    db.func.abs(db.func.sum(Consume.price)).label('sum'), db.func.count(Consume.price).label('count')).\
+                    filter(Consume.appkey == appkey, Consume.customer == username, Consume.price < 0).\
+                    filter(Consume.create_timed >= sdate, Consume.create_timed <= edate).first()
+
     # Consumer expenditure
-    customer_out = Consume.query.with_entities(db.func.sum(Consume.price).label('sum'),
-                                               db.func.count(Consume.price).label('count')).filter(
-        Consume.appkey == appkey, Consume.customer == username, Consume.price > 0).first()
+    customer_out = Consume.query.with_entities(
+                    db.func.sum(Consume.price).label('sum'), db.func.count(Consume.price).label('count')).\
+                    filter(Consume.appkey == appkey, Consume.customer == username, Consume.price > 0).\
+                    filter(Consume.create_timed >= sdate, Consume.create_timed <= edate).first()
 
     return return_result(result=dict(publisher_in=publisher_in, publisher_out=publisher_out, customer_in=customer_in,
                                      customer_out=customer_out))
+
+
+@bpv1.route('/transactions/publish/count', methods=['POST'])
+@appkey_check
+@validate_form(form_class=PublishCountForm)
+def publish_count():
+    """Publish of resources"""
+    appkey = g.appkey
+    author = g.form.author.data
+    sdate = g.form.sdate.data
+    edate = g.form.edate.data
+    count = Content.query.filter_by(appkey=appkey, author=author).\
+                filter(Content.create_timed >= sdate, Content.create_timed <= edate).count()
+    return return_result(result=dict(count=count))
 
 
 def save_content(**kwargs):

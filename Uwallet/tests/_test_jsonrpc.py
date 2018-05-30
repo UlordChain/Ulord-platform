@@ -144,8 +144,8 @@ def mul_test():
 
 if __name__ == '__main__':
     user = 'test_201805281100'
-    # password = '123'
-    password = 'pbkdf2:sha256:50000$oEw0SZX0$f8d9951addfa90213e63bb4553cacc7e3cc8e78d9d59f5e707da1fc09dd4d675'
+    password = '123'
+    # password = 'pbkdf2:sha256:50000$oEw0SZX0$f8d9951addfa90213e63bb4553cacc7e3cc8e78d9d59f5e707da1fc09dd4d675'
 
     claim_name = 'test_201801588'
     claim_id = '8b33c43b7d9954d1333541d9f40f1236ca9622c7'
@@ -153,7 +153,7 @@ if __name__ == '__main__':
 
     # print create(user, password)  # 0.48
     # print pay('37fd0c5e3eeb11e8a12af48e3889c8ab_user1', amount=1)  # 0.95
-    # print getbalance('hetao', password)  # 0.14
+    print getbalance(user, password)  # 0.14
     # print publish(user, password, claim_name, False) # 3.67
     # print publish(user, password, claim_name, True) # 2.68
     # print consume(claim_id)  # 1.4
@@ -164,4 +164,4 @@ if __name__ == '__main__':
     # print server.listaddresses()
     # print server.password('shuxudong', '123', 'pbkdf2:sha256:50000$oEw0SZX0$f8d9951addfa90213e63bb4553cacc7e3cc8e78d9d59f5e707da1fc09dd4d675')
     # print server.is_wallet_exists('')
-    print server.pay('shuxudong', password, 'hetao', 1000)
+    # print server.pay('shuxudong', password, user, 10)

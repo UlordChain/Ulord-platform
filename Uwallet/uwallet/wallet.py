@@ -1164,7 +1164,7 @@ class Wallet(Abstract_Wallet):
             return self.up_to_date
 
     def receive_tx_callback(self, tx_hash, tx, tx_height):
-        important_print('receive tx callback')
+        important_print("receive %s's tx callback" % self.user)
         self.add_transaction(tx_hash, tx)
         self.add_unverified_tx(tx_hash, tx_height)
 
@@ -1232,3 +1232,6 @@ class Wallet(Abstract_Wallet):
             wait_for_wallet()
         else:
             self.synchronize()
+
+    def __str__(self):
+        return "the {}'s wallet".format(self.user)

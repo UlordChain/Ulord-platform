@@ -567,8 +567,6 @@ class Commands(object):
         str(tx)  # this serializes
         if not unsigned:
             self.wallet.sign_transaction(tx)
-        print('######', tx)
-
         return tx
 
     @command('uc')
