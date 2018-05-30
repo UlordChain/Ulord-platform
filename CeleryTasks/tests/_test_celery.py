@@ -69,9 +69,9 @@ if __name__ == '__main__':
 
     publish_args = get_publish_params()
     # # 异步调用
-    # publish.delay(user, password, claim_name, *publish_args, skip_update_check=True, callback=print_result)  # 2.68
+    res=publish.delay(user, password, claim_name, *publish_args, skip_update_check=True, callback=print_result)  # 2.68
     # 等待结果返回
-    # print(res.get())
+    print(res.get())
 
     # 同步调用
     # publish(user, password, claim_name, *publish_args, skip_update_check=True, callback=print_result)

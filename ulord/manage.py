@@ -26,7 +26,7 @@ manager.add_command("shell", Shell(make_context=make_shell_context))
 
 @manager.option('-H', '--host', dest='host',help='host', default='0.0.0.0')
 @manager.option('-P', '--port', dest='port',help='port', default=4999, type=int)
-def runserver(host,port):
+def runserver(host, port):
     config_app(app, 'development')
     dispatch_handlers(app)
     dispatch_apps(app)

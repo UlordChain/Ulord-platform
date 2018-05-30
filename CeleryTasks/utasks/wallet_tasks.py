@@ -15,7 +15,7 @@ from utasks.utils import Timekeeping
 log = logging.getLogger(__name__)
 
 @app.task
-def publish(user, password, claim_name, metadata, contentType, sourceHash, currency, amount, bid=1, address=None, tx_fee=None,
+def publish1(user, password, claim_name, metadata, contentType, sourceHash, currency, amount, bid=1, address=None, tx_fee=None,
                    skip_update_check=True, callback=None):
 
     server = Server(configs.get('wallet_rpc'))

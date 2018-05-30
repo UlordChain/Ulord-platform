@@ -4,13 +4,14 @@
 # @Email   : httpservlet@yeah.net
 
 from flask_wtf import FlaskForm
-from wtforms import StringField, IntegerField, BooleanField, FloatField
+from wtforms import StringField, IntegerField, BooleanField, FloatField, DateTimeField
 from wtforms.validators import Email, DataRequired, Length, Optional, ValidationError, StopValidation
 from .validators import Unique, Exists, RsaCheck, WalletUnique, WalletExists
 from ulord.models import User, Role
 from .custom_fields import TagListField
 from ulord.models import Content
 from flask import g
+from datetime import datetime, timedelta
 
 __all__ = ['CreateWalletForm', 'PayToUserForm', 'BalanceForm', 'PublishForm', 'CheckForm', 'ConsumeForm',
            'AccountInForm', 'AccountOutForm', 'AccountInOutForm', 'PublishCountForm', 'AccountForm', 'UpdateForm']
@@ -54,7 +55,7 @@ class PublishForm(FlaskForm):
     title = StringField('title', validators=[DataRequired(), Length(max=64)])
     tags = TagListField('tags', validators=[DataRequired()])
     udfs_hash = StringField('udfs_hash', validators=[DataRequired(), Length(max=46)])
-    price = FloatField('price', validators=[Optional()],filters=[lambda x: x or 0])
+    price = FloatField('price', validators=[Optional()], filters=[lambda x: x or 0])
     content_type = StringField('content_type', validators=[DataRequired(), Length(max=16)])
     description = StringField('description', validators=[Optional()])
 
@@ -106,11 +107,31 @@ class ConsumeForm(FlaskForm):
 class AccountInForm(FlaskForm):
     username = StringField('username', validators=[DataRequired(), Length(max=64)])
     category = IntegerField('category', validators=[Optional()])
+    sdate = DateTimeField('start date', format='%Y-%m-%d', validators=[DataRequired()])
+    edate = DateTimeField('end date', format='%Y-%m-%d', validators=[DataRequired()])
+
+    def validate_edate(self, field):
+        delta = timedelta(hours=23, seconds=59, minutes=59)
+        field.data = field.data + delta
+        if field.data < self.sdate.data:
+            raise ValidationError("The end time must be greater than the beginning time.")
+        if field.data.date() > datetime.now().date():
+            raise ValidationError("The end date cannot be greater than the current date.")
 
 
 class AccountOutForm(FlaskForm):
     username = StringField('username', validators=[DataRequired(), Length(max=64)])
     category = IntegerField('category', validators=[Optional()])
+    sdate = DateTimeField('start date', format='%Y-%m-%d', validators=[DataRequired()])
+    edate = DateTimeField('end date', format='%Y-%m-%d', validators=[DataRequired()])
+
+    def validate_edate(self, field):
+        delta = timedelta(hours=23, seconds=59, minutes=59)
+        field.data = field.data + delta
+        if field.data < self.sdate.data:
+            raise ValidationError("The end time must be greater than the beginning time.")
+        if field.data.date() > datetime.now().date():
+            raise ValidationError("The end date cannot be greater than the current date.")
 
 
 class AccountInOutForm(FlaskForm):
@@ -119,7 +140,27 @@ class AccountInOutForm(FlaskForm):
 
 class PublishCountForm(FlaskForm):
     author = StringField('author', validators=[DataRequired(), Length(max=64)])
+    sdate = DateTimeField('start date', format='%Y-%m-%d', validators=[DataRequired()])
+    edate = DateTimeField('end date', format='%Y-%m-%d', validators=[DataRequired()])
+
+    def validate_edate(self, field):
+        delta = timedelta(hours=23, seconds=59, minutes=59)
+        field.data = field.data + delta
+        if field.data < self.sdate.data:
+            raise ValidationError("The end time must be greater than the beginning time.")
+        if field.data.date() > datetime.now().date():
+            raise ValidationError("The end date cannot be greater than the current date.")
 
 
 class AccountForm(FlaskForm):
     username = StringField('username', validators=[DataRequired(), Length(max=64)])
+    sdate = DateTimeField('start date', format='%Y-%m-%d', validators=[DataRequired()])
+    edate = DateTimeField('end date', format='%Y-%m-%d', validators=[DataRequired()])
+
+    def validate_edate(self, field):
+        delta = timedelta(hours=23, seconds=59, minutes=59)
+        field.data = field.data + delta
+        if field.data < self.sdate.data:
+            raise ValidationError("The end time must be greater than the beginning time.")
+        if field.data.date() > datetime.now().date():
+            raise ValidationError("The end date cannot be greater than the current date.")
