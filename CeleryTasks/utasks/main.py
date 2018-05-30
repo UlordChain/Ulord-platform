@@ -38,7 +38,7 @@ if __name__ == '__main__':
     if 'worker' not in sys.argv:
         sys.argv.append('worker')
         sys.argv.append('-A')
-        sys.argv.append('tasks')
+        sys.argv.append('wallet_tasks')
     print(sys.argv)
 
     main()

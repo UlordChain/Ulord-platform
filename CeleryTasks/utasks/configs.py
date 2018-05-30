@@ -15,7 +15,8 @@ log = logging.getLogger(__name__)
 
 DEFAULT_CONFIG = {
     'debug': True,
-    'wallet_rpc': 'http://192.168.14.240:8080',
+    'wallet_rpc': 'http://192.168.14.241:8000',
+    # 'wallet_rpc': 'http://192.168.14.240:8080',
     'config_path': '/etc/utasks.conf',
     'broker': 'amqp://guest:guest@192.168.14.240',
     'backend': 'redis://192.168.14.240',

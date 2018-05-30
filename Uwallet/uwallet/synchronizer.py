@@ -62,8 +62,8 @@ class Synchronizer(ThreadJob):
 
 
     def addr_subscription_response(self, response):
-        important_print(response)
-
+        important_print('addr_subscription_response', self.wallet , response)
+        print(self.wallet)
         params, result = self.parse_response(response)
         if not params:
             return
