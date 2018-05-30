@@ -98,13 +98,3 @@ def claim_account():
     records = query.all()
     return return_result(result=records)
 
-
-@bpv1.route("/content/purchase", methods=['POST'])
-@appkey_check
-@validate_form(form_class=PurchaseForm)
-def purchase():
-    """资源购买量"""
-    appkey = g.appkey
-    claim_id = g.form.claim_id.data
-    count = Consume.query.filter_by(claim_id=claim_id, appkey=appkey).count()
-    return return_result(result=dict(count=count))

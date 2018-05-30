@@ -1,3 +1,9 @@
+[TOC]
+
+
+----------
+
+
 # 一. API平台管理界面相关接口(内部接口)
 
 #### 说明: 先登录获取token, 然后将其添加到请求headers中, 格式如下
@@ -1020,7 +1026,7 @@ num: 每页条数
 }
 ```
 
-##### 4. 单个资源统计信息  `POST`    `/v1/content/claim/account`
+##### 5. 单资源统计信息  `POST`    `/v1/content/claim/account`
 ```
 # 请求参数:
 {
@@ -1052,25 +1058,6 @@ num: 每页条数
             "sum": 1
         }
     ]
-}
-```
-
-##### 5. 购买量  `POST`    `/v1/content/purchase`
-```
-# 请求参数:
-{
-    'claim_id':a0f65383247ad6f804da8897281b88a6c1ddd2e6  # 资源在ulord链上的id值
-}
-
-# 返回值:
-
-成功
-{
-    "errcode": 0,
-    "reason": "success",
-    "result": {
-        "num": 1,  # 修改影响行数
-    }
 }
 ```
 
@@ -1168,7 +1155,6 @@ ulord钱包错误码:
     '53000': 'Decode claim value error',
     '53001': 'invalid claim address',
 }
-
 ```
 ### 附录B: 数据库ER图
 
