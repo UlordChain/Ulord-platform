@@ -63,7 +63,7 @@ public class PagingResult extends APIResult {
     public static PagingResult buildResult(Object result, int pageNum, int pageSize, int pages, long totalRecords){
         PagingResult r = new PagingResult();
         r.setResult(result);
-        r.setErrorCode(UPaaSErrorCode.SUCCESS);
+        r.setErrorcode(UPaaSErrorCode.SUCCESS);
         r.setReason("OK");
         r.setPageNum(pageNum);
         r.setPageSize(pageSize);

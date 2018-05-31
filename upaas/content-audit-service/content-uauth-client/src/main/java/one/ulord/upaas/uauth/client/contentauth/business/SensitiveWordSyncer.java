@@ -2,21 +2,27 @@
  * Copyright(c) 2018
  * Ulord core developers
  */
-package one.ulord.upaas.uauth.client.contentauth;
+package one.ulord.upaas.uauth.client.contentauth.business;
 
+import com.hankcs.hanlp.dictionary.CustomDictionary;
 import lombok.extern.slf4j.Slf4j;
 import one.ulord.upaas.common.BaseMessage;
 import one.ulord.upaas.common.communication.UPaaSCommandCode;
 import one.ulord.upaas.common.communication.bo.LoginRequest;
 import one.ulord.upaas.common.communication.bo.Response;
 import one.ulord.upaas.common.sync.SyncOpEnum;
+import one.ulord.upaas.common.sync.SyncOpItem;
 import one.ulord.upaas.common.sync.SyncOpVersionRepo;
 import one.ulord.upaas.common.utils.BeanUtilEx;
 import one.ulord.upaas.uauth.common.vo.*;
+import org.dozer.DozerBeanMapperBuilder;
+import org.dozer.Mapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -40,6 +46,7 @@ public class SensitiveWordSyncer {
      * Sync operation version repo for sensitive word
      */
     SyncOpVersionRepo<SensitiveWord> sensitiveWordsRepo = new SyncOpVersionRepo<>();
+    HashMap<String, SensitiveWord> sensitiveWordMap = new HashMap<>();
 
     /////////////////////////////////////////////////////////////////////////////////////////
     // Basic
@@ -48,19 +55,13 @@ public class SensitiveWordSyncer {
             if (message.getType() == BaseMessage.DATA_TYPE.POJO &&
                     message.getObject() instanceof Map){
                 T response = createInstance(classz);
-                try {
-                    BeanUtilEx.populate(response, (Map<String, ? extends Object>) message.getObject());
-                    if (response.isSuccess()){
-                        return response;
-                    }else{
-                        log.warn("Received a error login response:", response.getErrorCode(), response.getMessage());
-                    }
-                } catch (IllegalAccessException e) {
-                    log.warn("Cannot populate object from message:", e);
-                } catch (InvocationTargetException e) {
-                    log.warn("Cannot populate object from message:", e);
+                Mapper mapper = DozerBeanMapperBuilder.buildDefault();
+                mapper.map(message.getObject(), response);
+                if (response.isSuccess()){
+                    return response;
+                }else{
+                    log.warn("Received a error login response:", response.getErrorCode(), response.getMessage());
                 }
-
             }else {
                 log.warn("Invalid login response message type:{}", message);
             }
@@ -234,6 +235,7 @@ public class SensitiveWordSyncer {
             if (response.getVersion() > sensitiveWordsRepo.getNewestVersion()){
                 // update current repo
                 sensitiveWordsRepo.addRecordOp(response.getSyncOpItems());
+                updateNLPDictionary(response.getSyncOpItems());
                 // update current version
                 sensitiveWordsRepo.updateVersion(response.getVersion());
             }
@@ -249,7 +251,10 @@ public class SensitiveWordSyncer {
         if (response != null){
             if (response.getVersion() >= sensitiveWordsRepo.getNewestVersion()){
                 // update current repo
-                sensitiveWordsRepo.addRecordOp(sensitiveWordsRepo.wrapSyncOpItem(SyncOpEnum.ADD, response.getItems()));
+                List<SyncOpItem<SensitiveWord>> syncOpItems = sensitiveWordsRepo.wrapSyncOpItem(
+                        SyncOpEnum.ADD, response.getItems());
+                sensitiveWordsRepo.addRecordOp(syncOpItems);
+                updateNLPDictionary(syncOpItems);
             }
         }else {
             log.warn("Error full sync response.");
@@ -264,15 +269,10 @@ public class SensitiveWordSyncer {
             if (message.getType() == BaseMessage.DATA_TYPE.POJO &&
                     message.getObject() instanceof Map){
                 UAuthSyncRequest request = new UAuthSyncRequest();
-                try {
-                    BeanUtilEx.populate(request, (Map<String, ? extends Object>) message.getObject());
-                    if (request.getVersion() != sensitiveWordsRepo.getNewestVersion()){
-                        return requestVersion();
-                    }
-                } catch (IllegalAccessException e) {
-                    log.warn("Cannot populate object from message:", e);
-                } catch (InvocationTargetException e) {
-                    log.warn("Cannot populate object from message:", e);
+                Mapper mapper = DozerBeanMapperBuilder.buildDefault();
+                mapper.map(message.getObject(), request);
+                if (request.getVersion() != sensitiveWordsRepo.getNewestVersion()){
+                    return requestVersion();
                 }
             }else {
                 log.warn("Invalid login response message type:{}", message);
@@ -282,4 +282,36 @@ public class SensitiveWordSyncer {
         }
         return null;
     }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // NLP
+
+    /**
+     * Hit sensitive word
+     * @param word word
+     * @return sensitive word
+     */
+    public SensitiveWord hitSensitiveWord(String word){
+        return sensitiveWordMap.get(word);
+    }
+
+    private void updateNLPDictionary(List<SyncOpItem<SensitiveWord>> syncOpItems) {
+        syncOpItems.forEach(sensitiveWordSyncOpItem -> {
+            switch (sensitiveWordSyncOpItem.getOp()){
+                case ADD:
+                    String keyword = sensitiveWordSyncOpItem.getData().getKeyword();
+                    CustomDictionary.add(keyword);
+                    sensitiveWordMap.put(keyword, sensitiveWordSyncOpItem.getData());
+                    log.trace("Add NLP keyword", keyword);
+                    break;
+                case DELETE:
+                    keyword = sensitiveWordSyncOpItem.getData().getKeyword();
+                    CustomDictionary.remove(keyword);
+                    sensitiveWordMap.remove(keyword);
+                    log.trace("Delete NLP keyword", keyword);
+                    break;
+            }
+        });
+    }
+
 }

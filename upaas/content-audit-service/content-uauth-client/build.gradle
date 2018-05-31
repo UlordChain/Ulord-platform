@@ -49,6 +49,14 @@ dependencies {
     compile("one.ulord.upaas:upaas-common:1.0-SNAPSHOT")
     compile("one.ulord.upaas:content-uauth-common:1.0-SNAPSHOT")
 
+    // NLP
+    compile group: 'com.hankcs', name:'hanlp', version:'portable-1.6.3'
+    // jsoup
+    compile group: 'org.jsoup', name: 'jsoup', version: '1.11.3'
+    // https://mvnrepository.com/artifact/com.github.dozermapper/dozer-core
+    compile group: 'com.github.dozermapper', name: 'dozer-core', version: '6.2.0'
+
+
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
 

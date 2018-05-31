@@ -5,7 +5,6 @@
 package one.ulord.upaas.common.api;
 
 import one.ulord.upaas.common.UPaaSErrorCode;
-import one.ulord.upaas.common.communication.UPaaSCommandCode;
 
 /**
  * API Result
@@ -13,16 +12,16 @@ import one.ulord.upaas.common.communication.UPaaSCommandCode;
  * @since 5/26/18
  */
 public class APIResult {
-    private int errorCode;
+    private int errorcode;
     private String reason;
     private Object result;
 
-    public int getErrorCode() {
-        return errorCode;
+    public int getErrorcode() {
+        return errorcode;
     }
 
-    public void setErrorCode(int errorCode) {
-        this.errorCode = errorCode;
+    public void setErrorcode(int errorcode) {
+        this.errorcode = errorcode;
     }
 
     public String getReason() {
@@ -49,7 +48,7 @@ public class APIResult {
      */
     public static APIResult buildError(int errorCode, String reason){
         APIResult result = new APIResult();
-        result.setErrorCode(errorCode);
+        result.setErrorcode(errorCode);
         result.setReason(reason);
 
         return result;
@@ -74,7 +73,7 @@ public class APIResult {
     public static APIResult buildResult(Object result, String reason){
         APIResult r = new APIResult();
         r.setResult(result);
-        r.setErrorCode(UPaaSErrorCode.SUCCESS);
+        r.setErrorcode(UPaaSErrorCode.SUCCESS);
 
         return r;
     }
