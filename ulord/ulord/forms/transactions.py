@@ -5,16 +5,16 @@
 
 from flask_wtf import FlaskForm
 from wtforms import StringField, IntegerField, BooleanField, FloatField, DateTimeField
-from wtforms.validators import Email, DataRequired, Length, Optional, ValidationError, StopValidation
-from .validators import Unique, Exists, RsaCheck, WalletUnique, WalletExists
-from ulord.models import User, Role
+from wtforms.validators import DataRequired, Length, Optional, ValidationError
+from .validators import WalletUnique, WalletExists
 from .custom_fields import TagListField
 from ulord.models import Content
 from flask import g
 from datetime import datetime, timedelta
 
 __all__ = ['CreateWalletForm', 'PayToUserForm', 'BalanceForm', 'PublishForm', 'CheckForm', 'ConsumeForm',
-           'AccountInForm', 'AccountOutForm', 'AccountInOutForm', 'PublishCountForm', 'AccountForm', 'UpdateForm']
+           'AccountInForm', 'AccountOutForm', 'AccountInOutForm', 'PublishCountForm', 'AccountForm', 'UpdateForm',
+           'DeleteForm']
 
 
 class CreateWalletForm(FlaskForm):
@@ -57,19 +57,33 @@ class PublishForm(FlaskForm):
     udfs_hash = StringField('udfs_hash', validators=[DataRequired(), Length(max=46)])
     price = FloatField('price', validators=[Optional()], filters=[lambda x: x or 0])
     content_type = StringField('content_type', validators=[DataRequired(), Length(max=16)])
-    description = StringField('description', validators=[Optional()])
+    des = StringField('description', validators=[Optional()])
+    thumbnail = StringField('thumbnail', validators=[Optional()])
+    preview = StringField('preview', validators=[Optional()])
+    language = StringField('language', validators=[Optional()])
+    license = StringField('license', validators=[Optional()])
+    license_url = StringField('license_url', validators=[Optional()])
 
 
 class UpdateForm(FlaskForm):
     id = IntegerField('id', validators=[DataRequired()])
     pay_password = StringField('pay_password', validators=[DataRequired()])
-    title = StringField('title', validators=[DataRequired(), Length(max=64)])
-    tags = TagListField('tags', validators=[DataRequired()])
-    udfs_hash = StringField('udfs_hash', validators=[DataRequired(), Length(max=46)])
-    price = FloatField('price', validators=[Optional()], filters=[lambda x: x or 0])
-    content_type = StringField('content_type', validators=[DataRequired(), Length(max=16)])
-    description = StringField('description', validators=[Optional()])
+    title = StringField('title', validators=[Optional(), Length(max=64)])
+    tags = TagListField('tags', validators=[Optional()])
+    udfs_hash = StringField('udfs_hash', validators=[Optional(), Length(max=46)])
+    price = FloatField('price', validators=[Optional()])
+    content_type = StringField('content_type', validators=[Optional(), Length(max=16)])
+    des = StringField('description', validators=[Optional()])
+    thumbnail = StringField('thumbnail', validators=[Optional()])
+    preview = StringField('preview', validators=[Optional()])
+    language = StringField('language', validators=[Optional()])
+    license = StringField('license', validators=[Optional()])
+    license_url = StringField('license_url', validators=[Optional()])
 
+
+class DeleteForm(FlaskForm):
+    id = IntegerField('id', validators=[DataRequired()])
+    pay_password = StringField('pay_password', validators=[DataRequired()])
 
 class CheckForm(FlaskForm):
     customer = StringField('customer', validators=[DataRequired(), WalletExists(is_wallet_name=False)])

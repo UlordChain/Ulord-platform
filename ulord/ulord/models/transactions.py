@@ -54,7 +54,7 @@ class Content(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, comment='自增id')
     claim_id = db.Column(db.String(40), unique=True, nullable=False, comment='元数据在ulord链上的claim_id(资源的唯一标识)')
-    claim_name = db.Column(db.String(32), nullable=False, comment='资源在链上的更新标识')
+    claim_name = db.Column(db.String(32), unique=True, nullable=False, comment='资源在链上的更新标识')
     txid = db.Column(db.String(64), unique=True, nullable=False, comment='元数据上链交易id')
     fee = db.Column(db.Float, default=0, comment='手续费')
     nout = db.Column(db.Integer, default=0, comment='此次交易中的第几个交易')
@@ -109,8 +109,9 @@ class ContentHistory(db.Model):
     """资源历史记录(新增/更新/删除)"""
     __tablename__ = 'content_history'
 
-    txid = db.Column(db.String(64), primary_key=True, comment='元数据上链交易id')
-    claim_id = db.Column(db.String(40), unique=True, nullable=False, comment='元数据在ulord链上的claim_id(资源的唯一标识)')
+    id = db.Column(db.Integer, primary_key=True, comment='自增id')
+    txid = db.Column(db.String(64), comment='元数据上链交易id')
+    claim_id = db.Column(db.String(40), nullable=False, comment='元数据在ulord链上的claim_id(资源的唯一标识)')
     claim_name = db.Column(db.String(32), nullable=False, comment='资源在链上的更新标识')
     fee = db.Column(db.Float, default=0, comment='手续费')
     nout = db.Column(db.Integer, default=0, comment='此次交易中的第几个交易')

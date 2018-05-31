@@ -4,17 +4,17 @@
 # @Email   : httpservlet@yeah.net
 import inspect
 import traceback
-
+import copy
 from . import bpv1, appkey_check, get_jsonrpc_server
 from ulord.utils import return_result
 from ulord.utils.formatter import add_timestamp
 from flask import request, g, current_app as app
-from ulord.models import Content, Tag, ContentHistory, Consume, StatisticsAppUser, User
+from ulord.models import Content, Tag, ContentHistory, Consume, StatisticsAppUser
 from ulord.extensions import db
 from ulord.utils.generate import generate_appkey
 from ulord.forms import (
     validate_form, CreateWalletForm, PayToUserForm, BalanceForm, PublishForm, CheckForm, ConsumeForm, AccountInForm,
-    AccountOutForm, AccountInOutForm, PublishCountForm, AccountForm, UpdateForm)
+    AccountOutForm, AccountInOutForm, PublishCountForm, AccountForm, UpdateForm, DeleteForm)
 
 
 @bpv1.route('/transactions/createwallet', methods=['POST'])
@@ -116,27 +116,20 @@ def publish():
     Args:
         status: 1:add, 2:update, 3:delete(enabled=False)
     """
-    appkey = g.appkey
-    author = g.form.author.data
-    username_wallet = get_wallet_name(author)
-    pay_password = g.form.pay_password.data
-    title = g.form.title.data
-    tags = g.form.tags.data
-    udfs_hash = g.form.udfs_hash.data
-    price = g.form.price.data
-    content_type = g.form.content_type.data
-    description = g.form.description.data
-    bid = app.config['PUBLISH_BID']
-    currency = app.config['PUBLISH_CURRENCY']
+    data = copy.deepcopy(g.form.data)
+    data['appkey'] = g.appkey
+    username_wallet = get_wallet_name(data['author'])
+    pay_password = data.pop('pay_password')
+    data['currency'] = app.config['PUBLISH_CURRENCY']
+    data['claim_name'] = generate_appkey()
 
-    claim_name = generate_appkey()
-
-    metadata = dict(title=title, author=author, tag=tags, description=description, language='en', license='',
-                    licenseUrl='', nsfw=False, preview='', thumbnail='', )
+    metadata = dict(title=data['title'], author=data['author'], tag=data['tags'], description=data['des'],
+                    language=data['language'] or 'en', license=data['license'], licenseUrl=data['license_url'],
+                    nsfw=False, preview=data['preview'], thumbnail=data['thumbnail'])
     try:
         server = get_jsonrpc_server()
-        result = server.publish(username_wallet, pay_password, claim_name, metadata, content_type, udfs_hash, currency,
-                                price, bid, None, None, True)
+        result = server.publish(username_wallet, pay_password, data['claim_name'], metadata, data['content_type'],
+                        data['udfs_hash'], data['currency'], data['price'], app.config['PUBLISH_BID'], None, None, True)
         if result.get('errcode') != 0:
             return result
     except:
@@ -144,22 +137,21 @@ def publish():
                                                               traceback.format_exc()))
         return return_result(20201)
     result = result.get('result')
-    fee = float(result.get('fee', 0))
-    claim_id = result.get('claim_id')
-    txid = result.get('txid')
-    nout = int(result.get('nout', 0))
-    if len(txid) != 64:
+    data['fee'] = float(result.get('fee', 0))
+    data['claim_id'] = result.get('claim_id')
+    data['txid'] = result.get('txid')
+    data['nout'] = int(result.get('nout', 0))
+    if len(data['txid']) != 64:
         return return_result(20201, result=result)
-    status = 1
-    tags = save_tag(tags)
-    history = save_content_history(txid=txid, claim_id=claim_id, author=author, appkey=appkey, title=title,
-                                   udfs_hash=udfs_hash, price=price, content_type=content_type, currency=currency,
-                                   claim_name=claim_name, des=description, status=status, fee=fee, nout=nout)
-    content = save_content(claim_id=claim_id, author=author, appkey=appkey, txid=txid, fee=fee, nout=nout, title=title,
-                           udfs_hash=udfs_hash, price=price, content_type=content_type, currency=currency,
-                           claim_name=claim_name, des=description, status=status, tags=tags)
+    data['status'] = 1
+    data['tags'] = save_tag(data['tags'])
+    content = Content(**data)
+    db.session.add(content)
+    # data.pop('tags')
+    # history = ContentHistory(**data)
+    # db.session.add(history)
     db.session.commit()
-    return return_result(result=dict(id=content.id, claim_id=claim_id))
+    return return_result(result=dict(id=content.id, claim_id=content.claim_id))
 
 
 @bpv1.route('/transactions/update', methods=['POST'])
@@ -171,34 +163,28 @@ def update():
     Args:
         status: 1:add, 2:update, 3:delete(enabled=False)
     """
-    appkey = g.appkey
-    cid = g.form.id.data
-    content = Content.query.filter_by(id=cid, appkey=appkey).first()
+    data = copy.deepcopy(g.form.data)
+    _id = data.pop('id')
+    pay_password = data.pop('pay_password')
+    is_delete = data.pop('is_delete')
+    content = Content.query.filter_by(id=_id, appkey=g.appkey).first()
     if not content:
         return return_result(20007)
-    txid = content.txid
-    nout = content.nout
-    author = content.author
-    username_wallet = get_wallet_name(author)
-    claim_id = content.claim_id
-    claim_name = content.claim_name
+    data['claim_id'] = content.claim_id
+    data['claim_name'] = content.claim_name
+    data['author'] = content.author
+    data['appkey'] = content.appkey
+    data['currency'] = app.config['PUBLISH_CURRENCY']
 
-    pay_password = g.form.pay_password.data
-    title = g.form.title.data
-    tags = g.form.tags.data
-    udfs_hash = g.form.udfs_hash.data
-    price = g.form.price.data
-    content_type = g.form.content_type.data
-    description = g.form.description.data
-    bid = app.config['PUBLISH_BID']
-    currency = app.config['PUBLISH_CURRENCY']
-
-    metadata = dict(title=title, author=author, tag=tags, description=description, language='en', license='',
-                    licenseUrl='', nsfw=False, preview='', thumbnail='', )
+    metadata = dict(title=data['title'], author=content.author, tag=data['tags'], description=data['des'],
+                    language=data['language'] or 'en', license=data['license'], licenseUrl=data['license_url'],
+                    nsfw=False, preview=data['preview'], thumbnail=data['thumbnail'])
     try:
         server = get_jsonrpc_server()
-        result = server.update_claim(username_wallet, pay_password, claim_name, claim_id, txid, nout, metadata,
-                                     content_type, udfs_hash, currency, price, bid, None, None)
+        result = server.update_claim(get_wallet_name(data['author']), pay_password, data['claim_name'],
+                                     data['claim_id'], content.txid, content.nout, metadata, data['content_type'],
+                                     data['udfs_hash'], data['currency'], data['price'], app.config['PUBLISH_BID'],
+                                     None, None)
         if result.get('errcode') != 0:
             return result
     except:
@@ -207,22 +193,63 @@ def update():
         return return_result(20208)
 
     result = result.get('result')
-    fee = float(result.get('fee', 0))
-    claim_id = result.get('claim_id')
-    txid = result.get('txid')
-    nout = int(result.get('nout', 0))
-    if len(txid) != 64:
+    data['txid'] = result.get('txid')
+    data['nout'] = int(result.get('nout', 0))
+    data['fee'] = float(result.get('fee', 0))
+    if is_delete:
+        data['status'] = 3
+        data['enabled'] = False
+    else:
+        data['status'] = 2
+    if len(data['txid']) != 64:
         return return_result(20208, result=result)
-    status = 2
-    tags = save_tag(tags)
-    history = save_content_history(txid=txid, claim_id=claim_id, author=author, appkey=appkey, title=title,
-                                   udfs_hash=udfs_hash, price=price, content_type=content_type, currency=currency,
-                                   claim_name=claim_name, des=description, status=status, fee=fee, nout=nout)
-    content = save_content(id=cid, claim_id=claim_id, author=author, appkey=appkey, txid=txid, fee=fee, nout=nout, title=title,
-                           udfs_hash=udfs_hash, price=price, content_type=content_type, currency=currency,
-                           claim_name=claim_name, des=description, status=status, tags=tags)
+
+    for k, v in data.items():
+        if k in ['id', 'claim_id', 'claim_name', 'pay_password', 'author', 'appkey', 'currency']:
+            continue
+        if v:
+            if k == 'tags':
+                v = save_tag(v)
+            setattr(content, k, v)
+
+    # History doesn't need the tags and enabled
+    data.pop('tags')
+    data.pop('enabled')
+    history = ContentHistory(**data)
+    db.session.add(history)
     db.session.commit()
-    return return_result(result=dict(id=content.id, claim_id=claim_id))
+    return return_result(result=dict(id=content.id, claim_id=content.claim_id))
+
+
+@bpv1.route('/transactions/delete', methods=['POST'])
+@appkey_check
+@validate_form(form_class=DeleteForm)
+def delete():
+    """Update published resources
+
+    Args:
+        status: 1:add, 2:update, 3:delete(enabled=False)
+    """
+
+    content = Content.query.filter_by(id=g.form.id.data, appkey=g.appkey).first()
+    if not content:
+        return return_result(20007)
+    # try:
+    #     server = get_jsonrpc_server()
+    #     result = server.update_claim(get_wallet_name(content.author), g.form.pay_password.data, content.claim_name,
+    #                                  content.claim_id, content.txid, content.nout, metadata, content.content_type,
+    #                                  content.udfs_hash, content.currency, content.currency, app.config['PUBLISH_BID'],
+    #                                  None, None)
+    #     if result.get('errcode') != 0:
+    #         return result
+    # except:
+    #     app.logger.error('{}.{}: remote_addr<{}> - {}'.format(__name__, inspect.stack()[0][3], request.remote_addr,
+    #                                                           traceback.format_exc()))
+    #     return return_result(20208)
+    content.status = 3
+    content.enabled = False
+    db.session.commit()
+    return return_result(result=dict(num=1))
 
 
 @bpv1.route('/transactions/check', methods=['POST'])
@@ -318,17 +345,19 @@ def account_in(page, num):
     category = g.form.category.data
     sdate = g.form.sdate.data
     edate = g.form.edate.data
-    query = Content.query.with_entities(Content.id, Content.claim_id, Content.author, Content.title, Content.enabled, Consume.txid,
-                            Consume.customer, db.func.abs(Consume.price).label('price'), Consume.create_timed).join(
-                            Consume, Content.claim_id == Consume.claim_id).filter(Content.appkey == appkey).\
-                            filter(Consume.create_timed >= sdate, Consume.create_timed <= edate)
+    query = Content.query.with_entities(Content.id, Content.claim_id, Content.author, Content.title, Content.enabled,
+                                        Consume.txid, Consume.customer, db.func.abs(Consume.price).label('price'),
+                                        Consume.create_timed).join(Consume,
+                                                                   Content.claim_id == Consume.claim_id).filter(
+        Content.appkey == appkey).filter(Consume.create_timed >= sdate, Consume.create_timed <= edate)
     if category == 0:
         query = query.filter(Content.author == username, Consume.price > 0)
     elif category == 1:
         query = query.filter(Consume.customer == username, Consume.price < 0)
     else:
-        query = query.filter(db.and_(Content.author == username, Consume.price > 0) |
-                             db.and_(Consume.customer == username, Consume.price < 0))
+        query = query.filter(
+            db.and_(Content.author == username, Consume.price > 0) | db.and_(Consume.customer == username,
+                                                                             Consume.price < 0))
     records = query.order_by(Consume.create_timed.desc()).paginate(page, num, error_out=False)
     total = records.total
     pages = records.pages
@@ -354,17 +383,18 @@ def account_out(page, num):
     category = g.form.category.data
     sdate = g.form.sdate.data
     edate = g.form.edate.data
-    query = Content.query.with_entities(Content.claim_id, Content.author, Content.title, Consume.txid,
-              Consume.customer, db.func.abs(Consume.price).label('price'), Consume.create_timed).join(
-              Consume, Content.claim_id == Consume.claim_id).filter(Content.appkey == appkey).\
-              filter(Consume.create_timed >= sdate, Consume.create_timed <= edate)
+    query = Content.query.with_entities(Content.claim_id, Content.author, Content.title, Consume.txid, Consume.customer,
+                                        db.func.abs(Consume.price).label('price'), Consume.create_timed).join(Consume,
+                                                                                                              Content.claim_id == Consume.claim_id).filter(
+        Content.appkey == appkey).filter(Consume.create_timed >= sdate, Consume.create_timed <= edate)
     if category == 0:
         query = query.filter(Content.author == username, Consume.price < 0)
     elif category == 1:
         query = query.filter(Consume.customer == username, Consume.price > 0)
     else:
-        query = query.filter(db.and_(Content.author == username, Consume.price < 0) |
-                             db.and_(Consume.customer == username, Consume.price > 0))
+        query = query.filter(
+            db.and_(Content.author == username, Consume.price < 0) | db.and_(Consume.customer == username,
+                                                                             Consume.price > 0))
     records = query.order_by(Consume.create_timed.desc()).paginate(page, num, error_out=False)
     total = records.total
     pages = records.pages
@@ -383,10 +413,10 @@ def account_inout(page, num):
     appkey = g.appkey
     username = g.form.username.data
     records = Content.query.with_entities(Content.claim_id, Content.author, Content.title, Consume.txid,
-                              Consume.customer, Consume.price, Consume.create_timed).join(Consume,
-                              Content.claim_id == Consume.claim_id).filter(Content.appkey == appkey).filter(
-                              (Content.author == username) | (Consume.customer == username)).order_by(
-                              Consume.create_timed.desc()).paginate(page, num, error_out=False)
+                                          Consume.customer, Consume.price, Consume.create_timed).join(Consume,
+                                                                                                      Content.claim_id == Consume.claim_id).filter(
+        Content.appkey == appkey).filter((Content.author == username) | (Consume.customer == username)).order_by(
+        Consume.create_timed.desc()).paginate(page, num, error_out=False)
     total = records.total
     pages = records.pages
     records = add_timestamp(records.items)
@@ -404,30 +434,30 @@ def account():
     edate = g.form.edate.data
 
     # Publisher income
-    publisher_in = Consume.query.with_entities(
-                    db.func.sum(Consume.price).label('sum'), db.func.count(Consume.price).label('count')).\
-                    join(Content, Content.claim_id == Consume.claim_id). \
-                    filter(Content.appkey == appkey, Content.author == username, Consume.price > 0).\
-                    filter(Consume.create_timed >= sdate, Consume.create_timed <= edate).first()
+    publisher_in = Consume.query.with_entities(db.func.sum(Consume.price).label('sum'),
+                                               db.func.count(Consume.price).label('count')).join(Content,
+                                                                                                 Content.claim_id == Consume.claim_id).filter(
+        Content.appkey == appkey, Content.author == username, Consume.price > 0).filter(Consume.create_timed >= sdate,
+                                                                                        Consume.create_timed <= edate).first()
 
     # Publisher expenditure
-    publisher_out = Consume.query.with_entities(
-                    db.func.abs(db.func.sum(Consume.price)).label('sum'), db.func.count(Consume.price).label('count')).\
-                    join(Content, Content.claim_id == Consume.claim_id).\
-                    filter(Content.appkey == appkey, Content.author == username, Consume.price < 0).\
-                    filter(Consume.create_timed >= sdate, Consume.create_timed <= edate).first()
+    publisher_out = Consume.query.with_entities(db.func.abs(db.func.sum(Consume.price)).label('sum'),
+                                                db.func.count(Consume.price).label('count')).join(Content,
+                                                                                                  Content.claim_id == Consume.claim_id).filter(
+        Content.appkey == appkey, Content.author == username, Consume.price < 0).filter(Consume.create_timed >= sdate,
+                                                                                        Consume.create_timed <= edate).first()
 
     # Consumer income
-    customer_in = Consume.query.with_entities(
-                    db.func.abs(db.func.sum(Consume.price)).label('sum'), db.func.count(Consume.price).label('count')).\
-                    filter(Consume.appkey == appkey, Consume.customer == username, Consume.price < 0).\
-                    filter(Consume.create_timed >= sdate, Consume.create_timed <= edate).first()
+    customer_in = Consume.query.with_entities(db.func.abs(db.func.sum(Consume.price)).label('sum'),
+                                              db.func.count(Consume.price).label('count')).filter(
+        Consume.appkey == appkey, Consume.customer == username, Consume.price < 0).filter(Consume.create_timed >= sdate,
+                                                                                          Consume.create_timed <= edate).first()
 
     # Consumer expenditure
-    customer_out = Consume.query.with_entities(
-                    db.func.sum(Consume.price).label('sum'), db.func.count(Consume.price).label('count')).\
-                    filter(Consume.appkey == appkey, Consume.customer == username, Consume.price > 0).\
-                    filter(Consume.create_timed >= sdate, Consume.create_timed <= edate).first()
+    customer_out = Consume.query.with_entities(db.func.sum(Consume.price).label('sum'),
+                                               db.func.count(Consume.price).label('count')).filter(
+        Consume.appkey == appkey, Consume.customer == username, Consume.price > 0).filter(Consume.create_timed >= sdate,
+                                                                                          Consume.create_timed <= edate).first()
 
     return return_result(result=dict(publisher_in=publisher_in, publisher_out=publisher_out, customer_in=customer_in,
                                      customer_out=customer_out))
@@ -442,21 +472,9 @@ def publish_count():
     author = g.form.author.data
     sdate = g.form.sdate.data
     edate = g.form.edate.data
-    count = Content.query.filter_by(appkey=appkey, author=author).\
-                filter(Content.create_timed >= sdate, Content.create_timed <= edate).count()
+    count = Content.query.filter_by(appkey=appkey, author=author).filter(Content.create_timed >= sdate,
+                                                                         Content.create_timed <= edate).count()
     return return_result(result=dict(count=count))
-
-
-def save_content(**kwargs):
-    content = Content(**kwargs)
-    db.session.add(content)
-    return content
-
-
-def save_content_history(**kwargs):
-    history = ContentHistory(**kwargs)
-    db.session.add(history)
-    return history
 
 
 def save_tag(tag_names):
@@ -470,8 +488,6 @@ def save_tag(tag_names):
             tag.name = name
             db.session.add(tag)
         tags.append(tag)
-
-    db.session.commit()
     return tags
 
 

@@ -580,7 +580,9 @@ num: 每页条数
         'udfs_hash': Ulord文件系统哈希,
         'price': 定价,
         'content_type': 资源类型(文件后缀名),
-        'description':资源描述
+        'des':资源描述,
+        "thumbnail":缩略图地址,
+        "preview":预览地址
 }
 
 # 返回值:
@@ -607,7 +609,9 @@ num: 每页条数
         "udfs_hash": "WmVcVaHhMeWNNetSLTZArmqaHMpu5ycqntx7mFZaci63VF",
         "price": 1.2,
         "content_type": ".exe",
-        "description":"update blog description"
+        "des":"update blog description",
+        "thumbnail":缩略图地址,
+        "preview":预览地址
 }
 
 # 返回值:
@@ -619,6 +623,25 @@ num: 每页条数
     "result":{
         "id":数据库id,
         "claim_id":资源在链上的id,
+    }
+}
+```
+
+##### 4.2. 删除资源  `POST`    `/v1/transactions/delete`
+```
+# 请求参数:
+{
+        "id" : 30,  # 资源在db中的id
+}
+
+# 返回值:
+
+成功
+{
+    "errcode": 0,
+    "reason": "success",
+    "result": {
+        "num": 1
     }
 }
 ```
