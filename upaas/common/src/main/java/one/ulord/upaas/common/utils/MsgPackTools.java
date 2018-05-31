@@ -2,7 +2,7 @@
  * Copyright(c) 2018
  * Ulord core developers
  */
-package one.ulord.upaas.common;
+package one.ulord.upaas.common.utils;
 
 import org.msgpack.core.MessagePack;
 import org.msgpack.core.MessageUnpacker;

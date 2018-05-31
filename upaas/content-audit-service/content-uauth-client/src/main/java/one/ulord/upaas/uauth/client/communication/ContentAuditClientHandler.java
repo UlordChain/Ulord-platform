@@ -10,7 +10,7 @@ import io.netty.handler.timeout.IdleStateEvent;
 import lombok.extern.slf4j.Slf4j;
 import one.ulord.upaas.common.BaseMessage;
 import one.ulord.upaas.common.communication.client.UPaasClientHandler;
-import one.ulord.upaas.uauth.client.contentauth.SensitiveWordSyncer;
+import one.ulord.upaas.uauth.client.contentauth.business.SensitiveWordSyncer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
