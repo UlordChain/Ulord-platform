@@ -596,7 +596,7 @@ num: 每页条数
 }
 ```
 
-##### 4.1. 更新资源  `POST`    `/v1/transactions/publish`
+##### 4.1. 更新资源  `POST`    `/v1/transactions/update`
 ```
 # 请求参数:
 {
