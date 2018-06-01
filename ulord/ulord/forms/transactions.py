@@ -62,7 +62,7 @@ class PublishForm(FlaskForm):
     pay_password = StringField('pay_password', validators=[DataRequired()])
     title = StringField('title', validators=[DataRequired(), Length(max=64)])
     tags = TagListField('tags', validators=[DataRequired()])
-    udfs_hash = StringField('udfs_hash', validators=[DataRequired(), Length(max=46)])
+    udfs_hash = StringField('udfs_hash', validators=[DataRequired(), Length(min=46, max=46)])
     price = FloatField('price', validators=[Optional()], filters=[lambda x: x or 0])
     content_type = StringField('content_type', validators=[DataRequired(), Length(max=16)])
     des = StringField('description', validators=[Optional()])
@@ -78,7 +78,7 @@ class UpdateForm(FlaskForm):
     pay_password = StringField('pay_password', validators=[DataRequired()])
     title = StringField('title', validators=[Optional(), Length(max=64)])
     tags = TagListField('tags', validators=[Optional()])
-    udfs_hash = StringField('udfs_hash', validators=[Optional(), Length(max=46)])
+    udfs_hash = StringField('udfs_hash', validators=[Optional(), Length(min=46, max=46)])
     price = FloatField('price', validators=[Optional()])
     content_type = StringField('content_type', validators=[Optional(), Length(max=16)])
     des = StringField('description', validators=[Optional()])
@@ -92,6 +92,7 @@ class UpdateForm(FlaskForm):
 class DeleteForm(FlaskForm):
     id = IntegerField('id', validators=[DataRequired()])
     pay_password = StringField('pay_password', validators=[DataRequired()])
+
 
 class CheckForm(FlaskForm):
     customer = StringField('customer', validators=[DataRequired(), WalletExists(is_wallet_name=False)])

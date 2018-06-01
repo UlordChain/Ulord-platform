@@ -119,6 +119,7 @@ def publish():
     username_wallet = get_wallet_name(data['author'])
     pay_password = data.pop('pay_password')
     data['currency'] = app.config['PUBLISH_CURRENCY']
+    data['bid'] = app.config['PUBLISH_BID']
     data['claim_name'] = generate_appkey()
 
     metadata = dict(title=data['title'], author=data['author'], tag=data['tags'], description=data['des'],
@@ -127,7 +128,7 @@ def publish():
     try:
         server = get_jsonrpc_server()
         result = server.publish(username_wallet, pay_password, data['claim_name'], metadata, data['content_type'],
-                        data['udfs_hash'], data['currency'], data['price'], app.config['PUBLISH_BID'], None, None, True)
+                        data['udfs_hash'], data['currency'], data['price'], data['bid'], None, None, True)
         if result.get('errcode') != 0:
             return result
     except:
@@ -167,20 +168,25 @@ def update():
     content = Content.query.filter_by(id=_id, appkey=g.appkey, enabled=True).first()
     if not content:
         return return_result(20007)
-    data['claim_id'] = content.claim_id
-    data['claim_name'] = content.claim_name
-    data['author'] = content.author
-    data['appkey'] = content.appkey
-    data['currency'] = app.config['PUBLISH_CURRENCY']
+    content.currency = app.config['PUBLISH_CURRENCY']
+    content.bid = app.config['PUBLISH_BID']
 
-    metadata = dict(title=data['title'], author=content.author, tag=data['tags'], description=data['des'],
-                    language=data['language'] or 'en', license=data['license'], licenseUrl=data['license_url'],
-                    nsfw=False, preview=data['preview'], thumbnail=data['thumbnail'])
+    for k, v in data.items():
+        if k in ['id', 'pay_password']:
+            continue
+        if v:
+            if k == 'tags':
+                v = save_tag(v)
+            setattr(content, k, v)
+
+    metadata = dict(title=content.title, author=content.author, tag=[tag.name for tag in content.tags],
+                    description=content.des, language=content.language or 'en', license=content.license,
+                    licenseUrl=content.license_url, nsfw=False, preview=content.preview, thumbnail=content.thumbnail)
     try:
         server = get_jsonrpc_server()
-        result = server.update_claim(get_wallet_name(data['author']), pay_password, data['claim_name'],
-                                     data['claim_id'], content.txid, content.nout, metadata, data['content_type'],
-                                     data['udfs_hash'], data['currency'], data['price'], app.config['PUBLISH_BID'],
+        result = server.update_claim(get_wallet_name(content.author), pay_password, content.claim_name,
+                                     content.claim_id, content.txid, content.nout, metadata, content.content_type,
+                                     content.udfs_hash, content.currency, content.price, content.bid,
                                      None, None)
         if result.get('errcode') != 0:
             return result
@@ -190,23 +196,15 @@ def update():
         return return_result(20208)
 
     result = result.get('result')
-    data['txid'] = result.get('txid')
-    data['nout'] = int(result.get('nout', 0))
-    data['fee'] = float(result.get('fee', 0))
-    data['status'] = 2
-    if len(data['txid']) != 64:
+    content.txid = result.get('txid')
+    content.nout = int(result.get('nout', 0))
+    content.fee = float(result.get('fee', 0))
+    content.status = 2
+    if len(content.txid) != 64:
         return return_result(20208, result=result)
 
-    for k, v in data.items():
-        if k in ['id', 'claim_id', 'claim_name', 'pay_password', 'author', 'appkey', 'currency']:
-            continue
-        if v:
-            if k == 'tags':
-                v = save_tag(v)
-            setattr(content, k, v)
-
-    # History doesn't need the tags
-    data.pop('tags')
+    data = contenthistory_schema.dump(content).data
+    data['appkey'] = g.appkey
     history = ContentHistory(**data)
     db.session.add(history)
     db.session.commit()
@@ -234,7 +232,7 @@ def delete():
         server = get_jsonrpc_server()
         result = server.update_claim(get_wallet_name(content.author), g.form.pay_password.data, content.claim_name,
                                      content.claim_id, content.txid, content.nout, metadata, content.content_type,
-                                     content.udfs_hash, content.currency, float(content.price), app.config['PUBLISH_BID'],
+                                     content.udfs_hash, content.currency, content.price, content.bid,
                                      None, None)
         if result.get('errcode') != 0:
             return result
