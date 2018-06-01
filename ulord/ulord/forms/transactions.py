@@ -45,8 +45,16 @@ class PayToUserForm(FlaskForm):
 
 class BalanceForm(FlaskForm):
     is_developer = BooleanField('is_developer', false_values=(0, "false", False))
-    username = StringField('username', validators=[DataRequired(), WalletExists()])
-    pay_password = StringField('pay_password', validators=[DataRequired()])
+    username = StringField('username')
+    pay_password = StringField('pay_password')
+
+    def validate_username(self, field):
+        if self.is_developer.data is False:
+            field.validate(self, [DataRequired(), WalletExists()])
+
+    def validate_pay_password(self, field):
+        if self.is_developer.data is False:
+            field.validate(self, [DataRequired()])
 
 
 class PublishForm(FlaskForm):

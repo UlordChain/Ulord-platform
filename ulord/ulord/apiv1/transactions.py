@@ -15,15 +15,13 @@ from ulord.utils.generate import generate_appkey
 from ulord.forms import (
     validate_form, CreateWalletForm, PayToUserForm, BalanceForm, PublishForm, CheckForm, ConsumeForm, AccountInForm,
     AccountOutForm, AccountInOutForm, PublishCountForm, AccountForm, UpdateForm, DeleteForm)
-
+from ulord.schema import contenthistory_schema
 
 @bpv1.route('/transactions/createwallet', methods=['POST'])
 @appkey_check
 @validate_form(form_class=CreateWalletForm)
 def create_wallet():
     """Generate wallets for app users."""
-    # app.logger.error('hahahahahaha')
-    # raise ValueError('shuxudong de error')
     appkey = g.appkey
     username = g.form.username.data
     pay_password = g.form.pay_password.data
@@ -147,9 +145,9 @@ def publish():
     data['tags'] = save_tag(data['tags'])
     content = Content(**data)
     db.session.add(content)
-    # data.pop('tags')
-    # history = ContentHistory(**data)
-    # db.session.add(history)
+    data.pop('tags')
+    history = ContentHistory(**data)
+    db.session.add(history)
     db.session.commit()
     return return_result(result=dict(id=content.id, claim_id=content.claim_id))
 
@@ -166,8 +164,7 @@ def update():
     data = copy.deepcopy(g.form.data)
     _id = data.pop('id')
     pay_password = data.pop('pay_password')
-    is_delete = data.pop('is_delete')
-    content = Content.query.filter_by(id=_id, appkey=g.appkey).first()
+    content = Content.query.filter_by(id=_id, appkey=g.appkey, enabled=True).first()
     if not content:
         return return_result(20007)
     data['claim_id'] = content.claim_id
@@ -196,11 +193,7 @@ def update():
     data['txid'] = result.get('txid')
     data['nout'] = int(result.get('nout', 0))
     data['fee'] = float(result.get('fee', 0))
-    if is_delete:
-        data['status'] = 3
-        data['enabled'] = False
-    else:
-        data['status'] = 2
+    data['status'] = 2
     if len(data['txid']) != 64:
         return return_result(20208, result=result)
 
@@ -212,9 +205,8 @@ def update():
                 v = save_tag(v)
             setattr(content, k, v)
 
-    # History doesn't need the tags and enabled
+    # History doesn't need the tags
     data.pop('tags')
-    data.pop('enabled')
     history = ContentHistory(**data)
     db.session.add(history)
     db.session.commit()
@@ -228,26 +220,40 @@ def delete():
     """Update published resources
 
     Args:
-        status: 1:add, 2:update, 3:delete(enabled=False)
+        status: 1:add, 2:update, 3:delete(DB: enabled=False; CHAIN:metadata['nsfw']=True)
     """
 
-    content = Content.query.filter_by(id=g.form.id.data, appkey=g.appkey).first()
+    content = Content.query.filter_by(id=g.form.id.data, appkey=g.appkey, enabled=True).first()
     if not content:
         return return_result(20007)
-    # try:
-    #     server = get_jsonrpc_server()
-    #     result = server.update_claim(get_wallet_name(content.author), g.form.pay_password.data, content.claim_name,
-    #                                  content.claim_id, content.txid, content.nout, metadata, content.content_type,
-    #                                  content.udfs_hash, content.currency, content.currency, app.config['PUBLISH_BID'],
-    #                                  None, None)
-    #     if result.get('errcode') != 0:
-    #         return result
-    # except:
-    #     app.logger.error('{}.{}: remote_addr<{}> - {}'.format(__name__, inspect.stack()[0][3], request.remote_addr,
-    #                                                           traceback.format_exc()))
-    #     return return_result(20208)
+
+    metadata = dict(title=content.title, author=content.author, tag=[tag.name for tag in content.tags],
+                    description=content.des, language=content.language or 'en', license=content.license,
+                    licenseUrl=content.license_url, nsfw=True, preview=content.preview, thumbnail=content.preview)
+    try:
+        server = get_jsonrpc_server()
+        result = server.update_claim(get_wallet_name(content.author), g.form.pay_password.data, content.claim_name,
+                                     content.claim_id, content.txid, content.nout, metadata, content.content_type,
+                                     content.udfs_hash, content.currency, float(content.price), app.config['PUBLISH_BID'],
+                                     None, None)
+        if result.get('errcode') != 0:
+            return result
+    except:
+        app.logger.error('{}.{}: remote_addr<{}> - {}'.format(__name__, inspect.stack()[0][3], request.remote_addr,
+                                                              traceback.format_exc()))
+        return return_result(20208)
+
+    result = result.get('result')
+    content.txid = result.get('txid')
+    content.nout = int(result.get('nout', 0))
+    content.fee = float(result.get('fee', 0))
     content.status = 3
     content.enabled = False
+
+    data = contenthistory_schema.dump(content).data
+    data['appkey'] = g.appkey
+    history = ContentHistory(**data)
+    db.session.add(history)
     db.session.commit()
     return return_result(result=dict(num=1))
 
