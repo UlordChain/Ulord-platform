@@ -114,16 +114,17 @@ def command(s):
             # 这里的name都是注册过的, 不用异常处理
             cmd = known_commands.get(name)
 
-            params = cmd.params
-            if params:
-                log.info("the %s's params are >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> %s" %
-                         (name, [zip(params, l_args), kwargs]))
 
             try:
                 if cmd.requires_command and (not l_args or l_args.pop(0) != 'is_command'):
                     raise ServerError('52003', name)
                 elif 'is_command' in l_args:
                     l_args.remove('is_command')
+
+                params = cmd.params
+                if params:
+                    log.info("the %s's params are >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> %s" %
+                             (name, [zip(params, l_args), kwargs]))
 
                 if cmd.requires_user:
                     new_args = self.load_wallet(l_args, cmd.requires_network)
@@ -193,11 +194,13 @@ class Commands(object):
         return tuple(args)
 
     def unload_wallet(self):
-        if len(self.wallets) > self.max_wallet:
+        # if len(self.wallets) > self.max_wallet:
+        if self.wallets and len(self.wallets) > self.max_wallet:
             user = self.wallets.keys()[0]
             important_print('logout', user)
             self.wallet.stop_threads()
             del self.wallets[user]
+
         self.wallet = None
 
     @command('c')
@@ -517,9 +520,9 @@ class Commands(object):
               claim_val=None,
               abandon_txid=None, claim_id=None):
         self.nocheck = nocheck
-        # 确定找零地址
-        if change_addr is None:
-            change_addr = self.wallet.first_address
+        # Determine the change address
+        # if change_addr is None:
+        #     change_addr = self.wallet.first_address
         change_addr = self._resolver(change_addr)
         domain = None if domain is None else map(self._resolver, domain)
         fee = None if fee is None else int(COIN * Decimal(fee))
@@ -564,6 +567,7 @@ class Commands(object):
         tx = self.wallet.make_unsigned_transaction(coins, final_outputs, self.config, fee,
                                                    change_addr,
                                                    abandon_txid=abandon_txid)
+        important_print('tx input: {}, tx output: {}'.format(tx._inputs[0], tx._outputs[0]))
         str(tx)  # this serializes
         if not unsigned:
             self.wallet.sign_transaction(tx)
@@ -2625,11 +2629,16 @@ class Commands(object):
     # ========================================================================
     # ####################    my packaging interface   #######################
     # ========================================================================
+    @command('cn')
+    def get_memory(self, expression):
+        res = eval(expression)
+        return res
+
     @command('n')  # 这里不能加u标记
-    def create(self, user, password):
+    def create(self, user, password, use_change=True):
         """Create a new wallet"""
 
-        self.wallet = Wallet(user, password, True)
+        self.wallet = Wallet(user, password, use_change, True)
         seed = self.wallet.make_and_add_seed()
         self.wallet.create_master_keys()
         self.wallet.create_main_account()
@@ -3060,7 +3069,8 @@ command_options = {
     'timeout': (None, '--timeout', 'timeout'),
     'include_tip_info': (None, "--include_tip_info", 'Include claim tip information'),
     'address': (None, "--address", 'a address, to receive UT'),
-    'bid': (None, '--bid', 'the UT that publish a resource to the platform')
+    'bid': (None, '--bid', 'the UT that publish a resource to the platform'),
+    'use_change': (False, '--usechange', 'is use change for the wallet')
 }
 
 

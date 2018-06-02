@@ -1,24 +1,13 @@
 # -*- coding: utf-8 -*-
-# @Date    : 18-5-24 上午2:03
+# @Date    : 18-5-30 上午12:00
 # @Author  : hetao
 # @Email   : 18570367466@163.com
 # Copyright (c) 2016-2018 The Ulord Core Developers
-import time
 
-from utasks.wallet_tasks import publish, update_claim
+from celery import Celery
 
-
-def profiler(func):
-    def do_profile(*args, **kw_args):
-        n = func.func_name
-        t0 = time.time()
-        o = func(*args, **kw_args)
-        t = time.time() - t0
-        print "[profiler] %s %f" % (n, t)
-        return o
-
-    # return lambda *args, **kw_args: do_profile(func, args, kw_args)
-    return do_profile
+app = Celery(broker="amqp://guest:guest@192.168.14.240",
+    backend="redis://192.168.14.240")
 
 def print_result(*args):
     print('callback print: ---------')
@@ -54,9 +43,8 @@ def get_publish_params():
     bid = 0.59
     address = None
     tx_fee = None
-    args = (metadata, contentType, sourceHash, currency, amount, bid, address, tx_fee)
+    args = [metadata, contentType, sourceHash, currency, amount, bid, address, tx_fee]
     return args
-
 
 if __name__ == '__main__':
     user = 'test_201805281100'
@@ -67,13 +55,9 @@ if __name__ == '__main__':
     claim_id = 'bcd560324378b3705c1ffe37fadfb11643181c77'
     txid = 'eef94b23bfc2f5c05133450e53028efc6de7533c178d7aa3e82f6fc32f56cd81'
 
-    publish_args = get_publish_params()
-    # # 异步调用
-    # publish.delay(user, password, claim_name, *publish_args, skip_update_check=True, callback=print_result)  # 2.68
-    # 等待结果返回
-    # print(res.get())
+    publish_args = [user, password, claim_name]
+    publish_args.extend(get_publish_params())
+    print(publish_args)
+    app.send_task('wallet_tasks.publish', publish_args, kwargs={'skip_update_check': True})
 
-    # 同步调用
-    publish(user, password, claim_name, *publish_args, skip_update_check=True, callback=print_result)
 
-    # update_claim(user, password, claim_name, claim_id, txid, 0, *publish_args, callback=print_result)

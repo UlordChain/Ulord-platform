@@ -14,7 +14,7 @@ def profiler(func):
     # return lambda *args, **kw_args: do_profile(func, args, kw_args)
     return do_profile
 
-# server = Server('http://192.168.14.240:8080')
+# server = Server('http://192.168.14.240:8000')
 server = Server('http://192.168.14.241:8000')
 
 @profiler
@@ -59,12 +59,12 @@ def consume(claim_id):
     return server.consume(user, password, claim_id)
 
 @profiler
-def create(user, password):
+def create(user, password, use_change):
     """
 
     :return: {u'seed': u'faculty claim ghost cushion helmet sweet solution dirt night bottom gift trophy', u'success': True}
     """
-    return server.create(user, password)
+    return server.create(user, password, use_change)
 
 @profiler
 def getbalance(user, password):
@@ -143,19 +143,19 @@ def mul_test():
 
 
 if __name__ == '__main__':
-    user = 'test_201805281100'
-    password = '123'
-    # password = 'pbkdf2:sha256:50000$oEw0SZX0$f8d9951addfa90213e63bb4553cacc7e3cc8e78d9d59f5e707da1fc09dd4d675'
+    user = 'shuxudong'
+    # password = '123'
+    password = 'pbkdf2:sha256:50000$oEw0SZX0$f8d9951addfa90213e63bb4553cacc7e3cc8e78d9d59f5e707da1fc09dd4d675'
 
-    claim_name = 'test_201801588'
-    claim_id = '8b33c43b7d9954d1333541d9f40f1236ca9622c7'
-    txid = '6563c2f0cf8f3cb16779f476a9c2b32fe1fbe1a37702597c4020db2f6a1959b5'
+    claim_name = 'fd32773a648611e8bc56f48e3889c8ab'
+    claim_id = 'fcd510181f7eef94303992922e5fb900e29f3fbb'
+    txid = '9504d71184f365421c5728b12b4ddfff4aeff76c5609fd08767a101b64aafa4d'
 
-    # print create(user, password)  # 0.48
-    # print pay('37fd0c5e3eeb11e8a12af48e3889c8ab_user1', amount=1)  # 0.95
+    # print create(user, password, True)  # 0.48
+    # print pay(user, 3000)  # 0.95
     print getbalance(user, password)  # 0.14
     # print publish(user, password, claim_name, False) # 3.67
-    # print publish(user, password, claim_name, True) # 2.68
+    # print publish(user, password, claim_name, False) # 2.68
     # print consume(claim_id)  # 1.4
     # print update_claim(user, password, claim_name, claim_id, txid)  # 1.56 amount
     # print delete('ht')
@@ -163,5 +163,7 @@ if __name__ == '__main__':
 
     # print server.listaddresses()
     # print server.password('shuxudong', '123', 'pbkdf2:sha256:50000$oEw0SZX0$f8d9951addfa90213e63bb4553cacc7e3cc8e78d9d59f5e707da1fc09dd4d675')
-    # print server.is_wallet_exists('')
-    # print server.pay('shuxudong', password, user, 10)
+    # print server.is_wallet_exists('5d42b27e581c11e88b12f48e3889c8ab_user1')
+    print server.pay(user, password, 'hetao1', 1008)
+    # print server.pay('cln', 'pbkdf2:sha256:50000$wxOHrzn9$bb0569c6e78b5ed621917e28c401499e1e830a86e81febd38b04c6cec49a0460', user, 4)
+    # print getbalance('cln', 'pbkdf2:sha256:50000$wxOHrzn9$bb0569c6e78b5ed621917e28c401499e1e830a86e81febd38b04c6cec49a0460')  # 0.14

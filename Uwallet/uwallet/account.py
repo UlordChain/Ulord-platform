@@ -83,12 +83,14 @@ class Account(object):
                 address = self.create_new_address(for_change)
                 wallet.add_address(address, for_change)
                 continue
-            break
-            # if map(lambda a: wallet.address_is_old(a), addresses[-limit:]) == limit * [False]:
-            #     break
-            # else:
-            #     address = self.create_new_address(for_change)
-            #     wallet.add_address(address)
+            if not wallet.use_change:
+                break
+
+            if map(lambda a: wallet.address_is_old(a), addresses[-limit:]) == limit * [False]:
+                break
+            else:
+                address = self.create_new_address(for_change)
+                wallet.add_address(address)
 
 
     def synchronize(self, wallet):

@@ -5,6 +5,7 @@
 import hashlib
 import json
 import logging
+import random
 import threading
 import time
 import traceback
@@ -62,21 +63,20 @@ class Connection(object):
 
 
 class Wallet_Storage(object):
-    use_change = False
     root_name = 'x/'
     gap_limit = 1  # min receiving addresses
-    gap_limit_for_change = 1  # min change addresses
+    gap_limit_for_change = 10  # min change addresses
     root_derivation = "m/"
     wallet_type = 'standard'
 
-    def __init__(self, user, password, is_create=False):
+    def __init__(self, user, password, use_change=False, is_create=False):
         self.user = user
-        self._password = password
 
         if not password:
             raise ParamsError('51002')
         try:
-            str(password)
+            password = str(password)
+            self._password = password
         except:
             raise ParamsError('51001', "the password can't conversion into str")
 
@@ -85,7 +85,7 @@ class Wallet_Storage(object):
         else:
             self.app_key, self.id = 'ulord', user
 
-        db = Connection.mongo_con()['uwallet_user']
+        db = Connection.mongo_con()['uwallets']
         self.__col = db[self.app_key]
         self.__col.create_index('seed', unique=True, background=True)
 
@@ -96,14 +96,22 @@ class Wallet_Storage(object):
                 raise ParamsError('51004', self.user)
             # load wallet
             self.check_password()
-
-            receiving = self.addresses['receiving'] if self.use_change else self.addresses
-            self.first_address = receiving and receiving[0]
         else:
             if not is_create:
                 raise ParamsError('51003', self.user)
 
-            # create wallet
+        if self.use_changes is None:
+            self.use_changes = use_change  # mongodb field
+            self.use_change = use_change  # wallet attribute, Avoid checking the database every time
+        else:
+            self.use_change = self.use_changes
+
+
+    @property
+    def first_address(self):
+        receiving = self.addresses['receiving'] if self.use_change else self.addresses
+        first_address = receiving and receiving[0]
+        return first_address
 
     @classmethod
     def get_first_address(cls, user):
@@ -111,13 +119,13 @@ class Wallet_Storage(object):
             app_key, id = user.split('_')
         else:
             app_key, id = 'ulord', user
-        col = Connection.mongo_con()['uwallet_user'][app_key]
+        col = Connection.mongo_con()['uwallets'][app_key]
         # todo: except
-        res = col.find_one({'_id': id}, {'_id': 0, 'addresses': 1})
-        if res is None:
+        res = col.find_one({'_id': id}, {'_id': 0, 'addresses': 1, 'use_changes': 1})
+        if not res:
             raise ParamsError('51003', user)
 
-        receiving = res['addresses']['receiving'] if cls.use_change else res['addresses']
+        receiving = res['addresses']['receiving'] if res['use_changes'] else res['addresses']
         first_address = receiving and receiving[0]
         return first_address
 
@@ -131,6 +139,8 @@ class Wallet_Storage(object):
     def __getattr__(self, field):
         if field in WALLET_FIELD:
             res = self.__col.find_one({'_id': self.id}, {'_id': 0, field: 1})
+            if not res:
+                return None
             rs = res[field]
             if isinstance(rs, dict):
                 return Dict_Field(self, field, rs)
@@ -188,8 +198,8 @@ class Wallet_Storage(object):
 class Abstract_Wallet(Wallet_Storage):
     max_change_outputs = 3
 
-    def __init__(self, user, password, is_create=False):
-        super(Abstract_Wallet, self).__init__(user, password, is_create=is_create)
+    def __init__(self, user, password, use_change=False, is_create=False):
+        super(Abstract_Wallet, self).__init__(user, password, use_change=use_change, is_create=is_create)
         self.unverified_tx = {}
         self.electrum_version = UWALLET_VERSION
         # saved fields
@@ -290,7 +300,7 @@ class Abstract_Wallet(Wallet_Storage):
 
 
     def is_mine(self, address):
-        return address in self.get_addresses(True)
+        return address in self.get_addresses(is_all=True)
 
 
     def update_password(self, new_password):
@@ -346,10 +356,12 @@ class Abstract_Wallet(Wallet_Storage):
         self.master_public_keys = {self.root_name: xpub}
         self.master_private_keys = {self.root_name: pw_encode(self.decoded_xprv, self._password)}
 
-    def get_addresses(self, is_change=False):
+    def get_addresses(self, is_change=False, is_all=False):
         res =  self.addresses
         if not self.use_change:
             return res
+        if is_all:
+            return  res.get('change', []) + res.get('receiving', [])
         if is_change:
             return res.get('change', [])
         else:
@@ -379,9 +391,10 @@ class Abstract_Wallet(Wallet_Storage):
             res.update({field: []})
 
         for field in NOR_FIELD:
-            if field != 'seed':
+            if field not in ['use_changes', 'seed']:
                 res.update({field: ' '})
-        address = {} if self.use_change else []
+        address = {'change':[], 'receiving': []} if self.use_change else []
+
         res.update(addresses=address)
         self.update_col(None, None, update_data=res)
 
@@ -668,12 +681,11 @@ class Abstract_Wallet(Wallet_Storage):
             if address in addresses:
                 return (0, addresses.index(address))
         else:
-            # for acc_id in self.accounts:
-            #     for for_change in [0, 1]:
-            #         addresses = self.accounts[acc_id].get_addresses(for_change)
-            #         if address in addresses:
-            #             return (for_change, addresses.index(address))
-            raise ServerError('52013', 'get_address_index')
+            for acc_id in self.accounts:
+                for for_change in [True, False]:
+                    addresses = self.get_addresses(is_change=for_change)
+                    if address in addresses:
+                        return (for_change, addresses.index(address))
         raise Exception("Address not found", address)
 
     def fee_per_kb(self, config):
@@ -692,6 +704,10 @@ class Abstract_Wallet(Wallet_Storage):
         f = self.network.relay_fee if self.network and self.network.relay_fee else RELAY_FEE
         return min(f, MAX_RELAY_FEE)
 
+    def get_num_tx(self, address):
+        """ return number of transactions where address is involved """
+        return len(self.addr_history.get(address, []))
+
     def make_unsigned_transaction(self, coins, outputs, config, fixed_fee=None, change_addr=None,
                                   abandon_txid=None):
         # check outputs
@@ -704,32 +720,26 @@ class Abstract_Wallet(Wallet_Storage):
         # Avoid index-out-of-range with coins[0] below
         if not coins:
             log.error('not coins')
-            raise ServerError('52004', "cant't find input")
+            raise ServerError('52004', "No available UTXO")
 
         for item in coins:
             self.add_input_info(item)
 
         # change address
+        # send change to one of the accounts involved in the tx
         if not self.use_change:
             change_addrs = [self.first_address]
         elif change_addr:
             change_addrs = [change_addr]
         else:
-            # 这里可以从数据库里面取
-            # send change to one of the accounts involved in the tx
-            # address = coins[0].get('address')
-            # if self.use_change and self.accounts[account].has_change():
-            #     # New change addresses are created only after a few
-            #     # confirmations.  Select the unused addresses within the
-            #     # gap limit; if none take one at random
-            #     addrs = self.self.account_obj.get_addresses(1)[-self.gap_limit_for_change:]
-            #     change_addrs = [addr for addr in addrs if
-            #                     self.get_num_tx(addr) == 0]
-            #     if not change_addrs:
-            #         change_addrs = [random.choice(addrs)]
-            # else:
-            #     change_addrs = [address]
-            raise ServerError('52013', 'make_unsigned_transaction')
+            # New change addresses are created only after a few
+            # confirmations.  Select the unused addresses within the
+            # gap limit; if none take one at random
+            addrs = self.get_addresses(is_change=True)[-self.gap_limit_for_change:]
+            change_addrs = [addr for addr in addrs if
+                            self.get_num_tx(addr) == 0]
+            if not change_addrs:
+                change_addrs = [random.choice(addrs)]
 
         # Fee estimator
         if fixed_fee is None:
@@ -1093,6 +1103,7 @@ class Wallet(Abstract_Wallet):
                         dd[addr] = []
                     dd[addr].append((ser, v))
             # save
+            important_print('>>>>>>>>>>>> add transactions', tx_hash)
             self.tx_transactions[tx_hash] = tx
             self.transactions[tx_hash] = str(tx)
             self.txi = temp_txi
@@ -1131,29 +1142,34 @@ class Wallet(Abstract_Wallet):
         for k, v in self.accounts.items():
             if not self.use_change:
                 account_args = {'xpub': self.xpub, 'receiving': v}
-                self.account_obj = BIP32_Account(account_args, self.use_change)
-                corrected = self.account_obj.correct_pubkeys()
-                if corrected:
-                    self.save_accounts()
             else:
-                # todo: self.use_change == True , v.get('pending')这种情况需要处理
+                account_args = {
+                    'xpub': self.xpub,
+                    'receiving': v.get('receiving'),
+                    'change': v.get('change'),
+                }
+            self.account_obj = BIP32_Account(account_args, self.use_change)
+            corrected = self.account_obj.correct_pubkeys()
+            if corrected:
+                self.save_accounts()
+            # todo:  v.get('pending')
 
-                # 暂时不支持这种
-                #     if v.get('imported'):
-                #         self.accounts[k] = ImportedAccount(v)
-                #     elif v.get('xpub'):
-                #         self.accounts[k] = BIP32_Account(v)
-                #         corrected = self.accounts[k].correct_pubkeys()
-                #         if corrected:
-                #             self.save_accounts()
-                #
-                #     elif v.get('pending'):
-                #         removed = True
-                #     else:
-                #         self.print_error("cannot load account", v)
-                # if removed:
-                #     self.save_accounts()
-                raise ServerError('52013', 'load_accounts')
+            # 暂时不支持这种
+            #     if v.get('imported'):
+            #         self.accounts[k] = ImportedAccount(v)
+            #     elif v.get('xpub'):
+            #         self.accounts[k] = BIP32_Account(v)
+            #         corrected = self.accounts[k].correct_pubkeys()
+            #         if corrected:
+            #             self.save_accounts()
+            #
+            #     elif v.get('pending'):
+            #         removed = True
+            #     else:
+            #         self.print_error("cannot load account", v)
+            # if removed:
+            #     self.save_accounts()
+            # raise ServerError('52013', 'load_accounts')
 
     def set_up_to_date(self, up_to_date):
         with self.lock:
@@ -1164,7 +1180,8 @@ class Wallet(Abstract_Wallet):
             return self.up_to_date
 
     def receive_tx_callback(self, tx_hash, tx, tx_height):
-        important_print("receive %s's tx callback" % self.user)
+        #
+        important_print("receive %s's tx callback" % self.user, traceback.extract_stack()[-2][2])
         self.add_transaction(tx_hash, tx)
         self.add_unverified_tx(tx_hash, tx_height)
 
@@ -1235,3 +1252,15 @@ class Wallet(Abstract_Wallet):
 
     def __str__(self):
         return "the {}'s wallet".format(self.user)
+
+    def address_is_old(self, address, age_limit=2):
+        age = -1
+        h = self.addr_history.get(address, [])
+        for tx_hash, tx_height in h:
+            if tx_height == 0:
+                tx_age = 0
+            else:
+                tx_age = self.get_local_height() - tx_height + 1
+            if tx_age > age:
+                age = tx_age
+        return age > age_limit
