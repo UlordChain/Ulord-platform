@@ -8,7 +8,6 @@ from __future__ import absolute_import, unicode_literals
 import logging
 from utasks import app, configs
 from jsonrpclib import Server
-import time
 
 from utasks.utils import Timekeeping
 

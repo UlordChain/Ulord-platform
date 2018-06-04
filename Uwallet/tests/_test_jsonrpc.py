@@ -14,7 +14,7 @@ def profiler(func):
     # return lambda *args, **kw_args: do_profile(func, args, kw_args)
     return do_profile
 
-# server = Server('http://192.168.14.240:8080')
+# server = Server('http://192.168.14.240:8000')
 server = Server('http://192.168.14.241:8000')
 
 @profiler
@@ -54,17 +54,17 @@ def consume(claim_id):
 
     :return: {u'success': True, u'tx': u'3ecce656dbfeea5b38f385549ac51e550bfa6d70bba9d2042dacdd3c1def662a'}
     """
-    user = 'hetao'
+    user = 'ht'
     password = '123'
     return server.consume(user, password, claim_id)
 
 @profiler
-def create(user, password):
+def create(user, password, use_change):
     """
 
     :return: {u'seed': u'faculty claim ghost cushion helmet sweet solution dirt night bottom gift trophy', u'success': True}
     """
-    return server.create(user, password)
+    return server.create(user, password, use_change)
 
 @profiler
 def getbalance(user, password):
@@ -81,7 +81,7 @@ def pay(receive_user, amount):
     :param password:
     :return: {u'success': True, u'txid': u'b6b921500444b575b48745e33a8808c692a5bbe3c6ecfae4714c264d81696daf'}
     """
-    send_user = 'hetao'
+    send_user = 'ht'
     password = '123'
     return server.pay(send_user, password, receive_user, amount)
 
@@ -143,25 +143,50 @@ def mul_test():
 
 
 if __name__ == '__main__':
-    user = 'test_201805281100'
+    user = 'ht'
     password = '123'
     # password = 'pbkdf2:sha256:50000$oEw0SZX0$f8d9951addfa90213e63bb4553cacc7e3cc8e78d9d59f5e707da1fc09dd4d675'
+    claim_name = 'fd32773a648611e8bc56f48e3889c8ab'
+    claim_id = 'e2b29a45d8ee5b39c549a9ff6e7ac667bd18f776'
+    txid = '8aab1a95d08ccf814980d3d10f1af5e959468a1703f8eb3e6063fdbe78651e2b'
 
-    claim_name = 'test_201801588'
-    claim_id = '8b33c43b7d9954d1333541d9f40f1236ca9622c7'
-    txid = '6563c2f0cf8f3cb16779f476a9c2b32fe1fbe1a37702597c4020db2f6a1959b5'
-
-    # print create(user, password)  # 0.48
-    # print pay('37fd0c5e3eeb11e8a12af48e3889c8ab_user1', amount=1)  # 0.95
+    # print create(user, password, True)  # 0.48
+    # print pay(user, 10)  # 0.95
     print getbalance(user, password)  # 0.14
-    # print publish(user, password, claim_name, False) # 3.67
-    # print publish(user, password, claim_name, True) # 2.68
-    # print consume(claim_id)  # 1.4
+    # print publish(user, password, claim_name, True) # 3.67
     # print update_claim(user, password, claim_name, claim_id, txid)  # 1.56 amount
+    # print consume(claim_id)  # 1.4
     # print delete('ht')
 
+    # ==================================================================
 
+    cln_password = 'pbkdf2:sha256:50000$wxOHrzn9$bb0569c6e78b5ed621917e28c401499e1e830a86e81febd38b04c6cec49a0460'
     # print server.listaddresses()
     # print server.password('shuxudong', '123', 'pbkdf2:sha256:50000$oEw0SZX0$f8d9951addfa90213e63bb4553cacc7e3cc8e78d9d59f5e707da1fc09dd4d675')
-    # print server.is_wallet_exists('')
-    # print server.pay('shuxudong', password, user, 10)
+    # print server.is_wallet_exists('5d42b27e581c11e88b12f48e3889c8ab_user1')
+    # print server.pay(user, password, 'hetao1', 1008)
+
+    # print server.create('cln', cln_password)
+    # print server.pay(user, password, 'test_cln2', 2)
+    # print getbalance('cln', cln_password)  # 0.14
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

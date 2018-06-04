@@ -44,5 +44,5 @@ LIST_DB_FIELD = ('addresses',)
 # 既和数据库进行交互, 又和内存交互的 list 类型字段
 LIST_BOTH_FIELD = ()
 # 单个长度字段
-NOR_FIELD = ('seed', 'stored_height')
+NOR_FIELD = ('seed', 'stored_height', 'use_changes')
 WALLET_FIELD = DICT_BOTH_FIELD + DICT_DB_FIELD + LIST_DB_FIELD + LIST_BOTH_FIELD + NOR_FIELD

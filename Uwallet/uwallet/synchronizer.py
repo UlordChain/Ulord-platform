@@ -1,5 +1,6 @@
 #-*- coding: UTF-8 -*-
 import logging
+import traceback
 from threading import Lock
 
 from uwallet.hashing import Hash, hash_encode
@@ -81,6 +82,7 @@ class Synchronizer(ThreadJob):
 
     def addr_history_response(self, response):
         params, result = self.parse_response(response)
+        important_print('addr histtory resapinse', params, result)
         if not params:
             return
         addr = params[0]
@@ -100,6 +102,7 @@ class Synchronizer(ThreadJob):
         elif self.wallet.get_status(hist) != server_status:
             self.print_error("error: status mismatch: %s" % addr)
         else:
+            log.info('>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
             # Store received history
             self.wallet.receive_history_callback(addr, hist)
             # Request transactions we don't have
@@ -129,6 +132,7 @@ class Synchronizer(ThreadJob):
 
     def request_missing_txs(self, hist):
         # "hist" is a list of [tx_hash, tx_height] lists
+        important_print("request missing txs", traceback.extract_stack()[-2][2])
         missing = set()
         for tx_hash, tx_height in hist:
             if self.wallet.transactions.get(tx_hash) is None:
@@ -144,14 +148,14 @@ class Synchronizer(ThreadJob):
         addresses, and request any transactions in its address history
         we don't have.
         '''
-        for history in self.wallet.addr_history.values():
+        for history in self.wallet.addr_history.values()[:20]:
             if history == ['*']:
                 continue
             self.request_missing_txs(history)
 
         if self.requested_tx:
             log.warning("missing tx: %s", self.requested_tx)
-        self.subscribe_to_addresses(set(self.wallet.get_addresses(True)))
+        self.subscribe_to_addresses(set(self.wallet.get_addresses(is_all=True)))
 
     def run(self):
         '''Called from the network proxy thread main loop.'''
