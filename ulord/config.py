@@ -7,8 +7,8 @@
 class Config(object):
     SECRET_KEY = 'bb649c83dd1ea5c9d9dec9a18df0ffe9'
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
-    SQLALCHEMY_TRACK_MODIFICATIONS=True
-    SQLALCHEMY_POOL_SIZE=10
+    SQLALCHEMY_TRACK_MODIFICATIONS = True
+    SQLALCHEMY_POOL_SIZE = 10
     FLASKY_MAIL_SUBJECT_PREFIX = '[Ulord]'
     FLASKY_MAIL_SENDER = 'Ulord Admin <shuxudong@ulord.net>'
     FLASKY_ADMIN = 'Ulord'
@@ -18,7 +18,7 @@ class Config(object):
     PUBLISH_CURRENCY = 'UT'  # Token unit
     EXPIRATION = 60 * 60 * 6  # Login token expiration time
     UAPP_MAX_COUNT = 10  # The maximum number of new applications available.
-    SIGN_EXPIRES = 60 * 1000*1000  # API signature expiration time.
+    SIGN_EXPIRES = 60 * 1000 * 1000  # API signature expiration time.
     ERROR_LOG = "logs/error.log"
     INFO_LOG = "logs/info.log"
 

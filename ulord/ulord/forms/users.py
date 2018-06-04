@@ -18,7 +18,7 @@ class RegForm(FlaskForm):
     https://stackoverflow.com/questions/21831216/get-none-from-a-fields-data-in-instead-of-an-empty-string
     """
     username = StringField('username', validators=[DataRequired(), Length(3, 32), Unique(User, User.username)])
-    password = StringField('username', validators=[DataRequired(),RsaCheck()])
+    password = StringField('username', validators=[DataRequired(), RsaCheck()])
     # Telephone Numbers vary from country to country.
     telphone = StringField('telphone', validators=[Optional(), Unique(User, User.telphone), ],
                            filters=[lambda x: x or None])

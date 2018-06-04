@@ -16,6 +16,9 @@ from ulord.forms import (
     validate_form, CreateWalletForm, PayToUserForm, BalanceForm, PublishForm, CheckForm, ConsumeForm, AccountInForm,
     AccountOutForm, AccountInOutForm, PublishCountForm, AccountForm, UpdateForm, DeleteForm)
 from ulord.schema import contenthistory_schema
+from sqlalchemy.exc import IntegrityError
+from ulord.utils.log import formatter_error
+
 
 @bpv1.route('/transactions/createwallet', methods=['POST'])
 @appkey_check
@@ -25,7 +28,6 @@ def create_wallet():
     appkey = g.appkey
     username = g.form.username.data
     pay_password = g.form.pay_password.data
-
     try:
         server = get_jsonrpc_server()
         result = server.create(username, pay_password)
@@ -34,9 +36,11 @@ def create_wallet():
         app_user = StatisticsAppUser(appkey=appkey, app_username=username)
         db.session.add(app_user)
         db.session.commit()
+    except IntegrityError as ie:
+        app.logger.error(formatter_error(ie))
     except:
-        app.logger.error('{}.{}: remote_addr<{}> - {}'.format(__name__, inspect.stack()[0][3], request.remote_addr,
-                                                              traceback.format_exc()))
+        app.logger.error(formatter_error('hehe'))
+        app.logger.error(formatter_error(traceback.format_exc()))
         return return_result(20204)
 
     return return_result()
@@ -109,7 +113,6 @@ def balance():
 @validate_form(form_class=PublishForm)
 def publish():
     """Release resources
-
 
     Args:
         status: 1:add, 2:update, 3:delete(enabled=False)
@@ -303,8 +306,8 @@ def consume():
     content = g.form.content
     price = content.price
     if content.author != customer and content.price != 0:  # Non-free resources
-        consume = Consume.query.filter_by(claim_id=claim_id, customer=customer, appkey=appkey).first()
-        if not consume:
+        cs = Consume.query.filter_by(claim_id=claim_id, customer=customer, appkey=appkey).first()
+        if not cs:
             try:
                 server = get_jsonrpc_server()
                 if price >= 0:  # Normal
@@ -380,7 +383,7 @@ def account_out(page, num):
     Args:
         page: Show the page
         num: How many pages per page
-        category: 0 - Resource income, 1 - Advertising revenue
+        category: 0 - Resource spending, 1 - Advertising income
     """
     appkey = g.appkey
     username = g.form.username.data
@@ -389,12 +392,12 @@ def account_out(page, num):
     edate = g.form.edate.data
     query = Content.query.with_entities(Content.claim_id, Content.author, Content.title, Consume.txid, Consume.customer,
                                         db.func.abs(Consume.price).label('price'), Consume.create_timed).join(Consume,
-                                                                                                              Content.claim_id == Consume.claim_id).filter(
+                                                                          Content.claim_id == Consume.claim_id).filter(
         Content.appkey == appkey).filter(Consume.create_timed >= sdate, Consume.create_timed <= edate)
     if category == 0:
-        query = query.filter(Content.author == username, Consume.price < 0)
-    elif category == 1:
         query = query.filter(Consume.customer == username, Consume.price > 0)
+    elif category == 1:
+        query = query.filter(Content.author == username, Consume.price < 0)
     else:
         query = query.filter(
             db.and_(Content.author == username, Consume.price < 0) | db.and_(Consume.customer == username,

@@ -237,7 +237,7 @@ num: 每页条数
 
 {
     "username":开发这帐号,
-    "password":rsa加密后再base64编码,
+    "password":rsa加密后再base64编码(某些js库直接完成了这两步操作),
     "email":邮箱(可空),
     "telphone":电话(可空),
 }
@@ -273,7 +273,7 @@ num: 每页条数
 
 {
     "username":开发这帐号,
-    "password":rsa加密后再base64编码,
+    "password":rsa加密后再base64编码(某些js库直接完成了这两步操作),
 }
 
 # 返回值:
@@ -293,8 +293,8 @@ num: 每页条数
 # 请求参数:
 
 {
-    "password":原密码(rsa加密后再base64编码),
-    "new_password":新密码(rsa加密后再base64编码),
+    "password":原密码(rsa加密后再base64编码(某些js库直接完成了这两步操作)),
+    "new_password":新密码(rsa加密后再base64编码(某些js库直接完成了这两步操作)),
 }
 
 # 返回值:
@@ -751,7 +751,7 @@ num: 每页条数
 # 请求参数:
 {
     'username':719355782,  # 用户
-    'category':0,  # 0:资源收入(发布), 1: 广告收入(消费). 不传参: 所有收入
+    'category':0,  # 0:资源支出(消费者), 1: 广告支出(作者). 不传参: 所有收入
     "sdate":"2018-03-29",  # 开始时间
     "edate":"2018-03-29"   # 结束时间
 }

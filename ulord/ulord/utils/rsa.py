@@ -52,6 +52,6 @@ class RSAHelper(object):
 rsahelper = RSAHelper()
 
 if __name__ == '__main__':
-    msg = rsahelper.encry(b'123456')
-    print(msg)
+    m = rsahelper._encry(b'123456')
+    print(m)
     print(rsahelper.decrypt(b"KooywEDf4mvn0o4/PvJIM68L4LsKpd8gHnxLF4BZknPZ8uVNtOptCLae4+UBNmSKI2DNaPBUYY09ur25RkiUmGPZid1/0Gs0Bn/jyLFMbcDuDzBspzlAP1+QKFicueQ64rjYbj+3ie+4RfRpjdhcYLJIgWvw5M16OPn8dPc+ZSg="))

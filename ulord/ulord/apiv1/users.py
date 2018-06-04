@@ -53,7 +53,8 @@ def reg():
     user.role_id = role.id
     db.session.add(user)
     db.session.commit()
-    return return_result(result=dict(id=user.id))
+    token = user.generate_auth_token(expiration=app.config['EXPIRATION'])
+    return return_result(result=dict(id=user.id, token=token))
 
 
 @bpv1.route('/users/login', methods=['POST'])
