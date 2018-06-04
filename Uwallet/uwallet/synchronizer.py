@@ -148,7 +148,7 @@ class Synchronizer(ThreadJob):
         addresses, and request any transactions in its address history
         we don't have.
         '''
-        for history in self.wallet.addr_history.values():
+        for history in self.wallet.addr_history.values()[:20]:
             if history == ['*']:
                 continue
             self.request_missing_txs(history)

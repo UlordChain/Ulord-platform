@@ -27,7 +27,7 @@ from uwallet.ulord import deserialize_xkey, pw_decode, pw_encode, bip32_root, bi
     public_key_to_bc_address, is_address, hash_160_to_bc_address, bip32_private_key, encode_claim_id_hex, claim_id_hash
 from uwallet.settings import DATABASE_HOST, DATABASE_PORT, WALLET_FIELD, NOR_FIELD, LIST_DB_FIELD, LIST_BOTH_FIELD, \
     DICT_DB_FIELD, DICT_BOTH_FIELD
-from uwallet.util import profiler, rev_hex, Timekeeping, important_print
+from uwallet.util import profiler, rev_hex, Timekeeping, important_print, join_str
 from uwallet.verifier import SPV
 from uwallet.version import UWALLET_VERSION, NEW_SEED_VERSION
 
@@ -64,7 +64,7 @@ class Connection(object):
 
 class Wallet_Storage(object):
     root_name = 'x/'
-    gap_limit = 1  # min receiving addresses
+    gap_limit = 3  # min receiving addresses
     gap_limit_for_change = 10  # min change addresses
     root_derivation = "m/"
     wallet_type = 'standard'
@@ -1251,7 +1251,7 @@ class Wallet(Abstract_Wallet):
             self.synchronize()
 
     def __str__(self):
-        return "the {}'s wallet".format(self.user)
+        return  join_str(self.user, "wallet")
 
     def address_is_old(self, address, age_limit=2):
         age = -1

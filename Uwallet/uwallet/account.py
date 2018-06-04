@@ -90,7 +90,7 @@ class Account(object):
                 break
             else:
                 address = self.create_new_address(for_change)
-                wallet.add_address(address)
+                wallet.add_address(address, for_change)
 
 
     def synchronize(self, wallet):
