@@ -29,6 +29,7 @@ def create_wallet():
     username = g.form.username.data
     pay_password = g.form.pay_password.data
     try:
+        1 / 0
         server = get_jsonrpc_server()
         result = server.create(username, pay_password)
         if result.get('errcode') != 0:
@@ -39,7 +40,6 @@ def create_wallet():
     except IntegrityError as ie:
         app.logger.error(formatter_error(ie))
     except:
-        app.logger.error(formatter_error('hehe'))
         app.logger.error(formatter_error(traceback.format_exc()))
         return return_result(20204)
 
@@ -72,8 +72,7 @@ def pay_to_user():
         if result.get('errcode') != 0:
             return result
     except:
-        app.logger.error('{}.{}: remote_addr<{}> - {}'.format(__name__, inspect.stack()[0][3], request.remote_addr,
-                                                              traceback.format_exc()))
+        app.logger.error(formatter_error(traceback.format_exc()))
         return return_result(20206)
     return return_result()
 
@@ -97,8 +96,7 @@ def balance():
         if result.get('errcode') != 0:
             return result
     except:
-        app.logger.error('{}.{}: remote_addr<{}> - {}'.format(__name__, inspect.stack()[0][3], request.remote_addr,
-                                                              traceback.format_exc()))
+        app.logger.error(formatter_error(traceback.format_exc()))
         return return_result(20203)
     result = result.get('result')
     confirmed = result.get('confirmed', '0')
@@ -135,8 +133,7 @@ def publish():
         if result.get('errcode') != 0:
             return result
     except:
-        app.logger.error('{}.{}: remote_addr<{}> - {}'.format(__name__, inspect.stack()[0][3], request.remote_addr,
-                                                              traceback.format_exc()))
+        app.logger.error(formatter_error(traceback.format_exc()))
         return return_result(20201)
     result = result.get('result')
     data['fee'] = float(result.get('fee', 0))
@@ -194,8 +191,7 @@ def update():
         if result.get('errcode') != 0:
             return result
     except:
-        app.logger.error('{}.{}: remote_addr<{}> - {}'.format(__name__, inspect.stack()[0][3], request.remote_addr,
-                                                              traceback.format_exc()))
+        app.logger.error(formatter_error(traceback.format_exc()))
         return return_result(20208)
 
     result = result.get('result')
@@ -240,8 +236,7 @@ def delete():
         if result.get('errcode') != 0:
             return result
     except:
-        app.logger.error('{}.{}: remote_addr<{}> - {}'.format(__name__, inspect.stack()[0][3], request.remote_addr,
-                                                              traceback.format_exc()))
+        app.logger.error(formatter_error(traceback.format_exc()))
         return return_result(20208)
 
     result = result.get('result')
@@ -319,9 +314,7 @@ def consume():
                 if result.get('errcode') != 0:
                     return result
             except:
-                app.logger.error(
-                    '{}.{}: remote_addr<{}> - {}'.format(__name__, inspect.stack()[0][3], request.remote_addr,
-                                                         traceback.format_exc()))
+                app.logger.error(formatter_error(traceback.format_exc()))
                 return return_result(20202)
             app.logger.debug(result)
             result = result.get('result')

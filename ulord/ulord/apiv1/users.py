@@ -15,7 +15,7 @@ from ulord.forms import validate_form, RegForm, LoginForm, EditForm, ChangePassw
 from ulord.utils.rsa import rsahelper
 from ulord.schema import users_schema
 from ulord.utils.formatter import add_timestamp
-
+from ulord.utils.log import formatter_error
 
 # @bpv1.route('/wallet/remove',methods=['POST'])
 # def remove_wallet():
@@ -44,8 +44,7 @@ def reg():
         if result.get('errcode') != 0:
             return result
     except:
-        app.logger.error('{}.{}: remote_addr<{}> - {}'.format(__name__, inspect.stack()[0][3], request.remote_addr,
-                                                              traceback.format_exc()))
+        app.logger.error(formatter_error(traceback.format_exc()))
         return return_result(20205)
 
     role = Role.query.filter_by(name='normal').first()
@@ -105,8 +104,7 @@ def change_password():
         if result.get('errcode') != 0:
             return result
     except:
-        app.logger.error('{}.{}: remote_addr<{}> - {}'.format(__name__, inspect.stack()[0][3], request.remote_addr,
-                                                              traceback.format_exc()))
+        app.logger.error(formatter_error(traceback.format_exc()))
         return return_result(20207)
 
     user.password = new_password_hash  # update password, auto commit
