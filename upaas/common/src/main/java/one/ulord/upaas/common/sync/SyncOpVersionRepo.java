@@ -65,7 +65,9 @@ public class SyncOpVersionRepo<E> {
             }else if (localVersion > version){
                 return false;
             }else{
-                throw new SyncVersionException("Version big that current max version, full sync be need.");
+                // maybe server restart, the client stay old version.
+                log.info("Version big that current max version, full sync be need.");
+                return false;
             }
         }
     }
@@ -75,11 +77,39 @@ public class SyncOpVersionRepo<E> {
      * @return version, -1 indicated there is nothing in repo
      */
     public int getNewestVersion(){
+        if (versionRepo.size() == 0) return -1;
         SyncOpVersion<E> syncOpVersion = versionRepo.get(0);
         if (syncOpVersion == null){
             return -1;
         }else{
            return syncOpVersion.getVersion();
+        }
+    }
+
+    /**
+     * Does it need all synchronization
+     * @param version current version
+     * @return true - need full sync
+     */
+    public boolean isNeedFullSync(int version){
+        if (versionRepo.size() > 0){
+            SyncOpVersion<E> syncOpVersion = versionRepo.get(versionRepo.size() - 1);
+            if (syncOpVersion.getVersion() > version || version > getNewestVersion()){
+                return true; // The oldest version bigger that current version, we need full sync
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Update version, which used in client
+     * @param version new version
+     */
+    public void updateVersion(int version){
+        if (versionRepo.size() > 0){
+            SyncOpVersion<E> syncOpVersion = versionRepo.get(0);
+            syncOpVersion.setVersion(version);
         }
     }
 
@@ -185,6 +215,15 @@ public class SyncOpVersionRepo<E> {
         return opItems;
     }
 
+
+    /**
+     * Get version repo
+     * @return repo
+     */
+    public List<SyncOpVersion<E>> getVersionRepo(){
+        return versionRepo;
+    }
+
     private List<E> mergeFrom(int version, List<E> results){
         int e = versionRepo.get(versionRepo.size()-1).getVersion();
         int s = version - e;
@@ -227,4 +266,5 @@ public class SyncOpVersionRepo<E> {
 
         return opItems;
     }
+
 }

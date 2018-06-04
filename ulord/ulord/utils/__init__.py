@@ -68,6 +68,7 @@ _errcodes={
     20205:{'errcode':20205,'reason':'用户注册失败,因为没有成功创建ulord钱包.'},
     20206:{'errcode':20206,'reason':'支付失败.'},
     20207:{'errcode':20207,'reason':'修改钱包密码失败.'},
+    20208:{'errcode':20208,'reason':'资源更新失败.'},
 }
 
 def return_result(errcode=0,reason=None,result=None):

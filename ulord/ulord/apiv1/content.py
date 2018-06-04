@@ -88,7 +88,7 @@ def claim_id_consume(page, num):
 @appkey_check
 @validate_form(form_class=ClaimAccountForm)
 def claim_account():
-    """Single resource bill"""
+    """Multiple resource statistics"""
     appkey = g.appkey
     claim_ids = g.form.claim_ids.data
     query = Consume.query.with_entities(Consume.claim_id, db.func.sum(Consume.price).label('sum'),

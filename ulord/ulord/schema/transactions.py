@@ -6,7 +6,8 @@
 from ulord.extensions import ma
 from ulord.models import Content, Consume, Tag
 
-_all__ = ['content_schema', 'contents_schema', 'consume_schema', 'consumes_schema']
+_all__ = ['content_schema', 'contents_schema', 'consume_schema', 'consumes_schema', 'contenthistory_schema',
+          'contenthistorys_schema']
 
 
 class TagSchema(ma.ModelSchema):
@@ -38,3 +39,13 @@ class ConsumeSchema(ma.ModelSchema):
 
 consume_schema = ConsumeSchema()
 consumes_schema = ConsumeSchema(many=True)
+
+
+class ContentHistorySchema(ma.ModelSchema):
+    class Meta:
+        model = Content
+        exclude = ('create_timed', 'update_timed', 'id', 'tags', 'enabled', 'consumes')
+
+
+contenthistory_schema = ContentHistorySchema()
+contenthistorys_schema = ContentHistorySchema(many=True)

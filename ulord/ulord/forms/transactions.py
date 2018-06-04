@@ -4,16 +4,17 @@
 # @Email   : httpservlet@yeah.net
 
 from flask_wtf import FlaskForm
-from wtforms import StringField, IntegerField, BooleanField, FloatField
-from wtforms.validators import Email, DataRequired, Length, Optional, ValidationError, StopValidation
-from .validators import Unique, Exists, RsaCheck, WalletUnique, WalletExists
-from ulord.models import User, Role
+from wtforms import StringField, IntegerField, BooleanField, FloatField, DateTimeField
+from wtforms.validators import DataRequired, Length, Optional, ValidationError
+from .validators import WalletUnique, WalletExists
 from .custom_fields import TagListField
 from ulord.models import Content
 from flask import g
+from datetime import datetime, timedelta
 
 __all__ = ['CreateWalletForm', 'PayToUserForm', 'BalanceForm', 'PublishForm', 'CheckForm', 'ConsumeForm',
-           'AccountInForm', 'AccountOutForm', 'AccountInOutForm', 'PublishCountForm', 'AccountForm', 'UpdateForm']
+           'AccountInForm', 'AccountOutForm', 'AccountInOutForm', 'PublishCountForm', 'AccountForm', 'UpdateForm',
+           'DeleteForm']
 
 
 class CreateWalletForm(FlaskForm):
@@ -44,8 +45,16 @@ class PayToUserForm(FlaskForm):
 
 class BalanceForm(FlaskForm):
     is_developer = BooleanField('is_developer', false_values=(0, "false", False))
-    username = StringField('username', validators=[DataRequired(), WalletExists()])
-    pay_password = StringField('pay_password', validators=[DataRequired()])
+    username = StringField('username')
+    pay_password = StringField('pay_password')
+
+    def validate_username(self, field):
+        if self.is_developer.data is False:
+            field.validate(self, [DataRequired(), WalletExists()])
+
+    def validate_pay_password(self, field):
+        if self.is_developer.data is False:
+            field.validate(self, [DataRequired()])
 
 
 class PublishForm(FlaskForm):
@@ -53,22 +62,36 @@ class PublishForm(FlaskForm):
     pay_password = StringField('pay_password', validators=[DataRequired()])
     title = StringField('title', validators=[DataRequired(), Length(max=64)])
     tags = TagListField('tags', validators=[DataRequired()])
-    udfs_hash = StringField('udfs_hash', validators=[DataRequired(), Length(max=46)])
-    price = FloatField('price', validators=[Optional()],filters=[lambda x: x or 0])
+    udfs_hash = StringField('udfs_hash', validators=[DataRequired(), Length(min=46, max=46)])
+    price = FloatField('price', validators=[Optional()], filters=[lambda x: x or 0])
     content_type = StringField('content_type', validators=[DataRequired(), Length(max=16)])
-    description = StringField('description', validators=[Optional()])
+    des = StringField('description', validators=[Optional()])
+    thumbnail = StringField('thumbnail', validators=[Optional()])
+    preview = StringField('preview', validators=[Optional()])
+    language = StringField('language', validators=[Optional()])
+    license = StringField('license', validators=[Optional()])
+    license_url = StringField('license_url', validators=[Optional()])
 
 
 class UpdateForm(FlaskForm):
-    id = StringField('id', validators=[DataRequired()])
-    author = StringField('author', validators=[DataRequired(), Length(max=64), WalletExists(is_wallet_name=False)])
+    id = IntegerField('id', validators=[DataRequired()])
     pay_password = StringField('pay_password', validators=[DataRequired()])
-    title = StringField('title', validators=[DataRequired(), Length(max=64)])
-    tags = TagListField('tags', validators=[DataRequired()])
-    udfs_hash = StringField('udfs_hash', validators=[DataRequired(), Length(max=46)])
-    price = FloatField('price', validators=[DataRequired()])
-    content_type = StringField('content_type', validators=[DataRequired(), Length(max=16)])
-    description = StringField('description', validators=[Optional()])
+    title = StringField('title', validators=[Optional(), Length(max=64)])
+    tags = TagListField('tags', validators=[Optional()])
+    udfs_hash = StringField('udfs_hash', validators=[Optional(), Length(min=46, max=46)])
+    price = FloatField('price', validators=[Optional()])
+    content_type = StringField('content_type', validators=[Optional(), Length(max=16)])
+    des = StringField('description', validators=[Optional()])
+    thumbnail = StringField('thumbnail', validators=[Optional()])
+    preview = StringField('preview', validators=[Optional()])
+    language = StringField('language', validators=[Optional()])
+    license = StringField('license', validators=[Optional()])
+    license_url = StringField('license_url', validators=[Optional()])
+
+
+class DeleteForm(FlaskForm):
+    id = IntegerField('id', validators=[DataRequired()])
+    pay_password = StringField('pay_password', validators=[DataRequired()])
 
 
 class CheckForm(FlaskForm):
@@ -103,12 +126,25 @@ class ConsumeForm(FlaskForm):
             field.validate(self, [DataRequired()])
 
 
-class AccountInForm(FlaskForm):
+class _DateForm(FlaskForm):
+    sdate = DateTimeField('start date', format='%Y-%m-%d', validators=[DataRequired()])
+    edate = DateTimeField('end date', format='%Y-%m-%d', validators=[DataRequired()])
+
+    def validate_edate(self, field):
+        delta = timedelta(hours=23, seconds=59, minutes=59)
+        field.data = field.data + delta
+        if field.data < self.sdate.data:
+            raise ValidationError("The end time must be greater than the beginning time.")
+        if field.data.date() > datetime.now().date():
+            raise ValidationError("The end date cannot be greater than the current date.")
+
+
+class AccountInForm(_DateForm):
     username = StringField('username', validators=[DataRequired(), Length(max=64)])
     category = IntegerField('category', validators=[Optional()])
 
 
-class AccountOutForm(FlaskForm):
+class AccountOutForm(_DateForm):
     username = StringField('username', validators=[DataRequired(), Length(max=64)])
     category = IntegerField('category', validators=[Optional()])
 
@@ -117,9 +153,9 @@ class AccountInOutForm(FlaskForm):
     username = StringField('username', validators=[DataRequired(), Length(max=64)])
 
 
-class PublishCountForm(FlaskForm):
+class PublishCountForm(_DateForm):
     author = StringField('author', validators=[DataRequired(), Length(max=64)])
 
 
-class AccountForm(FlaskForm):
+class AccountForm(_DateForm):
     username = StringField('username', validators=[DataRequired(), Length(max=64)])

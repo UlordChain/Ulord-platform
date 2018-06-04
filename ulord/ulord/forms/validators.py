@@ -54,9 +54,9 @@ class RsaCheck(object):
 
 
 class WalletUnique(object):
-    def __init__(self, message='The user already exists.',is_wallet_name=True):
+    def __init__(self, message='The user already exists.', is_wallet_name=True):
         self.message = message
-        self.is_wallet_name=is_wallet_name
+        self.is_wallet_name = is_wallet_name
 
     def __call__(self, form, field):
         server = get_jsonrpc_server()
@@ -75,7 +75,7 @@ class WalletUnique(object):
 class WalletExists(object):
     def __init__(self, message="The user doesn't exist.",is_wallet_name=True):
         self.message = message
-        self.is_wallet_name=is_wallet_name
+        self.is_wallet_name = is_wallet_name
 
     def __call__(self, form, field):
         server = get_jsonrpc_server()
