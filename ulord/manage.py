@@ -9,7 +9,7 @@
 # 具体可参考: https://my.oschina.net/lijsf/blog/158828
 
 import sys
-from flask_script import Manager, Shell
+from flask_script import Manager, Shell, Command, Option
 from ulord import config_app, dispatch_apps, dispatch_handlers, db, app
 
 # import logging
@@ -24,8 +24,31 @@ def make_shell_context():
 manager.add_command("shell", Shell(make_context=make_shell_context))
 
 
-@manager.option('-H', '--host', dest='host',help='host', default='0.0.0.0')
-@manager.option('-P', '--port', dest='port',help='port', default=4999, type=int)
+@manager.option('-H', '--host', dest='host', default='127.0.0.1')
+@manager.option('-P', '--port', dest='port', type=int, default=5000)
+@manager.option('-w', '--workers', dest='workers', type=int, default=8)
+def gunicorn(host, port, workers):
+    """Start the Server with Gunicorn"""
+    from gunicorn.app.base import Application
+
+    class FlaskApplication(Application):
+        def init(self, parser, opts, args):
+            return {
+                'bind': '{0}:{1}'.format(host, port),
+                'workers': workers
+            }
+
+        def load(self):
+            return app
+
+    config_app(app, 'development')
+    dispatch_handlers(app)
+    dispatch_apps(app)
+    FlaskApplication().run()
+
+
+@manager.option('-H', '--host', dest='host', help='host', default='0.0.0.0')
+@manager.option('-P', '--port', dest='port', help='port', default=4999, type=int)
 def runserver(host, port):
     config_app(app, 'development')
     dispatch_handlers(app)
@@ -36,7 +59,7 @@ def runserver(host, port):
 
 @manager.command
 def initdb():
-    config_app(app, 'development')
+    config_app(app, 'prodection')
     try:
         # db.drop_all()
         db.create_all()

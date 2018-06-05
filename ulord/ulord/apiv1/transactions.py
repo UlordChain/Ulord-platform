@@ -29,7 +29,6 @@ def create_wallet():
     username = g.form.username.data
     pay_password = g.form.pay_password.data
     try:
-        1 / 0
         server = get_jsonrpc_server()
         result = server.create(username, pay_password)
         if result.get('errcode') != 0:
