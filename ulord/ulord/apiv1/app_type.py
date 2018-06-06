@@ -5,7 +5,6 @@
 
 from . import bpv1, admin_required, blocked_check
 from flask import g
-from ulord.models import Type
 from ulord.extensions import db, auth
 from . import return_result
 from ulord.models import Type

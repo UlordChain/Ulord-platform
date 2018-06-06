@@ -41,7 +41,7 @@ def gunicorn(host, port, workers):
         def load(self):
             return app
 
-    config_app(app, 'development')
+    config_app(app, 'production')
     dispatch_handlers(app)
     dispatch_apps(app)
     FlaskApplication().run()
@@ -59,7 +59,7 @@ def runserver(host, port):
 
 @manager.command
 def initdb():
-    config_app(app, 'prodection')
+    config_app(app, 'production')
     try:
         # db.drop_all()
         db.create_all()

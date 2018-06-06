@@ -5,7 +5,7 @@
 from ulord import config_app, dispatch_apps, dispatch_handlers, app
 
 """Start the Server with Gunicorn"""
-config_app(app, 'development')
+config_app(app, 'production')
 dispatch_handlers(app)
 dispatch_apps(app)
 

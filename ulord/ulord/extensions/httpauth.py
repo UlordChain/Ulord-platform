@@ -12,7 +12,6 @@ __all__ = ['error_401', 'verify_token']
 
 @auth.error_handler
 def error_401():
-    app.logger.error(error)
     return return_result(401), 401
 
 

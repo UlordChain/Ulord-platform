@@ -8,7 +8,7 @@ class Config(object):
     SECRET_KEY = 'bb649c83dd1ea5c9d9dec9a18df0ffe9'
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
     SQLALCHEMY_TRACK_MODIFICATIONS = True
-    SQLALCHEMY_POOL_SIZE = 10
+    SQLALCHEMY_POOL_SIZE = 128
     FLASKY_MAIL_SUBJECT_PREFIX = '[Ulord]'
     FLASKY_MAIL_SENDER = 'Ulord Admin <shuxudong@ulord.net>'
     FLASKY_ADMIN = 'Ulord'
@@ -49,5 +49,5 @@ class ProductionConfig(Config):
 
 
 dconfig = {
-    'development': DevelopmentConfig, 'testing': TestingConfig, 'prodection': ProductionConfig,
+    'development': DevelopmentConfig, 'testing': TestingConfig, 'production': ProductionConfig,
     'default': DevelopmentConfig}

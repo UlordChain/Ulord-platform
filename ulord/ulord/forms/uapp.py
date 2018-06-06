@@ -20,8 +20,8 @@ class AddAppForm(FlaskForm):
     appdes = StringField('appdes', validators=[Optional(), Length(max=500)],filters=[lambda x: x or None])
     apptype_id=IntegerField('apptype_id',validators=[DataRequired(),Exists(Type,Type.id)])
 
-    def validate_appname(self,field):
-        check=Application.query.filter_by(appname=field.data,user_id=g.user.id).first()
+    def validate_appname(self, field):
+        check = Application.query.filter_by(appname=field.data, user_id=g.user.id).first()
         if check:
             raise ValidationError('This filed already exists.')
 

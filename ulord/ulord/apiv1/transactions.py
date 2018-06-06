@@ -275,7 +275,7 @@ def check():
     contents = Content.query.filter(Content.claim_id.in_(claim_ids), appkey == appkey).all()
     for content in contents:
         result.update({content.claim_id: False})
-        if content.author == customer:  # Publisher and consumer are the same person
+        if content.author == customer or content.price == 0:  # Publisher and consumer are the same person
             result.update({content.claim_id: content.udfs_hash})
         else:
             consume = Consume.query.filter_by(claim_id=content.claim_id, customer=customer, appkey=appkey).first()

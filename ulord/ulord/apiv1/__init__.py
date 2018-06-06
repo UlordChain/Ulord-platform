@@ -33,7 +33,7 @@ def verify_sign(appkey, secret, curtime, old_sign):
     sign = appkey + sign + secret + str(curtime)
     # print(sign)
     sign = hashlib.md5(sign.encode('u8')).hexdigest().upper()
-    # print(sign,old_sign)
+    # print(sign, old_sign)
     if sign == old_sign.upper():
         return True
     return False
@@ -67,6 +67,7 @@ def appkey_check(f):
                 return return_result(10017)
         if not sign:
             return return_result(10013)
+        # print(appkey,secret,curtime,sign)
         if not verify_sign(appkey, secret, curtime, sign):
             return return_result(20102)
 

@@ -13,7 +13,7 @@ __all__ = ['AddTypeForm', 'EditTypeForm', 'RemoveTypeForm']
 
 
 class AddTypeForm(FlaskForm):
-    parent_id = IntegerField('parent_id', validators=[Optional(),Exists(Type,Type.id)])
+    parent_id = IntegerField('parent_id', validators=[Optional(), Exists(Type,Type.id)])
     name = StringField('name', validators=[DataRequired(), Length(max=32), Unique(Type, Type.name)])
     des = StringField('des', validators=[Optional(), Length(max=256)], filters=[lambda x: x or None])
 

@@ -22,7 +22,7 @@ workers = multiprocessing.cpu_count() * 2 + 1
 # 每个进程的开启线程
 # 就是设置开启的多线程的数目，官方也是推荐设置为核心数的两至四倍。
 # 这个设置只对进程工作方式为Gthread的产生影响。
-threads = multiprocessing.cpu_count() * 2
+# threads = multiprocessing.cpu_count() * 2
 
 backlog = 2048
 
@@ -40,7 +40,8 @@ proc_name = 'gunicorn.pid'
 # 进程pid记录文件
 pidfile = 'app_pid.log'
 
-loglevel = 'debug'
-logfile = 'debug.log'
+loglevel = 'info'
+# logfile = 'error.log'
+errorlog = 'info.log'
 accesslog = 'access.log'
 access_log_format = '%(h)s %(t)s %(U)s %(q)s'
