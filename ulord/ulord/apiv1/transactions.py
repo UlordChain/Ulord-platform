@@ -315,7 +315,7 @@ def consume():
             except:
                 app.logger.error(formatter_error(traceback.format_exc()))
                 return return_result(20202)
-            app.logger.debug(result)
+            # app.logger.debug(result)
             result = result.get('result')
             txid = result.get('txid')
             if len(txid) != 64:

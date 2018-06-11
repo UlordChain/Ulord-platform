@@ -2,17 +2,15 @@
 # @Time    : 2018/3/22
 # @Author  : Shu
 # @Email   : httpservlet@yeah.net
-import logging
-
-logger = logging.getLogger(__name__)
 from flask import Flask, Response, jsonify, abort, request
 from .extensions import db, ma
 from config import dconfig
 from .utils import return_result
 from .apiv1 import bpv1
-from ulord.utils.log import init_logging
+from .utils.log import init_logging
 from flask_cors import CORS
 from sqlalchemy.exc import DatabaseError
+
 
 class JSONResponse(Response):
     @classmethod
@@ -31,7 +29,7 @@ CORS(app, supports_credentials=True)
 
 
 def config_app(app, config_name):
-    logger.info('Setting up application...')
+    app.logger.info('Setting up application...')
     config = dconfig[config_name]
     app.config.from_object(config)
     config.init_app(app)
