@@ -190,6 +190,7 @@ class Commands(object):
             if self.wallet._password != password:
                 raise ParamsError('51001')
 
+        self.wallet.check_accounts()
         args.insert(0, self)
         return tuple(args)
 

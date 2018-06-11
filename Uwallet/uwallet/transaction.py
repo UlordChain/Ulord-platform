@@ -722,3 +722,10 @@ class Transaction(object):
         print_error(priority, threshold)
 
         return priority < threshold
+
+if __name__ == '__main__':
+    raw = "0100000001a044dfefaa46af2992f3c1281f49138aee42e5c6d0418cef9de9aaf0234aeee0010000006b483045022100b5ba3a6be7b5f60dba4d1c1af19733b838edf720fa1dd46199169f708b5c5ada022025aebfa405a19d59c1b6b1cf3c35ee96881052ea0de42b426a20bb2a3035c9b4012103c7a9e72d764ab502595c4a54e9ccd94f528090235059635625d3851102582158ffffffff0200c2eb0b000000001976a91410bf67872526a44b8b57ee75f1d0f9d9555a75e888ace48311fa130000001976a9142a0ccd618fa3b453256ec0fdfbcb66808f1ea37388ac00000000"
+    res  = deserialize(raw)
+    from pprint import pprint
+
+    pprint(res)

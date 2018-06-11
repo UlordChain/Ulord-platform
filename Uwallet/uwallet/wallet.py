@@ -1022,7 +1022,15 @@ class Wallet(Abstract_Wallet):
         self.save_accounts()
 
     def save_accounts(self):
+        log.info('correct accounts')
         self.accounts = {self.root_name: self.account_obj.dump()}
+        if self.use_change:
+            self.addresses = {
+                'receiving': self.account_obj.receiving_addresses,
+                'change': self.account_obj.change_addresses
+            }
+        else:
+            self.addresses =self.account_obj.receiving_addresses
 
 
     def synchronize(self):
@@ -1136,6 +1144,13 @@ class Wallet(Abstract_Wallet):
                 self.txo.pop(tx_hash)
             except KeyError:
                 log.error("tx was not in history", tx_hash)
+
+    def check_accounts(self):
+        if len(self.accounts['x/']['change']) != len(self.addresses['change']) or \
+                len(self.accounts['x/']['receiving']) != len(self.addresses['receiving']):
+            log.info('#############  accounts error')
+            self.load_accounts()
+            self.save_accounts()
 
     @profiler
     def load_accounts(self):

@@ -83,6 +83,8 @@ def pay(receive_user, amount):
     """
     send_user = 'ht'
     password = '123'
+    # send_user = 'shu'
+    # password = 'pbkdf2:sha256:50000$oEw0SZX0$f8d9951addfa90213e63bb4553cacc7e3cc8e78d9d59f5e707da1fc09dd4d675'
     return server.pay(send_user, password, receive_user, amount)
 
 @profiler
@@ -143,10 +145,10 @@ def mul_test():
 
 
 if __name__ == '__main__':
-    user = 'ht'
+    user = 'hetao'
     password = '123'
     # password = 'pbkdf2:sha256:50000$oEw0SZX0$f8d9951addfa90213e63bb4553cacc7e3cc8e78d9d59f5e707da1fc09dd4d675'
-    claim_name = 'fd32773a648611e8bc56f48e3889c8ab'
+    claim_name = 'fd32773a648611e8bc56f4dsf9c8ab'
     claim_id = 'e2b29a45d8ee5b39c549a9ff6e7ac667bd18f776'
     txid = '8aab1a95d08ccf814980d3d10f1af5e959468a1703f8eb3e6063fdbe78651e2b'
 
@@ -167,26 +169,5 @@ if __name__ == '__main__':
     # print server.pay(user, password, 'hetao1', 1008)
 
     # print server.create('cln', cln_password)
-    # print server.pay(user, password, 'test_cln2', 2)
+    # print server.pay('cln', cln_password, 'ht', 2)
     # print getbalance('cln', cln_password)  # 0.14
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
