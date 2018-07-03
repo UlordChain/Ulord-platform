@@ -38,7 +38,7 @@ In current project, we group different function into different directory.
 - [Ulord](./ulord) Ulord platform source code
 - [Uschema](./Uschema) Protocol buffer schema for content abstract which can put into ulord chain.
 - [UCWallet](./UCwallet) Ulord UCWallet source code
-- [UCWallet-server](./UCWallet-server) Ulord UCWallet server source code.
+- [UCWallet-server](https://github.com/UlordChain/Uwallet-server) Ulord UCWallet server source code.
 
 ## Geting Started
 You can see our [Wiki](https://github.com/UlordChain/Ulord-platform/wiki) for some help or get involve from [blog demo project](https://github.com/UlordChain/ulord-blog-demo).
