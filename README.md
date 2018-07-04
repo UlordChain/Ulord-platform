@@ -37,7 +37,7 @@ Ulord platform mainly develop by python, and enterprise SDK only support python 
 In current project, we group different function into different directory.
 - [Ulord](./ulord) Ulord platform source code
 - [Uschema](./Uschema) Protocol buffer schema for content abstract which can put into ulord chain.
-- [UCWallet](./UCwallet) Ulord UCWallet source code
+- [UWallet](./Uwallet) Ulord UCWallet source code
 - [UCWallet-server](https://github.com/UlordChain/Uwallet-server) Ulord UCWallet server source code.
 
 ## Geting Started
