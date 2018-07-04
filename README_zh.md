@@ -35,7 +35,7 @@ Ulord平台主要由Python开发，企业端SDK目前支持Python，未来会开
 
 - [ulord](./ulord) Ulord平台源代码
 - [Uschema](./Uschema) Ulord平台上链信息格式定义（ProtoBuff)
-- [UCWallet](./UCwallet) Ulord平台托管钱包客户端源代码
+- [UWallet](./Uwallet) Ulord平台托管钱包客户端源代码
 - [UCWallet-server](https://github.com/UlordChain/Uwallet-server) Ulord平台托管钱包服务端源代码
 
 ## 开始使用Ulord平台
