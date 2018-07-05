@@ -1,0 +1,184 @@
+/**
+ * Copyright(c) 2018
+ * Ulord core developers
+ */
+package one.ulord.upaas.ucwallet.client;
+
+import one.ulord.upaas.ucwallet.client.contract.generates.CenterPublish;
+import one.ulord.upaas.ucwallet.client.contract.generates.DBControl;
+import one.ulord.upaas.ucwallet.client.contract.generates.USHToken;
+import org.web3j.crypto.CipherException;
+import org.web3j.crypto.Credentials;
+import org.web3j.crypto.WalletUtils;
+import org.web3j.protocol.Web3j;
+import org.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.web3j.protocol.core.methods.response.Web3ClientVersion;
+import org.web3j.protocol.http.HttpService;
+import org.web3j.tx.gas.DefaultGasProvider;
+
+import java.io.File;
+import java.io.IOException;
+import java.math.BigInteger;
+import java.util.List;
+import java.util.concurrent.*;
+
+/**
+ * Content contract
+ * @author haibo
+ * @since 7/5/18
+ */
+public class ContentContract {
+    /**
+     * Block max gas limit
+     */
+    public static BigInteger BLOCK_GAS_LIMIT = BigInteger.valueOf(6800000);
+    /**
+     * Min gas price
+     */
+    public static BigInteger GAS_PRICE = BigInteger.valueOf(200000000); //0.2GWei
+
+    private String tokenAddress;
+    private String adminAddress;
+    private String publishAddress;
+    private String keystoreFile;
+    private String mainAddress;
+
+    private USHToken ushToken;
+    private DBControl dbControl;
+    private CenterPublish centerPublish;
+
+    private TransactionActionHandler handler;
+
+
+    public ContentContract(String ulordProvider, String tokenAddress, String adminAddress, String publishAddress,
+                           String keystoreFile, String keystorePassword, TransactionActionHandler handler)
+            throws IOException, CipherException {
+        this.tokenAddress = tokenAddress;
+        this.adminAddress = adminAddress;
+        this.publishAddress = publishAddress;
+
+        this.keystoreFile = keystoreFile;
+        this.handler = handler;
+
+        Web3j web3j = Web3j.build(new HttpService(ulordProvider));
+        Web3ClientVersion web3ClientVersion = null;
+        web3ClientVersion = web3j.web3ClientVersion().send();
+        String clientVersion = web3ClientVersion.getWeb3ClientVersion();
+        if (clientVersion == null){
+            throw new IOException("Ulord provider cannot connect.");
+        }
+
+        File file = new File(keystoreFile);
+        if (!file.exists()){
+            // try to get file from classpath
+            String resourcePath = ContentContract.class.getClassLoader().getResource("").toString();
+            int typeSplitePos = resourcePath.indexOf(":");
+            if (typeSplitePos > 0){
+                resourcePath = resourcePath.substring(typeSplitePos+1);
+            }
+
+            file = new File(resourcePath + keystoreFile);
+            if (!file.exists()){
+                throw new IOException("Cannot found keystore file.");
+            }
+        }
+        Credentials credentials = WalletUtils.loadCredentials(keystorePassword, file);
+        this.mainAddress = credentials.getAddress();
+
+        // load contract object
+        this.ushToken = USHToken.load(tokenAddress, web3j, credentials,
+                DefaultGasProvider.GAS_PRICE, DefaultGasProvider.GAS_LIMIT);
+        this.dbControl = DBControl.load(adminAddress, web3j, credentials,
+                DefaultGasProvider.GAS_PRICE, DefaultGasProvider.GAS_LIMIT);
+        this.centerPublish = CenterPublish.load(publishAddress, web3j, credentials,
+                DefaultGasProvider.GAS_PRICE, UCWalletDemoApplication.BLOCK_GAS_LIMIT); // Using block max limit
+    }
+
+
+
+    /**
+     * Transfer amount of token to a specified address
+     * @param reqId request id
+     * @param toAddress a target address
+     * @param quantity quantity
+     */
+    public void transferToken(final String reqId, String toAddress, BigInteger quantity){
+        ushToken.transfer(toAddress, quantity).sendAsync().whenCompleteAsync((receipt, e) -> {
+            if (e == null){
+                processTransactionReceipt(reqId, receipt);
+            }else{
+                this.handler.fail(reqId, e.getMessage());
+            }
+        });
+    }
+
+    /**
+     * Approve publish contract to use a quality tokens
+     * @param reqId request id
+     * @param quantity a quality
+     */
+    public void approveContractQuality(final String reqId, BigInteger quantity){
+        CompletableFuture<TransactionReceipt> future = ushToken.approve(publishAddress, quantity).sendAsync();
+        future.whenCompleteAsync((receipt, e)->{
+           if (e == null){
+               processTransactionReceipt(reqId, receipt);
+           }else{
+               this.handler.fail(reqId, e.getMessage());
+           }
+        });
+
+    }
+
+    /**
+     * Publish a resource to ulord smart contract.
+     * While
+     * @param reqId request id
+     * @param udfsHash UDFS hash, must get from UDFS {@link UDFSClient}
+     * @param authorAddress author address
+     * @param price price
+     * @param deposit deposit
+     */
+    public void publishResource(final String reqId, String udfsHash,
+                                String authorAddress, BigInteger price, BigInteger deposit){
+        // Using RxJava to process sync
+        centerPublish.createClaim(udfsHash, authorAddress,
+                price, deposit, new BigInteger("1")).sendAsync().whenCompleteAsync((receipt, e)-> {
+                    if (e == null){
+                        processTransactionReceipt(reqId, receipt);
+                    }else{
+                        this.handler.fail(reqId, e.getMessage());
+                    }
+                });
+    }
+
+    /**
+     * Transfer to multiple address using different quality from current address
+     * @param reqId request id
+     * @param address a set of target address
+     * @param quality a set of quality need to transfer
+     */
+    public void transferTokens(final String reqId, List<String> address, List<BigInteger> quality){
+        centerPublish.mulTransfer(address, quality).sendAsync().whenCompleteAsync((receipt, e)-> {
+            if (e == null){
+                processTransactionReceipt(reqId, receipt);
+            }else{
+                this.handler.fail(reqId, e.getMessage());
+            }
+        });
+    }
+
+    private void processTransactionReceipt(String reqId, TransactionReceipt transactionReceipt) {
+        if (transactionReceipt.isStatusOK()) {
+            if (this.handler != null){
+                this.handler.success(reqId, transactionReceipt.getTransactionHash());
+            }
+        }else{
+            if (this.handler != null){
+                this.handler.fail(reqId,
+                        "Unknown exception, the receipt has received:"
+                                + transactionReceipt.getTransactionHash());
+            }
+        }
+    }
+
+}
