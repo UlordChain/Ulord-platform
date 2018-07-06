@@ -28,7 +28,6 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -36,7 +35,6 @@ import java.util.concurrent.ExecutionException;
  * @since 7/4/18
  */
 public class UCWalletDemoApplication implements TransactionActionHandler{
-    public static BigInteger BLOCK_GAS_LIMIT = BigInteger.valueOf(6000000);
 
     public void testContentContract(){
         try {
@@ -51,6 +49,13 @@ public class UCWalletDemoApplication implements TransactionActionHandler{
                     this
                     );
 
+            // get gas balance
+            System.out.println("Gas balance:" + contentContract.getGasBalance().toString());
+            try {
+                System.out.println("Token balance main:" + contentContract.getTokenBanalce().toString());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             // test token transfer
             System.out.println("Transfer 100000000000000000(1Token) to address 0x24fd610e1769f1f051e6d25a9099588df13d7feb... ");
             contentContract.transferToken("tranfer token:",
@@ -85,13 +90,11 @@ public class UCWalletDemoApplication implements TransactionActionHandler{
             // test multiple transfer action
             System.out.println("Transfer some quality to multiple address");
             List<String> addressList = new ArrayList<>();
-            addressList.add("0x24fd610e1769f1f051e6d25a9099588df13d7feb");
             addressList.add("0x3f16131ac9203656a9ca790f23878ae165c3eb4f");
             addressList.add("0x2e836371bf20107837da6ad9bb4d08d8f53f65ba");
             addressList.add("0x597ed0bf61b741a80d4774a4a4d318b431a07b07");
             addressList.add("0x9babfbae60ad466a5b68d29e127bb59429828216");
             List<BigInteger> valueList = new ArrayList<>();
-            valueList.add(new BigInteger("100000000000000000"));
             valueList.add(new BigInteger("200000000000000000"));
             valueList.add(new BigInteger("300000000000000000"));
             valueList.add(new BigInteger("400000000000000000"));
@@ -165,7 +168,7 @@ public class UCWalletDemoApplication implements TransactionActionHandler{
 //            String centerPublishContractAddress = "0x5bcb00efaffaa9096a5514e4572e04b930c92d8d";
             String centerPublishContractAddress = "0x300d7fd299d1994b0c9da55c64f78fc9fe32c301";
             centerPublish = CenterPublish.load(centerPublishContractAddress, web3j, credentials,
-                    DefaultGasProvider.GAS_PRICE, UCWalletDemoApplication.BLOCK_GAS_LIMIT); // GAS LIMIT每区块最大限制值
+                    DefaultGasProvider.GAS_PRICE, ContentContract.BLOCK_GAS_LIMIT); // GAS LIMIT每区块最大限制值
             if (false) {
                 centerPublish = CenterPublish.deploy(
                         web3j, credentials, DefaultGasProvider.GAS_PRICE, DefaultGasProvider.GAS_LIMIT,

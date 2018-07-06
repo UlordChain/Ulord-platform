@@ -17,9 +17,11 @@ import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.protocol.core.methods.response.Web3ClientVersion;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.tx.gas.DefaultGasProvider;
+import org.web3j.utils.Convert;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.concurrent.*;
@@ -33,7 +35,7 @@ public class ContentContract {
     /**
      * Block max gas limit
      */
-    public static BigInteger BLOCK_GAS_LIMIT = BigInteger.valueOf(6800000);
+    public static BigInteger BLOCK_GAS_LIMIT = BigInteger.valueOf(6700000);
     /**
      * Min gas price
      */
@@ -108,26 +110,32 @@ public class ContentContract {
         this.dbControl = DBControl.load(adminAddress, web3j, credentials,
                 DefaultGasProvider.GAS_PRICE, DefaultGasProvider.GAS_LIMIT);
         this.centerPublish = CenterPublish.load(publishAddress, web3j, credentials,
-                DefaultGasProvider.GAS_PRICE, UCWalletDemoApplication.BLOCK_GAS_LIMIT); // Using block max limit
+                DefaultGasProvider.GAS_PRICE, ContentContract.BLOCK_GAS_LIMIT); // Using block max limit
     }
 
 
     /**
      * Get ulord side chain gas balance
-     * @return gas balance
+     * @return gas balance (Unit SUT)
      * @throws IOException
      */
-    public BigInteger getGasBalance() throws IOException {
-        return web3j.ethGetBalance(this.mainAddress, DefaultBlockParameterName.LATEST).send().getBalance();
+    public BigDecimal getGasBalance() throws IOException {
+        BigInteger balance = web3j.ethGetBalance(this.mainAddress, DefaultBlockParameterName.LATEST).send().getBalance();
+        return Convert.fromWei(new BigDecimal(balance), Convert.Unit.ETHER);
     }
 
     /**
      * Get ulord side chain token balance
-     * @return token balance
+     * @return token balance (Unit UX)
      * @throws Exception
      */
-    public BigInteger getTokenBanalce() throws Exception {
-        return ushToken.balanceOf(this.mainAddress).send();
+    public BigDecimal getTokenBanalce() throws Exception {
+        return getTokenBalance(this.mainAddress);
+    }
+
+    public BigDecimal getTokenBalance(String address) throws Exception {
+        BigInteger value = ushToken.balanceOf(address).send();
+        return new BigDecimal(value).divide(BigDecimal.valueOf(10).pow(18));
     }
 
     /**
