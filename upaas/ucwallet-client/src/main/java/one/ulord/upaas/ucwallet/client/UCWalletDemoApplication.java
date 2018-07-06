@@ -46,8 +46,8 @@ public class UCWalletDemoApplication implements TransactionActionHandler{
                     "0xa0544b7124c36d50f2580a67750f10cd5a16056c",
                     "0xcbe2540ce8543d15ec157749295e35cc9593fe8b",
                     "0x300d7fd299d1994b0c9da55c64f78fc9fe32c301",
-                    "keystore/usc.test.lk.wallet.json",
-                    "abcd1234",
+                    "keystore/ulord-testnet-rsk.wallet.json",
+                    "12345678",
                     this
                     );
 

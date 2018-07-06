@@ -11,6 +11,8 @@ import org.web3j.crypto.CipherException;
 import org.web3j.crypto.Credentials;
 import org.web3j.crypto.WalletUtils;
 import org.web3j.protocol.Web3j;
+import org.web3j.protocol.core.DefaultBlockParameter;
+import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.protocol.core.methods.response.Web3ClientVersion;
 import org.web3j.protocol.http.HttpService;
@@ -49,7 +51,22 @@ public class ContentContract {
 
     private TransactionActionHandler handler;
 
+    private Web3j web3j;
 
+
+    /**
+     * Build a new content smart contract instance. It will take more that 10 seconds to build connection
+     * and contract instance.
+     * @param ulordProvider Ulord side provider, such as http://xxxx:yyy, which is a RPC endpoint
+     * @param tokenAddress token address which has deploy to ulord side chain
+     * @param adminAddress a admin contract for token which has deploy to ulord side chain
+     * @param publishAddress a publish smart contract which has deply to ulord side chain
+     * @param keystoreFile user account keystore file, which include user account private key
+     * @param keystorePassword user account keystore password
+     * @param handler a {@line TransactionActionHandler} instance
+     * @throws IOException
+     * @throws CipherException
+     */
     public ContentContract(String ulordProvider, String tokenAddress, String adminAddress, String publishAddress,
                            String keystoreFile, String keystorePassword, TransactionActionHandler handler)
             throws IOException, CipherException {
@@ -60,7 +77,7 @@ public class ContentContract {
         this.keystoreFile = keystoreFile;
         this.handler = handler;
 
-        Web3j web3j = Web3j.build(new HttpService(ulordProvider));
+        this.web3j = Web3j.build(new HttpService(ulordProvider));
         Web3ClientVersion web3ClientVersion = null;
         web3ClientVersion = web3j.web3ClientVersion().send();
         String clientVersion = web3ClientVersion.getWeb3ClientVersion();
@@ -95,6 +112,23 @@ public class ContentContract {
     }
 
 
+    /**
+     * Get ulord side chain gas balance
+     * @return gas balance
+     * @throws IOException
+     */
+    public BigInteger getGasBalance() throws IOException {
+        return web3j.ethGetBalance(this.mainAddress, DefaultBlockParameterName.LATEST).send().getBalance();
+    }
+
+    /**
+     * Get ulord side chain token balance
+     * @return token balance
+     * @throws Exception
+     */
+    public BigInteger getTokenBanalce() throws Exception {
+        return ushToken.balanceOf(this.mainAddress).send();
+    }
 
     /**
      * Transfer amount of token to a specified address
