@@ -7,17 +7,15 @@ package one.ulord.upaas.ucwallet.client;
 import one.ulord.upaas.ucwallet.client.contract.generates.CenterPublish;
 import one.ulord.upaas.ucwallet.client.contract.generates.DBControl;
 import one.ulord.upaas.ucwallet.client.contract.generates.USHToken;
-import org.web3j.crypto.CipherException;
-import org.web3j.crypto.Credentials;
-import org.web3j.crypto.WalletUtils;
+import org.web3j.crypto.*;
 import org.web3j.protocol.Web3j;
-import org.web3j.protocol.core.DefaultBlockParameter;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.protocol.core.methods.response.Web3ClientVersion;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.tx.gas.DefaultGasProvider;
 import org.web3j.utils.Convert;
+import org.web3j.utils.Numeric;
 
 import java.io.File;
 import java.io.IOException;
@@ -53,6 +51,8 @@ public class ContentContract {
 
     private TransactionActionHandler handler;
 
+    Credentials credentials;
+
     private Web3j web3j;
 
 
@@ -87,7 +87,7 @@ public class ContentContract {
             throw new IOException("Ulord provider cannot connect.");
         }
 
-        File file = new File(keystoreFile);
+        File file = new File(this.keystoreFile);
         if (!file.exists()){
             // try to get file from classpath
             String resourcePath = ContentContract.class.getClassLoader().getResource("").toString();
@@ -96,12 +96,12 @@ public class ContentContract {
                 resourcePath = resourcePath.substring(typeSplitePos+1);
             }
 
-            file = new File(resourcePath + keystoreFile);
+            file = new File(resourcePath + this.keystoreFile);
             if (!file.exists()){
                 throw new IOException("Cannot found keystore file.");
             }
         }
-        Credentials credentials = WalletUtils.loadCredentials(keystorePassword, file);
+        this.credentials = WalletUtils.loadCredentials(keystorePassword, file);
         this.mainAddress = credentials.getAddress();
 
         // load contract object
@@ -129,7 +129,7 @@ public class ContentContract {
      * @return token balance (Unit UX)
      * @throws Exception
      */
-    public BigDecimal getTokenBanalce() throws Exception {
+    public BigDecimal getTokenBalance() throws Exception {
         return getTokenBalance(this.mainAddress);
     }
 
@@ -138,6 +138,43 @@ public class ContentContract {
         return new BigDecimal(value).divide(BigDecimal.valueOf(10).pow(18));
     }
 
+    /**
+     * Transfer amount of gas from main address to specified address
+     * @param reqId request id
+     * @param toAddress target address
+     * @param value gas value
+     * @throws IOException IOException while send a RPC call
+     */
+    public void transferGas(final String reqId, String toAddress, BigInteger value) throws IOException {
+        web3j.ethGetTransactionCount(this.mainAddress, DefaultBlockParameterName.LATEST)
+                .sendAsync().whenCompleteAsync((txCount, e1)->
+        {
+            if (e1 == null){
+                RawTransaction rawtx = RawTransaction.createEtherTransaction(txCount.getTransactionCount(),
+                        GAS_PRICE, DefaultGasProvider.GAS_LIMIT, toAddress, value);
+
+                byte[] rawTxData = TransactionEncoder.signMessage(rawtx, this.credentials);
+                web3j.ethSendRawTransaction(Numeric.toHexString(rawTxData))
+                        .sendAsync().whenCompleteAsync((txHash, e2)->{
+                    if (e2 == null){
+                        String hash = txHash.getTransactionHash();
+                        web3j.ethGetTransactionReceipt(hash).sendAsync().whenCompleteAsync((receipt, e3)->{
+                            if (e3 == null){
+                                processTransactionReceipt(reqId, receipt.getResult());
+                            }else{
+                                this.handler.fail(reqId, e3.getMessage());
+                            }
+                        });
+                    }else{
+                        this.handler.fail(reqId, e2.getMessage());
+                    }
+                });
+            }else{
+                this.handler.fail(reqId, "Get address nonce error:" + e1.getMessage());
+            }
+        });
+
+    }
     /**
      * Transfer amount of token to a specified address
      * @param reqId request id

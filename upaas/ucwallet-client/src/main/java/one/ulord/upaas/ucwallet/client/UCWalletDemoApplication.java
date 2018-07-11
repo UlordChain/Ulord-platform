@@ -52,10 +52,15 @@ public class UCWalletDemoApplication implements TransactionActionHandler{
             // get gas balance
             System.out.println("Gas balance:" + contentContract.getGasBalance().toString());
             try {
-                System.out.println("Token balance main:" + contentContract.getTokenBanalce().toString());
+                System.out.println("Token balance main:" + contentContract.getTokenBalance().toString());
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            // set gas balance
+            System.out.println("Transfer some gas to...");
+            contentContract.transferGas("transfer gas", "0x2e836371bf20107837da6ad9bb4d08d8f53f65ba",
+                    new BigInteger("1000000000000"));
+
             // test token transfer
             System.out.println("Transfer 100000000000000000(1Token) to address 0x24fd610e1769f1f051e6d25a9099588df13d7feb... ");
             contentContract.transferToken("tranfer token:",
