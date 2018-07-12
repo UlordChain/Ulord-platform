@@ -1,0 +1,10 @@
+upaas:
+  uauth:
+    server:
+      host: localhost
+      port: 8070
+    client:
+      id: 'A000001'
+      username: test
+      password: test
+      keepLiveInterval: 30
