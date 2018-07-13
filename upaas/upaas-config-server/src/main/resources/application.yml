@@ -36,7 +36,7 @@ spring:
     config:
       server:
         git:
-          uri: file:///g:/upaas/config-repo
+          uri: file:///data/config-repo
 logging:
   config: classpath:log4j2.xml
 

@@ -7,6 +7,7 @@ buildscript {
         springBootVersion = '2.0.1.RELEASE'
     }
     repositories {
+    	mavenLocal()
         maven {url 'http://maven.aliyun.com/nexus/content/groups/public/'}
         mavenCentral()
     }
@@ -22,14 +23,14 @@ apply plugin: 'io.spring.dependency-management'
 sourceCompatibility = 1.8
 
 ext {
-    springCloudVersion = 'Finchley.M9'
+    springCloudVersion = 'Finchley.RELEASE'
 }
 
 repositories {
     mavenLocal()
     maven {url 'http://maven.aliyun.com/nexus/content/groups/public/'}
     mavenCentral()
-    maven { url 'https://repo.spring.io/libs-milestone' }
+//    maven { url 'https://repo.spring.io/libs-milestone' }
 }
 
 configurations {
