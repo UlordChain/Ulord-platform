@@ -145,7 +145,7 @@ public class ContentContract {
      * @param value gas value
      * @throws IOException IOException while send a RPC call
      */
-    public void transferGas(final String reqId, String toAddress, BigInteger value) throws IOException {
+    public void transferGas(final String reqId, String toAddress, BigInteger value) {
         web3j.ethGetTransactionCount(this.mainAddress, DefaultBlockParameterName.LATEST)
                 .sendAsync().whenCompleteAsync((txCount, e1)->
         {
