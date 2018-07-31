@@ -5,14 +5,20 @@
 package one.ulord.upaas.ucwallet.client;
 
 import one.ulord.upaas.ucwallet.client.contract.generates.CenterPublish;
-import one.ulord.upaas.ucwallet.client.contract.generates.DBControl;
-import one.ulord.upaas.ucwallet.client.contract.generates.USHToken;
+import one.ulord.upaas.ucwallet.client.contract.generates.UshareToken;
+import one.ulord.upaas.ucwallet.client.utils.Loader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.web3j.crypto.*;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterName;
+import org.web3j.protocol.core.methods.response.EthGetTransactionReceipt;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.protocol.core.methods.response.Web3ClientVersion;
 import org.web3j.protocol.http.HttpService;
+import org.web3j.tx.FastRawTransactionManager;
+import org.web3j.tx.TransactionManager;
+import org.web3j.tx.Transfer;
 import org.web3j.tx.gas.DefaultGasProvider;
 import org.web3j.utils.Convert;
 import org.web3j.utils.Numeric;
@@ -21,6 +27,8 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.List;
 import java.util.concurrent.*;
 
@@ -30,6 +38,8 @@ import java.util.concurrent.*;
  * @since 7/5/18
  */
 public class ContentContract {
+    final Logger logger = LoggerFactory.getLogger(ContentContract.class);
+
     /**
      * Block max gas limit
      */
@@ -39,19 +49,25 @@ public class ContentContract {
      */
     public static BigInteger GAS_PRICE = BigInteger.valueOf(200000000); //0.2GWei
 
+    public static long TX_CONFIRM_TIME_MS = 80000;
+    public static long TX_QUERY_LOOP_MS = 5000;
+
     private String tokenAddress;
-    private String adminAddress;
+    private String uxCandyAddress;
     private String publishAddress;
     private String keystoreFile;
     private String mainAddress;
 
-    private USHToken ushToken;
-    private DBControl dbControl;
+    private UshareToken ushToken;
+//    private UXCandy uxCandy;
     private CenterPublish centerPublish;
+    private Transfer transfer;
 
     private TransactionActionHandler handler;
 
     Credentials credentials;
+
+    FastRawTransactionManager transactionManager;
 
     private Web3j web3j;
 
@@ -61,7 +77,7 @@ public class ContentContract {
      * and contract instance.
      * @param ulordProvider Ulord side provider, such as http://xxxx:yyy, which is a RPC endpoint
      * @param tokenAddress token address which has deploy to ulord side chain
-     * @param adminAddress a admin contract for token which has deploy to ulord side chain
+     * @param candyAddress a candy contract for Token which is for multi-pay function
      * @param publishAddress a publish smart contract which has deply to ulord side chain
      * @param keystoreFile user account keystore file, which include user account private key
      * @param keystorePassword user account keystore password
@@ -69,15 +85,16 @@ public class ContentContract {
      * @throws IOException
      * @throws CipherException
      */
-    public ContentContract(String ulordProvider, String tokenAddress, String adminAddress, String publishAddress,
+    public ContentContract(String ulordProvider, String tokenAddress, String candyAddress, String publishAddress,
                            String keystoreFile, String keystorePassword, TransactionActionHandler handler)
             throws IOException, CipherException {
         this.tokenAddress = tokenAddress;
-        this.adminAddress = adminAddress;
+        this.uxCandyAddress = candyAddress;
         this.publishAddress = publishAddress;
 
         this.keystoreFile = keystoreFile;
         this.handler = handler;
+
 
         this.web3j = Web3j.build(new HttpService(ulordProvider));
         Web3ClientVersion web3ClientVersion = null;
@@ -87,8 +104,9 @@ public class ContentContract {
             throw new IOException("Ulord provider cannot connect.");
         }
 
-        File file = new File(this.keystoreFile);
-        if (!file.exists()){
+        URL fileUrl = Loader.getResource(keystoreFile);
+        File file = null;
+        if (fileUrl == null){
             // try to get file from classpath
             String resourcePath = ContentContract.class.getClassLoader().getResource("").toString();
             int typeSplitePos = resourcePath.indexOf(":");
@@ -100,16 +118,27 @@ public class ContentContract {
             if (!file.exists()){
                 throw new IOException("Cannot found keystore file.");
             }
+        }else{
+            try {
+                file = new File(fileUrl.toURI());
+            } catch (URISyntaxException e) {
+                throw new IOException(e.getMessage());
+            }
         }
         this.credentials = WalletUtils.loadCredentials(keystorePassword, file);
         this.mainAddress = credentials.getAddress();
 
+        // we need using fast transaction manager
+        transactionManager = new FastRawTransactionManager(web3j, credentials);
+
+        transfer = new Transfer(web3j, transactionManager);
+
         // load contract object
-        this.ushToken = USHToken.load(tokenAddress, web3j, credentials,
+        this.ushToken = UshareToken.load(tokenAddress, web3j, transactionManager,
                 DefaultGasProvider.GAS_PRICE, DefaultGasProvider.GAS_LIMIT);
-        this.dbControl = DBControl.load(adminAddress, web3j, credentials,
-                DefaultGasProvider.GAS_PRICE, DefaultGasProvider.GAS_LIMIT);
-        this.centerPublish = CenterPublish.load(publishAddress, web3j, credentials,
+//        this.uxCandy = UXCandy.load(uxCandyAddress, web3j, transactionManager,
+//                DefaultGasProvider.GAS_PRICE, DefaultGasProvider.GAS_LIMIT);
+        this.centerPublish = CenterPublish.load(publishAddress, web3j, transactionManager,
                 DefaultGasProvider.GAS_PRICE, ContentContract.BLOCK_GAS_LIMIT); // Using block max limit
     }
 
@@ -119,9 +148,19 @@ public class ContentContract {
      * @return gas balance (Unit SUT)
      * @throws IOException
      */
-    public BigDecimal getGasBalance() throws IOException {
+    public BigInteger getGasBalance() throws IOException {
         BigInteger balance = web3j.ethGetBalance(this.mainAddress, DefaultBlockParameterName.LATEST).send().getBalance();
-        return Convert.fromWei(new BigDecimal(balance), Convert.Unit.ETHER);
+        return balance;
+    }
+
+    /**
+     * Get ulord side chain gas balance for a specified address
+     * @return Gas balance, Unit SUT
+     * @throws IOException
+     */
+    public BigInteger getGasBalance(String address) throws IOException {
+        BigInteger balance = web3j.ethGetBalance(address, DefaultBlockParameterName.LATEST).send().getBalance();
+        return balance;
     }
 
     /**
@@ -129,13 +168,14 @@ public class ContentContract {
      * @return token balance (Unit UX)
      * @throws Exception
      */
-    public BigDecimal getTokenBalance() throws Exception {
+    public BigInteger getTokenBalance() throws Exception {
         return getTokenBalance(this.mainAddress);
     }
 
-    public BigDecimal getTokenBalance(String address) throws Exception {
+    public BigInteger getTokenBalance(String address) throws Exception {
         BigInteger value = ushToken.balanceOf(address).send();
-        return new BigDecimal(value).divide(BigDecimal.valueOf(10).pow(18));
+//        return new BigDecimal(value).divide(BigDecimal.valueOf(10).pow(18));
+        return value;
     }
 
     /**
@@ -146,35 +186,94 @@ public class ContentContract {
      * @throws IOException IOException while send a RPC call
      */
     public void transferGas(final String reqId, String toAddress, BigInteger value) {
-        web3j.ethGetTransactionCount(this.mainAddress, DefaultBlockParameterName.LATEST)
-                .sendAsync().whenCompleteAsync((txCount, e1)->
-        {
-            if (e1 == null){
-                RawTransaction rawtx = RawTransaction.createEtherTransaction(txCount.getTransactionCount(),
-                        GAS_PRICE, DefaultGasProvider.GAS_LIMIT, toAddress, value);
-
-                byte[] rawTxData = TransactionEncoder.signMessage(rawtx, this.credentials);
-                web3j.ethSendRawTransaction(Numeric.toHexString(rawTxData))
-                        .sendAsync().whenCompleteAsync((txHash, e2)->{
-                    if (e2 == null){
-                        String hash = txHash.getTransactionHash();
-                        web3j.ethGetTransactionReceipt(hash).sendAsync().whenCompleteAsync((receipt, e3)->{
-                            if (e3 == null){
-                                processTransactionReceipt(reqId, receipt.getResult());
-                            }else{
-                                this.handler.fail(reqId, e3.getMessage());
-                            }
-                        });
+        // transfer using fast transaction manager
+        transfer.sendFunds(toAddress, new BigDecimal(value), Convert.Unit.WEI, GAS_PRICE, DefaultGasProvider.GAS_LIMIT)
+                .sendAsync().whenCompleteAsync((receipt, e)->{
+                    if (e == null && receipt != null){
+                        processTransactionReceipt(reqId, receipt);
                     }else{
-                        this.handler.fail(reqId, e2.getMessage());
+                        processTransactionException(reqId, e);
                     }
-                });
-            }else{
-                this.handler.fail(reqId, "Get address nonce error:" + e1.getMessage());
-            }
         });
+// Comment by yinhaibo, We need to using
+//        web3j.ethGetTransactionCount(this.mainAddress, DefaultBlockParameterName.LATEST)
+//                .sendAsync().whenCompleteAsync((txCount, e1)->
+//        {
+//            if (e1 == null){
+//                RawTransaction rawtx = RawTransaction.createEtherTransaction(txCount.getTransactionCount(),
+//                        GAS_PRICE, DefaultGasProvider.GAS_LIMIT, toAddress, value);
+//
+//                byte[] rawTxData = TransactionEncoder.signMessage(rawtx, this.credentials);
+////                web3j.ethSendRawTransaction(Numeric.toHexString(rawTxData))
+////                        .sendAsync().whenCompleteAsync((txHash, e2)->{
+////                    if (e2 == null){
+////                        String hash = txHash.getTransactionHash();
+////                        web3j.ethGetTransactionReceipt(hash).sendAsync().whenCompleteAsync((receipt, e3)->{
+////                            if (e3 == null){
+////                                processTransactionReceipt(reqId, receipt.getResult());
+////                            }else{
+////                                this.handler.fail(reqId, e3.getMessage());
+////                            }
+////                        });
+////                    }else{
+////                        this.handler.fail(reqId, e2.getMessage());
+////                    }
+////                });
+//                web3j.ethSendRawTransaction(Numeric.toHexString(rawTxData))
+//                        .sendAsync().whenCompleteAsync((txHash, e2)->{
+//                    if (e2 == null){
+//                        String hash = txHash.getTransactionHash();
+//                        long startTime = System.currentTimeMillis();
+//                        boolean success = false;
+//                        while( System.currentTimeMillis() - startTime < TX_CONFIRM_TIME_MS) {
+//                            try {
+//                                EthGetTransactionReceipt receipt = web3j.ethGetTransactionReceipt(hash).send();
+//                                if (receipt.getError() != null) {
+//                                    this.handler.fail(reqId, receipt.getError().getMessage());
+//                                } else if (receipt.getResult() == null) {
+//                                    // we need to continue wait
+//                                    try {
+//                                        Thread.sleep(TX_QUERY_LOOP_MS);
+//                                    } catch (InterruptedException e) {
+//                                    }
+//                                } else {
+//                                    processTransactionReceipt(reqId, receipt.getResult());
+//                                    success = true;
+//                                    break;
+//                                }
+//                            } catch (IOException e) {
+//                                this.handler.fail(reqId, e.getMessage());
+//                            }
+//                        }
+//                        if (!success){
+//                            this.handler.fail(reqId, "Transaction maybe cannot be confirmed in current, " +
+//                                    "you can refresh you balance to check it.");
+//                        }
+//                    }else{
+//                        this.handler.fail(reqId, e2.getMessage());
+//                    }
+//                });
+//            }else{
+//                this.handler.fail(reqId, "Get address nonce error:" + e1.getMessage());
+//            }
+//        });
 
     }
+
+    private void processTransactionException(String reqId, Throwable e) {
+        // we need reset nonce
+        resetNonce();
+        this.handler.fail(reqId, e.getMessage());
+    }
+
+    private void resetNonce() {
+        try {
+            transactionManager.resetNonce();
+        } catch (IOException e1) {
+            logger.warn("Cannot reset transaction manager nonce value");
+        }
+    }
+
     /**
      * Transfer amount of token to a specified address
      * @param reqId request id
@@ -186,7 +285,7 @@ public class ContentContract {
             if (e == null){
                 processTransactionReceipt(reqId, receipt);
             }else{
-                this.handler.fail(reqId, e.getMessage());
+                processTransactionException(reqId, e);
             }
         });
     }
@@ -202,7 +301,7 @@ public class ContentContract {
            if (e == null){
                processTransactionReceipt(reqId, receipt);
            }else{
-               this.handler.fail(reqId, e.getMessage());
+               processTransactionException(reqId, e);
            }
         });
 
@@ -225,7 +324,7 @@ public class ContentContract {
                     if (e == null){
                         processTransactionReceipt(reqId, receipt);
                     }else{
-                        this.handler.fail(reqId, e.getMessage());
+                        processTransactionException(reqId, e);
                     }
                 });
     }
@@ -237,13 +336,23 @@ public class ContentContract {
      * @param quality a set of quality need to transfer
      */
     public void transferTokens(final String reqId, List<String> address, List<BigInteger> quality){
-        centerPublish.mulTransfer(address, quality).sendAsync().whenCompleteAsync((receipt, e)-> {
-            if (e == null){
-                processTransactionReceipt(reqId, receipt);
-            }else{
-                this.handler.fail(reqId, e.getMessage());
-            }
-        });
+//        uxCandy.mulPay(address, quality).sendAsync().whenCompleteAsync((receipt, e)-> {
+//            if (e == null){
+//                processTransactionReceipt(reqId, receipt);
+//            }else{
+//                this.handler.fail(reqId, e.getMessage());
+//            }
+//        });
+        throw new RuntimeException("Unsupported method yet.");
+    }
+
+    /**
+     * Return a raw transaction hash. [Sync]
+     * @param txhash transaction hash
+     * @return hash
+     */
+    public TransactionReceipt queryTransactionReceipt(String txhash) throws IOException {
+        return web3j.ethGetTransactionReceipt(txhash).send().getResult();
     }
 
     private void processTransactionReceipt(String reqId, TransactionReceipt transactionReceipt) {

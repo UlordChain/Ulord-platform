@@ -64,7 +64,7 @@ eureka:
 logging:
   config: classpath:log4j2.xml
 
-
+---
 
 ###########################
 # Production environment
@@ -81,7 +81,7 @@ spring:
     config:
       discovery:
         enabled: true
-        service-id: upaas-config-server
+        service-id: ushare-config-server
 #      fail-fast: true
 #      retry:
 #        initial-interval: 2000

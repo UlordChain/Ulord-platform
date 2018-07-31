@@ -51,7 +51,7 @@ eureka:
 ---
 # Production environment
 server:
-  port: 8888
+  port: 8072
 
 spring:
   profiles: prod
@@ -71,4 +71,4 @@ eureka:
     prefer-ip-address: true
   client:
     serviceUrl:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: http://localhost:8071/eureka/

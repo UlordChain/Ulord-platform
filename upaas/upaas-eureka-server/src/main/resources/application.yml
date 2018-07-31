@@ -39,7 +39,7 @@ logging:
 ---
 # Production environment
 server:
-  port: 8761
+  port: 8071
 
 spring:
   profiles: prod

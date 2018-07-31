@@ -66,12 +66,12 @@ eureka:
 logging:
   config: classpath:log4j2.xml
 
-
+---
 
 ###########################
 # Production environment
 server:
-  port: 8062
+  port: 8073
 
 spring:
   profiles: prod
@@ -84,7 +84,7 @@ spring:
       profile: prod
       discovery:
         enabled: true
-        service-id: ulord-config-server
+        service-id: ushare-config-server
 #      fail-fast: true
 #      retry:
 #        initial-interval: 2000

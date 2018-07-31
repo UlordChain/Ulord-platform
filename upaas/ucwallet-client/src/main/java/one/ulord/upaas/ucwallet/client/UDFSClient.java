@@ -20,6 +20,8 @@ import java.util.List;
  * @since 7/5/18
  */
 public class UDFSClient {
+    private final static long defaultSysReadTime = 30000;
+    private final static long defaultConnectTime = 10000;
     private ArrayList<String> udfsGatewayList = new ArrayList<>();
     private IPFS udfs;
 
@@ -42,6 +44,14 @@ public class UDFSClient {
     }
 
     private void init(){
+        // checkout timeout default config
+        if (System.getProperty("sun.net.client.defaultReadTimeout") == null) {
+            System.setProperty("sun.net.client.defaultReadTimeout", String.valueOf(defaultSysReadTime));
+        }
+        if (System.getProperty("sun.net.client.defaultConnectTimeout") == null) {
+            System.setProperty("sun.net.client.defaultConnectTimeout", String.valueOf(defaultConnectTime));
+        }
+
         for(String gateway : udfsGatewayList){
             try{
                 this.udfs = new IPFS(gateway);
