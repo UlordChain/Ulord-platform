@@ -9,19 +9,18 @@ import one.ulord.upaas.ucwallet.client.contract.generates.UshareToken;
 import one.ulord.upaas.ucwallet.client.utils.Loader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.web3j.crypto.*;
+import org.web3j.crypto.CipherException;
+import org.web3j.crypto.Credentials;
+import org.web3j.crypto.WalletUtils;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterName;
-import org.web3j.protocol.core.methods.response.EthGetTransactionReceipt;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.protocol.core.methods.response.Web3ClientVersion;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.tx.FastRawTransactionManager;
-import org.web3j.tx.TransactionManager;
 import org.web3j.tx.Transfer;
 import org.web3j.tx.gas.DefaultGasProvider;
 import org.web3j.utils.Convert;
-import org.web3j.utils.Numeric;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,7 +29,7 @@ import java.math.BigInteger;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Content contract
@@ -105,16 +104,10 @@ public class ContentContract {
         }
 
         URL fileUrl = Loader.getResource(keystoreFile);
+//        File file = new File(keystoreFile);
         File file = null;
         if (fileUrl == null){
-            // try to get file from classpath
-            String resourcePath = ContentContract.class.getClassLoader().getResource("").toString();
-            int typeSplitePos = resourcePath.indexOf(":");
-            if (typeSplitePos > 0){
-                resourcePath = resourcePath.substring(typeSplitePos+1);
-            }
-
-            file = new File(resourcePath + this.keystoreFile);
+            file = new File(this.keystoreFile);
             if (!file.exists()){
                 throw new IOException("Cannot found keystore file.");
             }
@@ -140,6 +133,8 @@ public class ContentContract {
 //                DefaultGasProvider.GAS_PRICE, DefaultGasProvider.GAS_LIMIT);
         this.centerPublish = CenterPublish.load(publishAddress, web3j, transactionManager,
                 DefaultGasProvider.GAS_PRICE, ContentContract.BLOCK_GAS_LIMIT); // Using block max limit
+
+        logger.info("Load Content Contract Success.");
     }
 
 
@@ -263,15 +258,13 @@ public class ContentContract {
     private void processTransactionException(String reqId, Throwable e) {
         // we need reset nonce
         resetNonce();
+        logger.warn("Transaction exception:" +  reqId + ", " + e.getMessage());
         this.handler.fail(reqId, e.getMessage());
     }
 
     private void resetNonce() {
-        try {
-            transactionManager.resetNonce();
-        } catch (IOException e1) {
-            logger.warn("Cannot reset transaction manager nonce value");
-        }
+        transactionManager.setNonce(BigInteger.valueOf(-1));
+        logger.info("RESET NONCE VALUE:" + transactionManager.getCurrentNonce());
     }
 
     /**
