@@ -2,6 +2,7 @@ plugins {
     id 'java'
 }
 apply plugin: 'maven'
+apply plugin: 'maven-publish'
 
 group 'one.ulord.upaas'
 version '1.0-SNAPSHOT'
@@ -24,6 +25,14 @@ uploadArchives {
     repositories {
         mavenDeployer {
             mavenLocal()
+        }
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
         }
     }
 }

@@ -45,7 +45,7 @@ spring:
       profile: test
       discovery:
         enabled: true
-        service-id: ulord-config-server
+        service-id: upaas-config-server
 #      fail-fast: true
 #      retry:
 #        initial-interval: 2000
@@ -84,7 +84,7 @@ spring:
       profile: prod
       discovery:
         enabled: true
-        service-id: ushare-config-server
+        service-id: upass-config-server
 #      fail-fast: true
 #      retry:
 #        initial-interval: 2000
