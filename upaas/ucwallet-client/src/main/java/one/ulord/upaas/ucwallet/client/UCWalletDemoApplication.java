@@ -39,9 +39,9 @@ public class UCWalletDemoApplication implements TransactionActionHandler{
             ContentContract contentContract = new ContentContract(
                     "http://114.67.37.245:58858",
                     "0xbc353d8cc6c73d95f2ec59573d1f47ed7f12e922",
-                    "",
+                    "0x9b3cec1d43d1ee6a1874a15c46b5436e0820882a",
                     "0xee9b6a4060c3e68259a58725fe93982f994cb5e9",
-                    "keystore/usc.test.ux.platform.json",
+                    "keystore/usc.test.ux.reward.json",
                     "12345678",
                     this
                     );
@@ -97,7 +97,7 @@ public class UCWalletDemoApplication implements TransactionActionHandler{
 //            contentContract.approveContractQuality("Approve", new BigInteger("10000000000000000000"));
 
             // test multiple transfer action
-            if (false) {
+            if (true) {
                 System.out.println("Transfer some quality to multiple address");
                 List<String> addressList = new ArrayList<>();
                 addressList.add("0x3f16131ac9203656a9ca790f23878ae165c3eb4f");

@@ -5,6 +5,7 @@
 package one.ulord.upaas.ucwallet.client;
 
 import one.ulord.upaas.ucwallet.client.contract.generates.CenterPublish;
+import one.ulord.upaas.ucwallet.client.contract.generates.MulTransfer;
 import one.ulord.upaas.ucwallet.client.contract.generates.UshareToken;
 import one.ulord.upaas.ucwallet.client.utils.Loader;
 import org.slf4j.Logger;
@@ -58,7 +59,7 @@ public class ContentContract {
     private String mainAddress;
 
     private UshareToken ushToken;
-//    private UXCandy uxCandy;
+    private MulTransfer uxCandy;
     private CenterPublish centerPublish;
     private Transfer transfer;
 
@@ -104,7 +105,6 @@ public class ContentContract {
         }
 
         URL fileUrl = Loader.getResource(keystoreFile);
-//        File file = new File(keystoreFile);
         File file = null;
         if (fileUrl == null){
             file = new File(this.keystoreFile);
@@ -129,8 +129,8 @@ public class ContentContract {
         // load contract object
         this.ushToken = UshareToken.load(tokenAddress, web3j, transactionManager,
                 DefaultGasProvider.GAS_PRICE, DefaultGasProvider.GAS_LIMIT);
-//        this.uxCandy = UXCandy.load(uxCandyAddress, web3j, transactionManager,
-//                DefaultGasProvider.GAS_PRICE, DefaultGasProvider.GAS_LIMIT);
+        this.uxCandy = MulTransfer.load(uxCandyAddress, web3j, transactionManager,
+                DefaultGasProvider.GAS_PRICE, DefaultGasProvider.GAS_LIMIT);
         this.centerPublish = CenterPublish.load(publishAddress, web3j, transactionManager,
                 DefaultGasProvider.GAS_PRICE, ContentContract.BLOCK_GAS_LIMIT); // Using block max limit
 
@@ -169,7 +169,6 @@ public class ContentContract {
 
     public BigInteger getTokenBalance(String address) throws Exception {
         BigInteger value = ushToken.balanceOf(address).send();
-//        return new BigDecimal(value).divide(BigDecimal.valueOf(10).pow(18));
         return value;
     }
 
@@ -190,69 +189,6 @@ public class ContentContract {
                         processTransactionException(reqId, e);
                     }
         });
-// Comment by yinhaibo, We need to using
-//        web3j.ethGetTransactionCount(this.mainAddress, DefaultBlockParameterName.LATEST)
-//                .sendAsync().whenCompleteAsync((txCount, e1)->
-//        {
-//            if (e1 == null){
-//                RawTransaction rawtx = RawTransaction.createEtherTransaction(txCount.getTransactionCount(),
-//                        GAS_PRICE, DefaultGasProvider.GAS_LIMIT, toAddress, value);
-//
-//                byte[] rawTxData = TransactionEncoder.signMessage(rawtx, this.credentials);
-////                web3j.ethSendRawTransaction(Numeric.toHexString(rawTxData))
-////                        .sendAsync().whenCompleteAsync((txHash, e2)->{
-////                    if (e2 == null){
-////                        String hash = txHash.getTransactionHash();
-////                        web3j.ethGetTransactionReceipt(hash).sendAsync().whenCompleteAsync((receipt, e3)->{
-////                            if (e3 == null){
-////                                processTransactionReceipt(reqId, receipt.getResult());
-////                            }else{
-////                                this.handler.fail(reqId, e3.getMessage());
-////                            }
-////                        });
-////                    }else{
-////                        this.handler.fail(reqId, e2.getMessage());
-////                    }
-////                });
-//                web3j.ethSendRawTransaction(Numeric.toHexString(rawTxData))
-//                        .sendAsync().whenCompleteAsync((txHash, e2)->{
-//                    if (e2 == null){
-//                        String hash = txHash.getTransactionHash();
-//                        long startTime = System.currentTimeMillis();
-//                        boolean success = false;
-//                        while( System.currentTimeMillis() - startTime < TX_CONFIRM_TIME_MS) {
-//                            try {
-//                                EthGetTransactionReceipt receipt = web3j.ethGetTransactionReceipt(hash).send();
-//                                if (receipt.getError() != null) {
-//                                    this.handler.fail(reqId, receipt.getError().getMessage());
-//                                } else if (receipt.getResult() == null) {
-//                                    // we need to continue wait
-//                                    try {
-//                                        Thread.sleep(TX_QUERY_LOOP_MS);
-//                                    } catch (InterruptedException e) {
-//                                    }
-//                                } else {
-//                                    processTransactionReceipt(reqId, receipt.getResult());
-//                                    success = true;
-//                                    break;
-//                                }
-//                            } catch (IOException e) {
-//                                this.handler.fail(reqId, e.getMessage());
-//                            }
-//                        }
-//                        if (!success){
-//                            this.handler.fail(reqId, "Transaction maybe cannot be confirmed in current, " +
-//                                    "you can refresh you balance to check it.");
-//                        }
-//                    }else{
-//                        this.handler.fail(reqId, e2.getMessage());
-//                    }
-//                });
-//            }else{
-//                this.handler.fail(reqId, "Get address nonce error:" + e1.getMessage());
-//            }
-//        });
-
     }
 
     private void processTransactionException(String reqId, Throwable e) {
@@ -329,14 +265,41 @@ public class ContentContract {
      * @param quality a set of quality need to transfer
      */
     public void transferTokens(final String reqId, List<String> address, List<BigInteger> quality){
-//        uxCandy.mulPay(address, quality).sendAsync().whenCompleteAsync((receipt, e)-> {
-//            if (e == null){
-//                processTransactionReceipt(reqId, receipt);
-//            }else{
-//                this.handler.fail(reqId, e.getMessage());
-//            }
-//        });
-        throw new RuntimeException("Unsupported method yet.");
+        if (address == null || quality == null || address.size() == 0 || address.size() != quality.size()){
+            throw new RuntimeException("Invalid parameters, master equal.");
+        }
+        if (address.size() > 200){
+            logger.warn("Submit address amount more than 200, the transaction maybe out of gas.");
+        }
+        uxCandy.mulPayDiff(address, quality).sendAsync().whenCompleteAsync((receipt, e)-> {
+            if (e == null){
+                processTransactionReceipt(reqId, receipt);
+            }else{
+                processTransactionException(reqId, e);
+            }
+        });
+    }
+
+    /**
+     * Transfer to multiple address using same quality from current address
+     * @param reqId request id
+     * @param address a set of target address
+     * @param quality a set of quality need to transfer
+     */
+    public void transferTokens(final String reqId, BigInteger quality, List<String> address){
+        if (address == null || quality == null || address.size() == 0){
+            throw new RuntimeException("Invalid parameters, master equal.");
+        }
+        if (address.size() > 200){
+            logger.warn("Submit address amount more than 200, the transaction maybe out of gas.");
+        }
+        uxCandy.mulPaySame(quality, address).sendAsync().whenCompleteAsync((receipt, e)-> {
+            if (e == null){
+                processTransactionReceipt(reqId, receipt);
+            }else{
+                processTransactionException(reqId, e);
+            }
+        });
     }
 
     /**
