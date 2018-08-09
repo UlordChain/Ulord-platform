@@ -16,6 +16,7 @@ import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.tuples.generated.Tuple7;
 import org.web3j.tx.Contract;
 import org.web3j.tx.TransactionManager;
+import org.web3j.tx.gas.ContractGasProvider;
 import rx.Observable;
 import rx.functions.Func1;
 
@@ -87,12 +88,10 @@ public class CenterPublish extends Contract {
             Arrays.<TypeReference<?>>asList());
     ;
 
-    protected CenterPublish(String contractAddress, Web3j web3j, Credentials credentials, BigInteger gasPrice, BigInteger gasLimit) {
-        super(BINARY, contractAddress, web3j, credentials, gasPrice, gasLimit);
-    }
 
-    protected CenterPublish(String contractAddress, Web3j web3j, TransactionManager transactionManager, BigInteger gasPrice, BigInteger gasLimit) {
-        super(BINARY, contractAddress, web3j, transactionManager, gasPrice, gasLimit);
+    protected CenterPublish(String contractAddress, Web3j web3j, TransactionManager transactionManager,
+                            ContractGasProvider gasProvider) {
+        super(BINARY, contractAddress, web3j, transactionManager, gasProvider);
     }
 
     public RemoteCall<TransactionReceipt> updateClaimPrice(byte[] _cid, String _author, BigInteger _newprice) {
@@ -360,12 +359,10 @@ public class CenterPublish extends Contract {
         return logTransferAdminEventObservable(filter);
     }
 
-    public static CenterPublish load(String contractAddress, Web3j web3j, Credentials credentials, BigInteger gasPrice, BigInteger gasLimit) {
-        return new CenterPublish(contractAddress, web3j, credentials, gasPrice, gasLimit);
-    }
 
-    public static CenterPublish load(String contractAddress, Web3j web3j, TransactionManager transactionManager, BigInteger gasPrice, BigInteger gasLimit) {
-        return new CenterPublish(contractAddress, web3j, transactionManager, gasPrice, gasLimit);
+    public static CenterPublish load(String contractAddress, Web3j web3j, TransactionManager transactionManager,
+                                     ContractGasProvider gasProvider) {
+        return new CenterPublish(contractAddress, web3j, transactionManager, gasProvider);
     }
 
     public static class LogMangeWhileEventResponse {

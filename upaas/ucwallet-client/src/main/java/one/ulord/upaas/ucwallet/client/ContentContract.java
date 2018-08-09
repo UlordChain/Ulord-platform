@@ -10,17 +10,28 @@ import one.ulord.upaas.ucwallet.client.contract.generates.UshareToken;
 import one.ulord.upaas.ucwallet.client.utils.Loader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.web3j.abi.FunctionEncoder;
+import org.web3j.abi.TypeReference;
+import org.web3j.abi.datatypes.Address;
+import org.web3j.abi.datatypes.Function;
+import org.web3j.abi.datatypes.Type;
+import org.web3j.abi.datatypes.Utf8String;
+import org.web3j.abi.datatypes.generated.Uint256;
+import org.web3j.abi.datatypes.generated.Uint8;
 import org.web3j.crypto.CipherException;
 import org.web3j.crypto.Credentials;
 import org.web3j.crypto.WalletUtils;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterName;
+import org.web3j.protocol.core.methods.response.EthSendTransaction;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.protocol.core.methods.response.Web3ClientVersion;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.tx.FastRawTransactionManager;
 import org.web3j.tx.Transfer;
+import org.web3j.tx.gas.ContractGasProvider;
 import org.web3j.tx.gas.DefaultGasProvider;
+import org.web3j.tx.gas.StaticGasProvider;
 import org.web3j.utils.Convert;
 
 import java.io.File;
@@ -29,6 +40,8 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -68,6 +81,7 @@ public class ContentContract {
     Credentials credentials;
 
     FastRawTransactionManager transactionManager;
+    ContractGasProvider contractGasProvider;
 
     private Web3j web3j;
 
@@ -124,15 +138,15 @@ public class ContentContract {
         // we need using fast transaction manager
         transactionManager = new FastRawTransactionManager(web3j, credentials);
 
+        // we using default contract gas provider
+        contractGasProvider = new StaticGasProvider(DefaultGasProvider.GAS_PRICE, ContentContract.BLOCK_GAS_LIMIT);
+
         transfer = new Transfer(web3j, transactionManager);
 
         // load contract object
-        this.ushToken = UshareToken.load(tokenAddress, web3j, transactionManager,
-                DefaultGasProvider.GAS_PRICE, DefaultGasProvider.GAS_LIMIT);
-        this.uxCandy = MulTransfer.load(uxCandyAddress, web3j, transactionManager,
-                DefaultGasProvider.GAS_PRICE, DefaultGasProvider.GAS_LIMIT);
-        this.centerPublish = CenterPublish.load(publishAddress, web3j, transactionManager,
-                DefaultGasProvider.GAS_PRICE, ContentContract.BLOCK_GAS_LIMIT); // Using block max limit
+        this.ushToken = UshareToken.load(tokenAddress, web3j, transactionManager, contractGasProvider);
+        this.uxCandy = MulTransfer.load(uxCandyAddress, web3j, transactionManager, contractGasProvider);
+        this.centerPublish = CenterPublish.load(publishAddress, web3j, transactionManager, contractGasProvider); // Using block max limit
 
         logger.info("Load Content Contract Success.");
     }
@@ -191,6 +205,18 @@ public class ContentContract {
         });
     }
 
+    /**
+     * Transfer amount of gas from main address to specified address
+     * @param toAddress target address
+     * @param value gas value
+     * @throws IOException IOException while send a RPC call
+     */
+    public String transferGas(String toAddress, BigInteger value) throws IOException {
+        // transfer using fast transaction manager
+        EthSendTransaction txObject = transactionManager.sendTransaction(GAS_PRICE, DefaultGasProvider.GAS_LIMIT, toAddress, null, value);
+        return txObject.getTransactionHash();
+    }
+
     private void processTransactionException(String reqId, Throwable e) {
         // we need reset nonce
         resetNonce();
@@ -220,6 +246,26 @@ public class ContentContract {
     }
 
     /**
+     * Transfer amount of token to a specified address
+     * @param toAddress a target address
+     * @param quantity quantity
+     */
+    public String transferToken(String toAddress, BigInteger quantity) throws IOException {
+        final Function function = new Function(
+                UshareToken.FUNC_TRANSFER,
+                Arrays.<Type>asList(new Address(toAddress),
+                        new Uint256(quantity)),
+                Collections.<TypeReference<?>>emptyList());
+        EthSendTransaction txObject = transactionManager.sendTransaction(
+                contractGasProvider.getGasPrice(function.getName()),
+                contractGasProvider.getGasLimit(function.getName()),
+                toAddress,
+                FunctionEncoder.encode(function), BigInteger.ZERO);
+
+        return txObject.getTransactionHash();
+    }
+
+    /**
      * Approve publish contract to use a quality tokens
      * @param reqId request id
      * @param quantity a quality
@@ -234,6 +280,25 @@ public class ContentContract {
            }
         });
 
+    }
+
+    /**
+     * Approve publish contract to use a quality tokens
+     * @param quantity a quality
+     */
+    public String approveContractQuality(BigInteger quantity) throws IOException {
+        final Function function = new Function(
+                UshareToken.FUNC_APPROVE,
+                Arrays.<Type>asList(new Address(publishAddress),
+                        new Uint256(quantity)),
+                Collections.<TypeReference<?>>emptyList());
+        EthSendTransaction txObject = transactionManager.sendTransaction(
+                contractGasProvider.getGasPrice(function.getName()),
+                contractGasProvider.getGasLimit(function.getName()),
+                ushToken.getContractAddress(),
+                FunctionEncoder.encode(function), BigInteger.ZERO);
+
+        return txObject.getTransactionHash();
     }
 
     /**
@@ -259,6 +324,35 @@ public class ContentContract {
     }
 
     /**
+     * Publish a resource to ulord smart contract
+     * @param udfsHash
+     * @param authorAddress
+     * @param price
+     * @param deposit
+     * @return
+     * @throws IOException
+     */
+    public String publishResource(String udfsHash,
+                                String authorAddress, BigInteger price, BigInteger deposit) throws IOException {
+        final Function function = new Function(
+                CenterPublish.FUNC_CREATECLAIM,
+                Arrays.<Type>asList(new Utf8String(udfsHash),
+                        new Address(authorAddress),
+                        new Uint256(price),
+                        new Uint256(deposit),
+                        new Uint8(BigInteger.ONE)),
+                Collections.<TypeReference<?>>emptyList());
+
+        EthSendTransaction txObject = transactionManager.sendTransaction(
+                contractGasProvider.getGasPrice(function.getName()),
+                contractGasProvider.getGasLimit(function.getName()),
+                ushToken.getContractAddress(),
+                FunctionEncoder.encode(function), BigInteger.ZERO);
+
+        return txObject.getTransactionHash();
+    }
+
+    /**
      * Transfer to multiple address using different quality from current address
      * @param reqId request id
      * @param address a set of target address
@@ -281,6 +375,35 @@ public class ContentContract {
     }
 
     /**
+     * Transfer to multiple address using different quality from current address
+     * @param address a set of target address
+     * @param quality a set of quality need to transfer
+     */
+    public String transferTokens(List<String> address, List<BigInteger> quality) throws IOException {
+        if (address == null || quality == null || address.size() == 0 || address.size() != quality.size()){
+            throw new RuntimeException("Invalid parameters, master equal.");
+        }
+        if (address.size() > 200){
+            logger.warn("Submit address amount more than 200, the transaction maybe out of gas.");
+        }
+        final Function function = new Function(
+                MulTransfer.FUNC_MULPAYDIFF,
+                Arrays.<Type>asList(new org.web3j.abi.datatypes.DynamicArray<>(
+                                org.web3j.abi.Utils.typeMap(address, Address.class)),
+                        new org.web3j.abi.datatypes.DynamicArray<>(
+                                org.web3j.abi.Utils.typeMap(quality, org.web3j.abi.datatypes.generated.Uint256.class))),
+                Collections.<TypeReference<?>>emptyList());
+
+        EthSendTransaction txObject = transactionManager.sendTransaction(
+                contractGasProvider.getGasPrice(function.getName()),
+                contractGasProvider.getGasLimit(function.getName()),
+                uxCandy.getContractAddress(),
+                FunctionEncoder.encode(function), BigInteger.ZERO);
+
+        return txObject.getTransactionHash();
+    }
+
+    /**
      * Transfer to multiple address using same quality from current address
      * @param reqId request id
      * @param address a set of target address
@@ -300,6 +423,34 @@ public class ContentContract {
                 processTransactionException(reqId, e);
             }
         });
+    }
+
+    /**
+     * Transfer to multiple address using same quality from current address
+     * @param address a set of target address
+     * @param quality a set of quality need to transfer
+     */
+    public String transferTokens(BigInteger quality, List<String> address) throws IOException {
+        if (address == null || quality == null || address.size() == 0){
+            throw new RuntimeException("Invalid parameters, master equal.");
+        }
+        if (address.size() > 200){
+            logger.warn("Submit address amount more than 200, the transaction maybe out of gas.");
+        }
+        final Function function = new Function(
+                MulTransfer.FUNC_MULPAYSAME,
+                Arrays.<Type>asList(new org.web3j.abi.datatypes.generated.Uint256(quality),
+                        new org.web3j.abi.datatypes.DynamicArray<Address>(
+                                org.web3j.abi.Utils.typeMap(address, Address.class))),
+                Collections.<TypeReference<?>>emptyList());
+
+        EthSendTransaction txObject = transactionManager.sendTransaction(
+                contractGasProvider.getGasPrice(function.getName()),
+                contractGasProvider.getGasLimit(function.getName()),
+                uxCandy.getContractAddress(),
+                FunctionEncoder.encode(function), BigInteger.ZERO);
+
+        return txObject.getTransactionHash();
     }
 
     /**

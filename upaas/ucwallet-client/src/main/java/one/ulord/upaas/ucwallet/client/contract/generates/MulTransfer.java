@@ -16,6 +16,7 @@ import org.web3j.protocol.core.methods.response.Log;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.tx.Contract;
 import org.web3j.tx.TransactionManager;
+import org.web3j.tx.gas.ContractGasProvider;
 import rx.Observable;
 import rx.functions.Func1;
 
@@ -62,12 +63,9 @@ public class MulTransfer extends Contract {
             Arrays.<TypeReference<?>>asList());
     ;
 
-    protected MulTransfer(String contractAddress, Web3j web3j, Credentials credentials, BigInteger gasPrice, BigInteger gasLimit) {
-        super(BINARY, contractAddress, web3j, credentials, gasPrice, gasLimit);
-    }
 
-    protected MulTransfer(String contractAddress, Web3j web3j, TransactionManager transactionManager, BigInteger gasPrice, BigInteger gasLimit) {
-        super(BINARY, contractAddress, web3j, transactionManager, gasPrice, gasLimit);
+    protected MulTransfer(String contractAddress, Web3j web3j, TransactionManager transactionManager, ContractGasProvider gasProvider) {
+        super(BINARY, contractAddress, web3j, transactionManager, gasProvider);
     }
 
     public RemoteCall<TransactionReceipt> transferAdminship(String _new) {
@@ -198,12 +196,10 @@ public class MulTransfer extends Contract {
         return logTransferAdminEventObservable(filter);
     }
 
-    public static MulTransfer load(String contractAddress, Web3j web3j, Credentials credentials, BigInteger gasPrice, BigInteger gasLimit) {
-        return new MulTransfer(contractAddress, web3j, credentials, gasPrice, gasLimit);
-    }
 
-    public static MulTransfer load(String contractAddress, Web3j web3j, TransactionManager transactionManager, BigInteger gasPrice, BigInteger gasLimit) {
-        return new MulTransfer(contractAddress, web3j, transactionManager, gasPrice, gasLimit);
+    public static MulTransfer load(String contractAddress, Web3j web3j, TransactionManager transactionManager,
+                                   ContractGasProvider gasProvider) {
+        return new MulTransfer(contractAddress, web3j, transactionManager, gasProvider);
     }
 
     public static class LogTransferAdminEventResponse {
