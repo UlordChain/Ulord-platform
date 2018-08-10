@@ -346,7 +346,7 @@ public class ContentContract {
         EthSendTransaction txObject = transactionManager.sendTransaction(
                 contractGasProvider.getGasPrice(function.getName()),
                 contractGasProvider.getGasLimit(function.getName()),
-                ushToken.getContractAddress(),
+                centerPublish.getContractAddress(),
                 FunctionEncoder.encode(function), BigInteger.ZERO);
 
         return txObject.getTransactionHash();
