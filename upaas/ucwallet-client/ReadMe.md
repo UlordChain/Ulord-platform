@@ -1,7 +1,15 @@
 # UCWallet Client (Java)
 Ulord content wallet
- ## Usage
- ### Dependence
+## Test private key
+[Test private key](./usc-private-key.md)
+
+**NOTE: PLEASE DON'T USING THESE KEYS IN YOU PRODUCT ENVIRONMENT AND DON'T TRANSFER ALL TOKEN TO YOUR ADDRESS**
+
+## Deploy
+[UShare deploy record](./ushare-ce-deploy.md)
+
+## Usage
+### Dependence
  gradle
  ```
  compile ('org.web3j:core:3.4.0')
@@ -97,7 +105,7 @@ List<String> addressList = new ArrayList<>();
  
 We can also get balance of side chain and token balance.
 ```
-// get gas balance
+// get SUT balance
 public BigInteger getGasBalance() throws IOException；
 
 // Get token balance

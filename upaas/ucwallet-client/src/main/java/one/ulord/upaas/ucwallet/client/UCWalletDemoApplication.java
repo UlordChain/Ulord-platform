@@ -37,17 +37,17 @@ public class UCWalletDemoApplication implements TransactionActionHandler{
         try {
             System.out.println("Create a content contract object....");
             ContentContract contentContract = new ContentContract(
-                    "http://114.67.37.245:58858",
-                    "0xbc353d8cc6c73d95f2ec59573d1f47ed7f12e922",
-                    "0x9b3cec1d43d1ee6a1874a15c46b5436e0820882a",
-                    "0xee9b6a4060c3e68259a58725fe93982f994cb5e9",
-                    "keystore/usc.test.ux.reward.json",
+                    "http://testnet.usc.ulord.one:58858",
+                    "0xc3f4727b0388ecf04762172585b8e7f82ced166c", // UShare UX
+                    "0xcea7d4f4a367be785628b3b49c9e8563414be3fb",
+                    "0xba6baf26e4d7aa8062a8921843ad4b5714afbb57",
+                    "keystore/no6.keystore",
                     "12345678",
                     this
                     );
 
             // get gas balance
-            System.out.println("Gas balance:" + contentContract.getGasBalance().toString());
+            System.out.println("SUT balance:" + contentContract.getGasBalance().toString());
             try {
                 System.out.println("Token balance main:" + contentContract.getTokenBalance().toString());
             } catch (Exception e) {
@@ -56,7 +56,7 @@ public class UCWalletDemoApplication implements TransactionActionHandler{
 
             if (false) {
                 // set gas balance
-                System.out.println("Transfer some gas to...");
+                System.out.println("Transfer some SUT to...");
                 contentContract.transferGas("transfer gas", "0x2e836371bf20107837da6ad9bb4d08d8f53f65ba",
                         new BigInteger("1000000000000"));
             }
@@ -97,7 +97,7 @@ public class UCWalletDemoApplication implements TransactionActionHandler{
 //            contentContract.approveContractQuality("Approve", new BigInteger("10000000000000000000"));
 
             // test multiple transfer action
-            if (true) {
+            if (false) {
                 System.out.println("Transfer some quality to multiple address");
                 List<String> addressList = new ArrayList<>();
                 addressList.add("0x3f16131ac9203656a9ca790f23878ae165c3eb4f");
