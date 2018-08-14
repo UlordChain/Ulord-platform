@@ -187,6 +187,12 @@ public class ContentContract {
     }
 
     /**
+     * Get keystore address
+     * @return
+     */
+    public String getMainAddress(){return this.mainAddress;}
+
+    /**
      * Transfer amount of gas from main address to specified address
      * @param reqId request id
      * @param toAddress target address
