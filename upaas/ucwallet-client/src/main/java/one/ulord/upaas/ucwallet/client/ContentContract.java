@@ -213,7 +213,8 @@ public class ContentContract {
      */
     public String transferGas(String toAddress, BigInteger value) throws IOException {
         // transfer using fast transaction manager
-        EthSendTransaction txObject = transactionManager.sendTransaction(GAS_PRICE, DefaultGasProvider.GAS_LIMIT, toAddress, null, value);
+        EthSendTransaction txObject = transactionManager.sendTransaction(GAS_PRICE, DefaultGasProvider.GAS_LIMIT,
+                toAddress, "", value);
         return txObject.getTransactionHash();
     }
 

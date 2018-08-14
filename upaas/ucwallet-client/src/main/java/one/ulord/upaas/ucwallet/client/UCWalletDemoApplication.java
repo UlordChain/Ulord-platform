@@ -61,6 +61,14 @@ public class UCWalletDemoApplication implements TransactionActionHandler{
                         new BigInteger("1000000000000"));
             }
 
+            if (true) {
+                // set gas balance
+                System.out.println("Transfer some SUT to...");
+                String hash = contentContract.transferGas("0x2e836371bf20107837da6ad9bb4d08d8f53f65ba",
+                        new BigInteger("1000000000000"));
+                System.out.println(hash);
+            }
+
             if (false) {
                 // test token transfer
                 System.out.println("Transfer 100000000000000000(1Token) to address 0x24fd610e1769f1f051e6d25a9099588df13d7feb... ");
