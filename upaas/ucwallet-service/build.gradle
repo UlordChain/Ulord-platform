@@ -1,0 +1,35 @@
+plugins {
+    id 'java'
+}
+
+group 'one.ulord.upaas'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+apply plugin: 'war'
+
+repositories {
+    mavenLocal()
+    maven {url 'http://maven.aliyun.com/nexus/content/groups/public/'}
+    mavenCentral()
+    maven {
+        url 'https://jitpack.io'
+    }
+}
+
+dependencies {
+    compile ('org.web3j:core:3.4.0')
+    compile ('com.github.ipfs:java-ipfs-api:v1.2.0')
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '1.5.8.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: '1.5.8.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-data-redis', version: '1.5.8.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-tomcat', version: '1.5.8.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-amqp', version: '1.5.8.RELEASE'
+    compile group: 'io.springfox', name: 'springfox-swagger2', version: '2.2.2'
+    compile group: 'io.springfox', name: 'springfox-swagger-ui', version: '2.2.2'
+    compile group: 'com.alibaba', name: 'druid', version: '1.0.27'
+    compile 'com.google.code.gson:gson:2.7'
+}
