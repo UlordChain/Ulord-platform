@@ -12,10 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.web3j.abi.FunctionEncoder;
 import org.web3j.abi.TypeReference;
-import org.web3j.abi.datatypes.Address;
-import org.web3j.abi.datatypes.Function;
-import org.web3j.abi.datatypes.Type;
-import org.web3j.abi.datatypes.Utf8String;
+import org.web3j.abi.datatypes.*;
 import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.abi.datatypes.generated.Uint8;
 import org.web3j.crypto.CipherException;
@@ -266,7 +263,7 @@ public class ContentContract {
         EthSendTransaction txObject = transactionManager.sendTransaction(
                 contractGasProvider.getGasPrice(function.getName()),
                 contractGasProvider.getGasLimit(function.getName()),
-                toAddress,
+                tokenAddress,
                 FunctionEncoder.encode(function), BigInteger.ZERO);
 
         return txObject.getTransactionHash();
@@ -315,13 +312,13 @@ public class ContentContract {
      * @param udfsHash UDFS hash, must get from UDFS {@link UDFSClient}
      * @param authorAddress author address
      * @param price price
-     * @param deposit deposit
+     * @param storage storage into contract?
      */
     public void publishResource(final String reqId, String udfsHash,
-                                String authorAddress, BigInteger price, BigInteger deposit){
+                                String authorAddress, BigInteger price, Boolean storage){
         // Using RxJava to process sync
         centerPublish.createClaim(udfsHash, authorAddress,
-                price, deposit, new BigInteger("1")).sendAsync().whenCompleteAsync((receipt, e)-> {
+                price, new BigInteger("1"), storage).sendAsync().whenCompleteAsync((receipt, e)-> {
                     if (e == null){
                         processTransactionReceipt(reqId, receipt);
                     }else{
@@ -331,23 +328,21 @@ public class ContentContract {
     }
 
     /**
-     * Publish a resource to ulord smart contract
-     * @param udfsHash
-     * @param authorAddress
-     * @param price
-     * @param deposit
-     * @return
-     * @throws IOException
+     * Publish a resource to ulord smart contract, return immediately
+     * @param udfsHash UDFS hash, must get from UDFS {@link UDFSClient}
+     * @param authorAddress author address
+     * @param price price
+     * @param storage storage into contract?
      */
     public String publishResource(String udfsHash,
-                                String authorAddress, BigInteger price, BigInteger deposit) throws IOException {
+                                String authorAddress, BigInteger price, Boolean storage) throws IOException {
         final Function function = new Function(
                 CenterPublish.FUNC_CREATECLAIM,
                 Arrays.<Type>asList(new Utf8String(udfsHash),
                         new Address(authorAddress),
                         new Uint256(price),
-                        new Uint256(deposit),
-                        new Uint8(BigInteger.ONE)),
+                        new Uint8(1),
+                        new Bool(storage)),
                 Collections.<TypeReference<?>>emptyList());
 
         EthSendTransaction txObject = transactionManager.sendTransaction(

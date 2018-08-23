@@ -95,7 +95,7 @@ public class UCWalletDemoApplication implements TransactionActionHandler{
                         + " to ulord using address:0x3f16131ac9203656a9ca790f23878ae165c3eb4f");
                 contentContract.publishResource("publish resource", udfsHash,
                         "0x3f16131ac9203656a9ca790f23878ae165c3eb4f",
-                        BigInteger.valueOf(100000000000000L), BigInteger.ZERO);
+                        BigInteger.valueOf(100000000000000L), false);
             }
 
             // first, we nedd to approve publish contract to using current user address tokens
