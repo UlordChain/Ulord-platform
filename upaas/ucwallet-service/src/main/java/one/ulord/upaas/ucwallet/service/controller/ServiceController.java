@@ -51,10 +51,7 @@ public class ServiceController  implements TransactionActionHandler {
 	@ApiOperation(value = "Get gas balance", notes = "Get gas balance")
 	@RequestMapping(value = "getGasBalance", method = RequestMethod.GET)
 	public ResponseEntity<String> getGasBalance() {
-		// 初始化返回结果对象JsonResult
 		JsonResult<String, Object> resultJson = new JsonResult<String, Object>();
-		// 初始化业务数据Map对象
-		Map<String, Object> dataMap = new HashMap<String, Object> ();
 
 		ContentContract cc = contentContractHelper.getContentContract();
 		String gasBalance = "";
@@ -63,16 +60,11 @@ public class ServiceController  implements TransactionActionHandler {
 			logger.info("======================  ServiceController.getGasBalance......Gas balance:" + gasBalance);
 		} catch (Exception e) {
 			e.printStackTrace();
-			dataMap.put("reslut",e.getMessage());
-			resultJson.setDataMap(dataMap);
+			resultJson.setResult(e.getMessage());
 			return ResultUtil.GoResponseFailure(resultJson);
 		}
 
-		// 初始化业务数据Map对象
-		dataMap.put("reslut",gasBalance);
-
-		// 返回处理结果
-		resultJson.setDataMap(dataMap);
+		resultJson.setResult(gasBalance);
 		return ResultUtil.GoResponseSuccess(resultJson);
 	}
 
@@ -85,10 +77,7 @@ public class ServiceController  implements TransactionActionHandler {
 	@ApiOperation(value = "Get gas balance by address", notes = "Get gas balance by address")
 	@RequestMapping(value = "getGasBalanceByAddress", method = RequestMethod.GET)
 	public ResponseEntity<String> getGasBalanceByAddress(@RequestParam String address) {
-		// 初始化返回结果对象JsonResult
 		JsonResult<String, Object> resultJson = new JsonResult<String, Object>();
-		// 初始化业务数据Map对象
-		Map<String, Object> dataMap = new HashMap<String, Object> ();
 		logger.info("======================  ServiceController.getGasBalanceByAddress......address:"+address);
 
 		ContentContract cc = contentContractHelper.getContentContract();
@@ -98,15 +87,12 @@ public class ServiceController  implements TransactionActionHandler {
 			logger.info("======================  ServiceController.getGasBalanceByAddress......Gas balance:" + gasBalance);
 		} catch (Exception e) {
 			e.printStackTrace();
-			dataMap.put("reslut",e.getMessage());
-			resultJson.setDataMap(dataMap);
+			resultJson.setResult(e.getMessage());
 			return ResultUtil.GoResponseFailure(resultJson);
 		}
 
-		dataMap.put("reslut",gasBalance);
-
 		// 返回处理结果
-		resultJson.setDataMap(dataMap);
+		resultJson.setResult(gasBalance);
 		return ResultUtil.GoResponseSuccess(resultJson);
 	}
 
@@ -118,10 +104,7 @@ public class ServiceController  implements TransactionActionHandler {
 	@ApiOperation(value = "Get token balance", notes = "Get token balance")
 	@RequestMapping(value = "getTokenBalance", method = RequestMethod.GET)
 	public ResponseEntity<String> getTokenBalance() {
-		// 初始化返回结果对象JsonResult
 		JsonResult<String, Object> resultJson = new JsonResult<String, Object>();
-		// 初始化业务数据Map对象
-		Map<String, Object> dataMap = new HashMap<String, Object> ();
 
 		ContentContract cc = contentContractHelper.getContentContract();
 		String tokenBalance = "";
@@ -130,16 +113,11 @@ public class ServiceController  implements TransactionActionHandler {
 			logger.info("======================  ServiceController.getTokenBalance......Token balance:" + tokenBalance);
 		} catch (Exception e) {
 			e.printStackTrace();
-			dataMap.put("reslut",e.getMessage());
-			resultJson.setDataMap(dataMap);
+			resultJson.setResult(e.getMessage());
 			return ResultUtil.GoResponseFailure(resultJson);
 		}
 
-
-		dataMap.put("result",tokenBalance);
-
-		// 返回处理结果
-		resultJson.setDataMap(dataMap);
+		resultJson.setResult(tokenBalance);
 		return ResultUtil.GoResponseSuccess(resultJson);
 	}
 
@@ -152,10 +130,7 @@ public class ServiceController  implements TransactionActionHandler {
 	@ApiOperation(value = "Get token balance by address", notes = "Get token balance by address")
 	@RequestMapping(value = "getTokenBalanceByAddress", method = RequestMethod.GET)
 	public ResponseEntity<String> getTokenBalanceByAddress(@RequestParam String address) {
-		// 初始化返回结果对象JsonResult
 		JsonResult<String, Object> resultJson = new JsonResult<String, Object>();
-		// 初始化业务数据Map对象
-		Map<String, Object> dataMap = new HashMap<String, Object> ();
 		logger.info("======================  ServiceController.getTokenBalanceByAddress......address:"+address);
 
 		ContentContract cc = contentContractHelper.getContentContract();
@@ -165,16 +140,11 @@ public class ServiceController  implements TransactionActionHandler {
 			logger.info("======================  ServiceController.getTokenBalanceByAddress......Token balance:" + tokenBalance);
 		} catch (Exception e) {
 			e.printStackTrace();
-			dataMap.put("reslut",e.getMessage());
-			resultJson.setDataMap(dataMap);
+			resultJson.setResult(e.getMessage());
 			return ResultUtil.GoResponseFailure(resultJson);
 		}
 
-		// 初始化业务数据Map对象
-		dataMap.put("result",tokenBalance);
-
-		// 返回处理结果
-		resultJson.setDataMap(dataMap);
+		resultJson.setResult(tokenBalance);
 		return ResultUtil.GoResponseSuccess(resultJson);
 	}
 
@@ -189,9 +159,7 @@ public class ServiceController  implements TransactionActionHandler {
 	@ApiOperation(value = "Send raw transaction", notes = "Send raw transaction")
 	@RequestMapping(value = "sendRawTransaction", method = RequestMethod.POST)
 	public ResponseEntity<String> sendRawTransaction(@RequestParam String toAddress,String quality) {
-		// 初始化返回结果对象JsonResult
 		JsonResult<String, Object> resultJson = new JsonResult<String, Object>();
-		// 初始化业务数据Map对象
 		Map<String, Object> dataMap = new HashMap<String, Object> ();
 		logger.info("======================  ServiceController.sendRawTransaction......toAddress:"+toAddress+",quality:"+quality);
 
@@ -201,20 +169,13 @@ public class ServiceController  implements TransactionActionHandler {
 			hash = cc.sendRawTransaction(toAddress,new BigInteger(quality));
 		} catch (Exception e) {
 			e.printStackTrace();
-			dataMap.put("reslut",e.getMessage());
-			resultJson.setDataMap(dataMap);
+			resultJson.setResult(e.getMessage());
 			return ResultUtil.GoResponseFailure(resultJson);
 		}
 
-		// 初始化业务数据Map对象
-		dataMap.put("result",hash);
-
-		// 返回处理结果
-		resultJson.setDataMap(dataMap);
+		resultJson.setResult(hash);
 		return ResultUtil.GoResponseSuccess(resultJson);
 	}
-
-
 
 
 
