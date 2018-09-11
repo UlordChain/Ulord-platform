@@ -26,7 +26,7 @@
 	<logger name="org.hibernate" level="ERROR" />
 	<logger name="javax.persistence" level="ERROR" />
 
-	<root level="DEBUG">
+	<root level="INFO">
 		<appender-ref ref="CONSOLE" />
 		<appender-ref ref="FILE" />
 	</root>

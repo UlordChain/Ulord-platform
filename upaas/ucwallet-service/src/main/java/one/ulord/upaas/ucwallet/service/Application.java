@@ -6,12 +6,11 @@ package one.ulord.upaas.ucwallet.service;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.boot.web.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ImportResource;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.filter.CharacterEncodingFilter;
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 /**
  * Web服务入口类，提供Web容器初始化
@@ -21,15 +20,10 @@ import org.springframework.web.filter.CharacterEncodingFilter;
  */
 @SpringBootApplication
 @EnableAsync
-@ImportResource("classpath:application-service.xml")
-public class Application extends SpringBootServletInitializer {
+//@ImportResource("classpath:application-service.xml")
+public class Application {
 
-	@Override
-	protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
-		return application.sources(Application.class);
-	}
-
-	public static void main(String[] args) throws Exception {
+	public static void main(String[] args){
 		SpringApplication.run(Application.class, args);
 	}
 

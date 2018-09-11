@@ -18,11 +18,12 @@
 
 2.2 部署包
 
-| **类型** | **版本及包**                                    |
-| -------- | ----------------------------------------------- |
-| 部署包   | ucwallet-service-1.0-SNAPSHOT.war               |
-| 编码     | UTF-8                                           |
-| 访问地址 | http://ip:port/ucwallet-service/swagger-ui.html |
+| **类型** | **版本及包**                                     |
+| -------- | ------------------------------------------------ |
+| 部署包   | ucwallet-service-1.0-SNAPSHOT.war                |
+| 编码     | UTF-8                                            |
+| 访问地址 | http://ip:port/ucwallet-service/swagger-ui.html  |
+| 启动说明 | 先要启动一次ucwallet-sdk，启动时会自动创建Queues |
 
 2.3 修改application.properties 
 

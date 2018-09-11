@@ -37,11 +37,14 @@ public class ServiceController  implements TransactionActionHandler {
 
 	private static final Logger logger = LoggerFactory.getLogger(ServiceController.class);
 
-	@Autowired
-	RedisUtil redisUtil;
+//	@Autowired
+//	RedisUtil redisUtil;
 
-	@Autowired
+	@Autowired(required=true)
 	private ContentContractHelper contentContractHelper;
+
+
+
 
 
 	/**
