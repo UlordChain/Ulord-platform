@@ -20,7 +20,11 @@ var Web3Helper = {
     init:function(){
         Logger.log("init web3 helper...");
         if (null == this.web3) {
-            this.web3 = new Web3(window.web3.currentProvider);
+            if (!window.web3) {
+                alert("没有检查到MetaMask插件，请先安装MetaMask");
+            }else{
+                this.web3 = new Web3(window.web3.currentProvider);
+            }
         }
         // load contract abi
         this.ABI_AUTHOR_MODULE = this.getAbi(Config.CONTRACT_AUTHOR_MODULE);
@@ -82,7 +86,6 @@ var Web3Helper = {
     /**
      * get abi jsonObject by contract name
      * @param contractName
-     * @param abiName
      * @return
      */
     getAbi: function(contractName) {
@@ -256,8 +259,11 @@ var Web3Helper = {
 
     /**
      * upload content to UDFS
+     * @param token : 登录token
+     * @param title : 资源标题
+     * @param description : 资源描述
      * @param body : 资源内容
-     * @return hash
+     * @return udfs hash
      */
     uploadUdfs: function(token,title,description,body) {
         Logger.log("getUdfsHash token:"+token+",title:"+title+",description:"+description+",body:"+body);
@@ -289,11 +295,12 @@ var Web3Helper = {
 
 
     /**
-     * 发布一个新的资源上链
+     * 发布一个新的内容上链
      * @param token     : 登录token
-     * @param udfsHash  : 资源的UDFS Hash值
-     * @param price     : 资源的定价，0表示免费
-     * @param type      : 资源的类型
+     * @param udfsHash  : 内容的UDFS Hash值
+     * @param title     : 内容标题
+     * @param price     : 内容的定价，0表示免费
+     * @param type      : 内容的类型
      * @return
      */
     publishResource: function(token,udfsHash,title,price,type) {
@@ -364,9 +371,11 @@ var Web3Helper = {
 
     /**
      * 读者购买资源
-     * @param claimId  : 资源ID
+     * @param token      : 登录token
+     * @param claimId    : 资源ID
      * @param toAddress  : 收款地址
      * @param value      : 付款金额
+     * @param gas        : gas费用
      * return hash
      */
     purchaseResource: function(token,claimId,toAddress,value,gas) {
@@ -420,8 +429,8 @@ var Web3Helper = {
 
     /**
      * 查询资源列表
-     * @param page   : 页码
      * @param token  : 登录token
+     * @param page   : 页码
      * return json
      */
     queryResourceList: function(token,page) {
@@ -454,6 +463,7 @@ var Web3Helper = {
 
     /**
      * 查询资源详情
+     * @param token  : 登录token
      * @param blog_id  : 资源id
      * @return
      */
