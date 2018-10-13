@@ -3,11 +3,15 @@ plugins {
 }
 
 group 'one.ulord.upaas'
-version '1.0-SNAPSHOT'
+version '1.0.0'
 
 sourceCompatibility = 1.8
 
 apply plugin: 'war'
+
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}
 
 repositories {
     mavenLocal()
