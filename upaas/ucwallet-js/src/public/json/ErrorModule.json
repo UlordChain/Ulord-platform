@@ -1,0 +1,590 @@
+{
+  "contractName": "ErrorModule",
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "_errorNumber",
+          "type": "uint8"
+        }
+      ],
+      "name": "LogError",
+      "type": "event"
+    }
+  ],
+  "bytecode": "0x6080604052348015600f57600080fd5b50603580601d6000396000f3006080604052600080fd00a165627a7a723058202ce02df497ace96cedaf1bd97e316b32f5f6e096d5616de4a5c5f75df56038890029",
+  "deployedBytecode": "0x6080604052600080fd00a165627a7a723058202ce02df497ace96cedaf1bd97e316b32f5f6e096d5616de4a5c5f75df56038890029",
+  "sourceMap": "223:1285:5:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;223:1285:5;;;;;;;",
+  "deployedSourceMap": "223:1285:5:-;;;;;",
+  "source": "pragma solidity ^0.4.24;\n\n/**\n * @title 判断错误类型，\n * @dev 避免使用断言抛出异常，直接使用日志输出错误原因，\n * @dev 因为不能直接读取函数的返回值\n * 错误类型说明：\n */\ncontract ErrorModule {\n    enum RScorr { \n        Success,\n        Unknown,          // Unknown error\n        InvalidAddr,      // 无效的地址\n        InvalidStr,       // 无效的字符串\n        InvalidClaimId,   // 无效的资源id\n        InvalidUdfs,      // 无效的UDFS\n        InvalidObj,       // 无效的对象，购买一个已放弃的资源\n\n        Unsupported,      // 未授权\n        ServStop,         // 服务停止\n\n        ObjNotExist,      // 对象不存在\n        ObjExist,         // 对象已存在\n\n        ScantToken,       // 代币余额不充足\n        ScantCredit,      // 代币授权额度不足\n        Insolvent,        // 支付能力不足\n\n\n        Insufficient,     // 白名单权限不足\n        PermissionDenied, // 管理权限不足, 管理员权限\n        IdCertifyFailed,  // 身份认证失败，作者身份认证\n\n        Insignificance,   // 无意义的操作，更新的内容不变\n\n\n        ClaimForbidden,\n        ClaimAbandoned,\n        CidIsInvalid,\n        UdfsInvalid, //udfs 无效\n        Undefine01,\n        Undefine02,\n        Undefine03,\n        Undefine04,\n        Undefine05,\n        Undefine06,\n        Undefine07,\n        Undefine08,\n        Undefine09\n    }\n\n    event LogError(RScorr _errorNumber);\n}\n",
+  "sourcePath": "E:\\sol\\blog\\contracts\\ErrorModule.sol",
+  "ast": {
+    "absolutePath": "/E/sol/blog/contracts/ErrorModule.sol",
+    "exportedSymbols": {
+      "ErrorModule": [
+        2473
+      ]
+    },
+    "id": 2474,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 2436,
+        "literals": [
+          "solidity",
+          "^",
+          "0.4",
+          ".24"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:24:5"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": "@title 判断错误类型，\n@dev 避免使用断言抛出异常，直接使用日志输出错误原因，\n@dev 因为不能直接读取函数的返回值\n错误类型说明：",
+        "fullyImplemented": true,
+        "id": 2473,
+        "linearizedBaseContracts": [
+          2473
+        ],
+        "name": "ErrorModule",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "canonicalName": "ErrorModule.RScorr",
+            "id": 2468,
+            "members": [
+              {
+                "id": 2437,
+                "name": "Success",
+                "nodeType": "EnumValue",
+                "src": "273:7:5"
+              },
+              {
+                "id": 2438,
+                "name": "Unknown",
+                "nodeType": "EnumValue",
+                "src": "290:7:5"
+              },
+              {
+                "id": 2439,
+                "name": "InvalidAddr",
+                "nodeType": "EnumValue",
+                "src": "333:11:5"
+              },
+              {
+                "id": 2440,
+                "name": "InvalidStr",
+                "nodeType": "EnumValue",
+                "src": "378:10:5"
+              },
+              {
+                "id": 2441,
+                "name": "InvalidClaimId",
+                "nodeType": "EnumValue",
+                "src": "426:14:5"
+              },
+              {
+                "id": 2442,
+                "name": "InvalidUdfs",
+                "nodeType": "EnumValue",
+                "src": "473:11:5"
+              },
+              {
+                "id": 2443,
+                "name": "InvalidObj",
+                "nodeType": "EnumValue",
+                "src": "516:10:5"
+              },
+              {
+                "id": 2444,
+                "name": "Unsupported",
+                "nodeType": "EnumValue",
+                "src": "595:11:5"
+              },
+              {
+                "id": 2445,
+                "name": "ServStop",
+                "nodeType": "EnumValue",
+                "src": "634:8:5"
+              },
+              {
+                "id": 2446,
+                "name": "ObjNotExist",
+                "nodeType": "EnumValue",
+                "src": "677:11:5"
+              },
+              {
+                "id": 2447,
+                "name": "ObjExist",
+                "nodeType": "EnumValue",
+                "src": "722:8:5"
+              },
+              {
+                "id": 2448,
+                "name": "ScantToken",
+                "nodeType": "EnumValue",
+                "src": "768:10:5"
+              },
+              {
+                "id": 2449,
+                "name": "ScantCredit",
+                "nodeType": "EnumValue",
+                "src": "819:11:5"
+              },
+              {
+                "id": 2450,
+                "name": "Insolvent",
+                "nodeType": "EnumValue",
+                "src": "873:9:5"
+              },
+              {
+                "id": 2451,
+                "name": "Insufficient",
+                "nodeType": "EnumValue",
+                "src": "923:12:5"
+              },
+              {
+                "id": 2452,
+                "name": "PermissionDenied",
+                "nodeType": "EnumValue",
+                "src": "974:16:5"
+              },
+              {
+                "id": 2453,
+                "name": "IdCertifyFailed",
+                "nodeType": "EnumValue",
+                "src": "1039:15:5"
+              },
+              {
+                "id": 2454,
+                "name": "Insignificance",
+                "nodeType": "EnumValue",
+                "src": "1109:14:5"
+              },
+              {
+                "id": 2455,
+                "name": "ClaimForbidden",
+                "nodeType": "EnumValue",
+                "src": "1183:14:5"
+              },
+              {
+                "id": 2456,
+                "name": "ClaimAbandoned",
+                "nodeType": "EnumValue",
+                "src": "1207:14:5"
+              },
+              {
+                "id": 2457,
+                "name": "CidIsInvalid",
+                "nodeType": "EnumValue",
+                "src": "1231:12:5"
+              },
+              {
+                "id": 2458,
+                "name": "UdfsInvalid",
+                "nodeType": "EnumValue",
+                "src": "1253:11:5"
+              },
+              {
+                "id": 2459,
+                "name": "Undefine01",
+                "nodeType": "EnumValue",
+                "src": "1288:10:5"
+              },
+              {
+                "id": 2460,
+                "name": "Undefine02",
+                "nodeType": "EnumValue",
+                "src": "1308:10:5"
+              },
+              {
+                "id": 2461,
+                "name": "Undefine03",
+                "nodeType": "EnumValue",
+                "src": "1328:10:5"
+              },
+              {
+                "id": 2462,
+                "name": "Undefine04",
+                "nodeType": "EnumValue",
+                "src": "1348:10:5"
+              },
+              {
+                "id": 2463,
+                "name": "Undefine05",
+                "nodeType": "EnumValue",
+                "src": "1368:10:5"
+              },
+              {
+                "id": 2464,
+                "name": "Undefine06",
+                "nodeType": "EnumValue",
+                "src": "1388:10:5"
+              },
+              {
+                "id": 2465,
+                "name": "Undefine07",
+                "nodeType": "EnumValue",
+                "src": "1408:10:5"
+              },
+              {
+                "id": 2466,
+                "name": "Undefine08",
+                "nodeType": "EnumValue",
+                "src": "1428:10:5"
+              },
+              {
+                "id": 2467,
+                "name": "Undefine09",
+                "nodeType": "EnumValue",
+                "src": "1448:10:5"
+              }
+            ],
+            "name": "RScorr",
+            "nodeType": "EnumDefinition",
+            "src": "250:1214:5"
+          },
+          {
+            "anonymous": false,
+            "documentation": null,
+            "id": 2472,
+            "name": "LogError",
+            "nodeType": "EventDefinition",
+            "parameters": {
+              "id": 2471,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 2470,
+                  "indexed": false,
+                  "name": "_errorNumber",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 2472,
+                  "src": "1485:19:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_enum$_RScorr_$2468",
+                    "typeString": "enum ErrorModule.RScorr"
+                  },
+                  "typeName": {
+                    "contractScope": null,
+                    "id": 2469,
+                    "name": "RScorr",
+                    "nodeType": "UserDefinedTypeName",
+                    "referencedDeclaration": 2468,
+                    "src": "1485:6:5",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_enum$_RScorr_$2468",
+                      "typeString": "enum ErrorModule.RScorr"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1484:21:5"
+            },
+            "src": "1470:36:5"
+          }
+        ],
+        "scope": 2474,
+        "src": "223:1285:5"
+      }
+    ],
+    "src": "0:1509:5"
+  },
+  "legacyAST": {
+    "absolutePath": "/E/sol/blog/contracts/ErrorModule.sol",
+    "exportedSymbols": {
+      "ErrorModule": [
+        2473
+      ]
+    },
+    "id": 2474,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 2436,
+        "literals": [
+          "solidity",
+          "^",
+          "0.4",
+          ".24"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:24:5"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": "@title 判断错误类型，\n@dev 避免使用断言抛出异常，直接使用日志输出错误原因，\n@dev 因为不能直接读取函数的返回值\n错误类型说明：",
+        "fullyImplemented": true,
+        "id": 2473,
+        "linearizedBaseContracts": [
+          2473
+        ],
+        "name": "ErrorModule",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "canonicalName": "ErrorModule.RScorr",
+            "id": 2468,
+            "members": [
+              {
+                "id": 2437,
+                "name": "Success",
+                "nodeType": "EnumValue",
+                "src": "273:7:5"
+              },
+              {
+                "id": 2438,
+                "name": "Unknown",
+                "nodeType": "EnumValue",
+                "src": "290:7:5"
+              },
+              {
+                "id": 2439,
+                "name": "InvalidAddr",
+                "nodeType": "EnumValue",
+                "src": "333:11:5"
+              },
+              {
+                "id": 2440,
+                "name": "InvalidStr",
+                "nodeType": "EnumValue",
+                "src": "378:10:5"
+              },
+              {
+                "id": 2441,
+                "name": "InvalidClaimId",
+                "nodeType": "EnumValue",
+                "src": "426:14:5"
+              },
+              {
+                "id": 2442,
+                "name": "InvalidUdfs",
+                "nodeType": "EnumValue",
+                "src": "473:11:5"
+              },
+              {
+                "id": 2443,
+                "name": "InvalidObj",
+                "nodeType": "EnumValue",
+                "src": "516:10:5"
+              },
+              {
+                "id": 2444,
+                "name": "Unsupported",
+                "nodeType": "EnumValue",
+                "src": "595:11:5"
+              },
+              {
+                "id": 2445,
+                "name": "ServStop",
+                "nodeType": "EnumValue",
+                "src": "634:8:5"
+              },
+              {
+                "id": 2446,
+                "name": "ObjNotExist",
+                "nodeType": "EnumValue",
+                "src": "677:11:5"
+              },
+              {
+                "id": 2447,
+                "name": "ObjExist",
+                "nodeType": "EnumValue",
+                "src": "722:8:5"
+              },
+              {
+                "id": 2448,
+                "name": "ScantToken",
+                "nodeType": "EnumValue",
+                "src": "768:10:5"
+              },
+              {
+                "id": 2449,
+                "name": "ScantCredit",
+                "nodeType": "EnumValue",
+                "src": "819:11:5"
+              },
+              {
+                "id": 2450,
+                "name": "Insolvent",
+                "nodeType": "EnumValue",
+                "src": "873:9:5"
+              },
+              {
+                "id": 2451,
+                "name": "Insufficient",
+                "nodeType": "EnumValue",
+                "src": "923:12:5"
+              },
+              {
+                "id": 2452,
+                "name": "PermissionDenied",
+                "nodeType": "EnumValue",
+                "src": "974:16:5"
+              },
+              {
+                "id": 2453,
+                "name": "IdCertifyFailed",
+                "nodeType": "EnumValue",
+                "src": "1039:15:5"
+              },
+              {
+                "id": 2454,
+                "name": "Insignificance",
+                "nodeType": "EnumValue",
+                "src": "1109:14:5"
+              },
+              {
+                "id": 2455,
+                "name": "ClaimForbidden",
+                "nodeType": "EnumValue",
+                "src": "1183:14:5"
+              },
+              {
+                "id": 2456,
+                "name": "ClaimAbandoned",
+                "nodeType": "EnumValue",
+                "src": "1207:14:5"
+              },
+              {
+                "id": 2457,
+                "name": "CidIsInvalid",
+                "nodeType": "EnumValue",
+                "src": "1231:12:5"
+              },
+              {
+                "id": 2458,
+                "name": "UdfsInvalid",
+                "nodeType": "EnumValue",
+                "src": "1253:11:5"
+              },
+              {
+                "id": 2459,
+                "name": "Undefine01",
+                "nodeType": "EnumValue",
+                "src": "1288:10:5"
+              },
+              {
+                "id": 2460,
+                "name": "Undefine02",
+                "nodeType": "EnumValue",
+                "src": "1308:10:5"
+              },
+              {
+                "id": 2461,
+                "name": "Undefine03",
+                "nodeType": "EnumValue",
+                "src": "1328:10:5"
+              },
+              {
+                "id": 2462,
+                "name": "Undefine04",
+                "nodeType": "EnumValue",
+                "src": "1348:10:5"
+              },
+              {
+                "id": 2463,
+                "name": "Undefine05",
+                "nodeType": "EnumValue",
+                "src": "1368:10:5"
+              },
+              {
+                "id": 2464,
+                "name": "Undefine06",
+                "nodeType": "EnumValue",
+                "src": "1388:10:5"
+              },
+              {
+                "id": 2465,
+                "name": "Undefine07",
+                "nodeType": "EnumValue",
+                "src": "1408:10:5"
+              },
+              {
+                "id": 2466,
+                "name": "Undefine08",
+                "nodeType": "EnumValue",
+                "src": "1428:10:5"
+              },
+              {
+                "id": 2467,
+                "name": "Undefine09",
+                "nodeType": "EnumValue",
+                "src": "1448:10:5"
+              }
+            ],
+            "name": "RScorr",
+            "nodeType": "EnumDefinition",
+            "src": "250:1214:5"
+          },
+          {
+            "anonymous": false,
+            "documentation": null,
+            "id": 2472,
+            "name": "LogError",
+            "nodeType": "EventDefinition",
+            "parameters": {
+              "id": 2471,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 2470,
+                  "indexed": false,
+                  "name": "_errorNumber",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 2472,
+                  "src": "1485:19:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_enum$_RScorr_$2468",
+                    "typeString": "enum ErrorModule.RScorr"
+                  },
+                  "typeName": {
+                    "contractScope": null,
+                    "id": 2469,
+                    "name": "RScorr",
+                    "nodeType": "UserDefinedTypeName",
+                    "referencedDeclaration": 2468,
+                    "src": "1485:6:5",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_enum$_RScorr_$2468",
+                      "typeString": "enum ErrorModule.RScorr"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1484:21:5"
+            },
+            "src": "1470:36:5"
+          }
+        ],
+        "scope": 2474,
+        "src": "223:1285:5"
+      }
+    ],
+    "src": "0:1509:5"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.4.24+commit.e67f0147.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "2.0.1",
+  "updatedAt": "2018-08-27T09:46:48.209Z"
+}

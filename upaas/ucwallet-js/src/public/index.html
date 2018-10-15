@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head lang="zh-cn">
+    <meta charset="UTF-8"/>
+    <!--
+    <meta http-equiv="Access-Control-Allow-Origin" content="*" />
+    -->
+    <title>测试web3js</title>
+    <script src="/js/jquery-1.9.1.min.js" type="text/javascript" ></script>
+    <script src="/js/web3.min.js" type="text/javascript" ></script>
+    <script src="/js/bignumber.min.js" type="text/javascript" ></script>
+    <script src="/js/Web3-Logger.js" type="text/javascript" ></script>
+    <script src="/js/Web3-Config.js" type="text/javascript" ></script>
+    <script src="/js/Web3-Helper.js" type="text/javascript" ></script>
+    <script src="/js/Web3-Test.js" type="text/javascript" ></script>
+
+    <script src="/js/StringBuffer.js" type="text/javascript" ></script>
+
+    <!--
+    <script src="/js/ethereumjs-tx-1.3.3.min.js" type="text/javascript" ></script>
+    <script src="/js/multiaddr.min.js" type="text/javascript" ></script>
+    -->
+
+    <script src="/js/ipfs.min.js" type="text/javascript" ></script>
+
+    <script>
+        //var ipfs = new Ipfs({host: '127.0.0.1', port: '5001', protocol: 'http'});
+        //console.log(ipfs);
+    </script>
+</head>
+<body>
+    <h1>博客测试</h1>
+    <ol>
+        <ul>
+            <li><h3>检查网络</h3>
+                <p><span>
+                    <button onclick="Web3Helper.isNetworkConnected();">点击执行</button>
+                </span></p>
+            </li>
+            <li><h3>判断MetaMask是否已登录</h3>
+                <p><span>
+                    <button onclick="Web3Helper.isMetaMaskLogin();">点击执行</button>
+                </span></p>
+            </li>
+            <li><h3>注册</h3>
+                <p><span>
+                    <button onclick="Web3Helper.register('root2','123123123');">点击执行</button>
+                </span></p>
+            </li>
+            <li><h3>登录</h3>
+                <p><span>
+                    <button onclick="Web3Helper.login('root2','123123123');">点击执行</button>
+                </span></p>
+            </li>
+            <li><h3>退出</h3>
+                <p><span>
+                    <button onclick="Web3Helper.logout('15c19b12-a748-11e8-83a1-64006a44a234','root','a1234567');">点击执行</button>
+                </span></p>
+            </li>
+            <li><h3>查询用户信息</h3>
+                <p><span>
+                    <button onclick="Web3Helper.getUserInfo('36ccecca-acfe-11e8-8a94-64006a44a234','root');">点击执行</button>
+                </span></p>
+            </li>
+            <li><h3>发布-上传udfs并得到hash值</h3>
+                <p><span>
+                    <!--
+                    <img id="image" src=""/><br/>
+                    <input type="file" onchange="selectImage(this);"/>
+                    -->
+                    <button onclick="Web3Helper.uploadUdfs('cda2daba-b23a-11e8-bead-5254005d7fd2','testTitle15','testDescription','testBody2111111111111111115');">点击执行</button>
+                </span></p>
+            </li>
+            <li><h3>发布-资源上链</h3>
+                <p><span>
+                    <button onclick="Web3Helper.publishResource('d9ca9e26-b277-11e8-b96c-5254005d7fd2','QmayiGFaaVD4rKD1w1A5mFLvcYQFN8ywg4keF786FBJX8p','testTitle11',100000000000000,1);">点击执行</button>
+                </span></p>
+            </li>
+            <li><h3>读者购买资源</h3>
+                <p><span>
+                    <button onclick="Web3Helper.purchaseResource('d9ca9e26-b277-11e8-b96c-5254005d7fd2','0x5c5bbfcc4a7534d6ac75fb76fca0f9e0','0x76475b6b96d16964f715ff335ae42358d0c7f524',10000000000000000,21000);">点击执行</button>
+                </span></p>
+            </li>
+            <li><h3>查询资源列表</h3>
+                <p><span>
+                    <button onclick="Web3Helper.queryResourceList('d9ca9e26-b277-11e8-b96c-5254005d7fd2',1);">点击执行</button>
+                </span></p>
+            </li>
+            <li><h3>查询资源详情</h3>
+                <p><span>
+                    <button onclick="Web3Helper.queryResourceDetail('cd621c0a-acf9-11e8-ad39-64006a44a234','0x909b2af19d778cd804f3ad8bf1161397');">点击执行</button>
+                </span></p>
+            </li>
+            <li><h3>广告续费</h3>
+                <p><span>
+                    <button onclick="Web3Helper.renewAD('cd621c0a-acf9-11e8-ad39-64006a44a234',10000000000000000);">点击执行</button>
+                </span></p>
+            </li>
+        </ul>
+        </p>
+    </ol>
+
+    <h1>测试工具</h1>
+    <ol>
+        <ul>
+            <li><h3>查询Gas余额</h3>
+                <p><span>
+                    address: <input id="getGasBalance" type="text" style="width: 300px;" value="0x9Ae6D4760d0da73c45cb35551de1FA8C1c3df078"/>
+                    <button onclick="Web3Test.getGasBalance();">点击执行</button>
+                </span></p>
+                <div>
+                    <ul id="result1"></ul>
+                </div>
+            </li>
+            <li><h3>查询Token余额</h3>
+                <p><span>
+                    address: <input id="getTokenBalance" type="text" style="width: 300px;" value="0x9Ae6D4760d0da73c45cb35551de1FA8C1c3df078"/>
+                    <button onclick="Web3Test.getTokenBalance();">点击执行</button>
+                </span></p>
+                <div>
+                    <ul id="result2"></ul>
+                </div>
+            </li>
+            <li><h3>账转</h3>
+                <p><span>
+                    toAddress: <input id="sendTransaction_toAddress" type="text" style="width: 300px;" value="0x76475b6b96d16964f715ff335ae42358d0c7f524" /><br>
+                    value: <input id="sendTransaction_value" type="text" style="width: 300px;" value="100000000000000" /><br>
+                    <button onclick="Web3Test.sendTransaction();">点击执行</button>
+                </span></p>
+                <div>
+                    <ul id="result3"></ul>
+                </div>
+            </li>
+            <li><h3>发送原始交易</h3>
+                <p><span>
+                    fromAddress: <input id="sendRawTransaction_fromAddress" type="text" style="width: 300px;" value="0x9Ae6D4760d0da73c45cb35551de1FA8C1c3df078" /><br>
+                    toAddress: <input id="sendRawTransaction_toAddress" type="text" style="width: 300px;" value="0x76475b6b96d16964f715ff335ae42358d0c7f524" /><br>
+                    value: <input id="sendRawTransaction_value" type="text" style="width: 300px;" value="100000000000000" /><br>
+                    <button onclick="Web3Test.sendRawTransaction();">点击执行</button>
+                </span></p>
+                <div>
+                    <ul id="result4"></ul>
+                </div>
+            </li>
+            <li><h3>查询交易数</h3>
+                <p><span>
+                    address: <input id="getTransactionCount" type="text" style="width: 300px;" value="0x9Ae6D4760d0da73c45cb35551de1FA8C1c3df078" />
+                    <button onclick="Web3Test.getTransactionCount();">点击执行</button>
+                </span></p>
+                <div>
+                    <ul id="result5"></ul>
+                </div>
+            </li>
+            <li><h3>查询交易</h3>
+                <p><span>
+                    address: <input id="getTransaction" type="text" style="width: 300px;" value="0x0e44ef52480198ad2e029c6e42e67df340a6ef140c52f07b40898daa2cfe5481"/>
+                    <button onclick="Web3Test.getTransaction();">点击执行</button>
+                </span></p>
+                <div>
+                    <ul id="result6"></ul>
+                </div>
+            </li>
+            <li><h3>查询交易收据</h3>
+                <p><span>
+                    address: <input id="getTransactionReceipt" type="text" style="width: 300px;" value="0x0e44ef52480198ad2e029c6e42e67df340a6ef140c52f07b40898daa2cfe5481"/>
+                    <button onclick="Web3Test.getTransactionReceipt();">点击执行</button>
+                </span></p>
+                <div>
+                    <ul id="result7"></ul>
+                </div>
+            </li>
+            <li><h3>监听账户状态变化</h3>
+                <p><span>
+                    <button onclick="Web3Test.accountFilter();">点击执行</button>
+                </span></p>
+            </li>
+            <li><h3>授权登录</h3>
+                <p><span>
+                    <button onclick="Web3Test.oauthLogin();">点击执行</button>
+                </span></p>
+            </li>
+            <br><br><br><br>
+        </ul>
+        </p>
+    </ol>
+
+
+</body>

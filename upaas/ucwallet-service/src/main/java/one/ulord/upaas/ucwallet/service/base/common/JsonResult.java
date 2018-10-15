@@ -16,9 +16,10 @@ public class JsonResult<K, V> {
 
     private int resultCode;
     private String resultMsg;
+    private String result;
     private String jsessionid;
-    private long totalCount;
-    private Map<K, V> dataMap;
+//    private long totalCount;
+//    private Map<K, V> dataMap;
 
     public JsonResult() {
     }
@@ -47,19 +48,27 @@ public class JsonResult<K, V> {
         this.jsessionid = jsessionid;
     }
 
-    public Map<K, V> getDataMap() {
-        return this.dataMap;
+    public String getResult() {
+        return result;
     }
 
-    public void setDataMap(Map<K, V> dataMap) {
-        this.dataMap = dataMap;
+    public void setResult(String result) {
+        this.result = result;
     }
 
-    public long getTotalCount() {
-        return this.totalCount;
-    }
+    //    public Map<K, V> getDataMap() {
+//        return this.dataMap;
+//    }
+//
+//    public void setDataMap(Map<K, V> dataMap) {
+//        this.dataMap = dataMap;
+//    }
 
-    public void setTotalCount(long totalCount) {
-        this.totalCount = totalCount;
-    }
+//    public long getTotalCount() {
+//        return this.totalCount;
+//    }
+//
+//    public void setTotalCount(long totalCount) {
+//        this.totalCount = totalCount;
+//    }
 }

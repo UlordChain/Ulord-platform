@@ -1,0 +1,14 @@
+{
+  "name": "ucwallet-js",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./dist/index"
+  },
+  "dependencies": {
+    "buffer": "^5.2.0",
+    "fs": "0.0.1-security",
+    "web3": "^1.0.0-beta.35"
+  },
+  "devDependencies": {}
+}

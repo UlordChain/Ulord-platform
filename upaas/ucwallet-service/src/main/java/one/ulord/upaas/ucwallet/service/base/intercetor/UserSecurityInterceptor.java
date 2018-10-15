@@ -8,7 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import one.ulord.upaas.ucwallet.service.base.common.Constants;
 import one.ulord.upaas.ucwallet.service.base.common.RedisUtil;
-import org.aspectj.lang.annotation.Aspect;
+//import org.aspectj.lang.annotation.Aspect;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.ModelAndView;
@@ -20,8 +20,8 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
  * @author chenxin
  * @since 10/8/18
  */
-@Component
-@Aspect
+//@Component
+//@Aspect
 public class UserSecurityInterceptor extends HandlerInterceptorAdapter {
 
 	@Autowired

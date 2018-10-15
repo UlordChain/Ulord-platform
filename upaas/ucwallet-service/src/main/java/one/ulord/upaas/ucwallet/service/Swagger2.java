@@ -26,13 +26,24 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @EnableSwagger2
 public class Swagger2 {
 
+//	@Bean
+//	public Docket buildDocket() {
+//		return new Docket(DocumentationType.SWAGGER_2)
+//				.apiInfo(buildApiInfo())
+//				.select()
+//				//要扫描的API(Controller)基础包
+//				.apis(RequestHandlerSelectors.basePackage("one.ulord.upaas.ucwallet.service.controller"))
+//				.paths(PathSelectors.any())
+//				.build();
+//	}
+
 	@Bean
 	public Docket createRestApi() {
-		return new Docket(DocumentationType.SWAGGER_2).apiInfo(apiInfo()).select()
+		return new Docket(DocumentationType.SWAGGER_2).apiInfo(buildApiInfo()).select()
 				.apis(RequestHandlerSelectors.withMethodAnnotation(ApiOperation.class)).build();
 	}
 
-	private ApiInfo apiInfo() {
+	private ApiInfo buildApiInfo() {
 		return new ApiInfoBuilder().title("RESTful API for UCWallet-Service")
 				.description("Provide reference to DAPP caller.").termsOfServiceUrl("http://ulord.one")
 				.contact("chenxin").version("1.0").build();

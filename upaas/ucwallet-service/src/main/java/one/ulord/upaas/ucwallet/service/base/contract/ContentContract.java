@@ -479,6 +479,36 @@ public class ContentContract {
         }
     }
 
+
+    /**
+     * 发送原始交易
+     *
+     * @param hexValue
+     * @return hash
+     */
+    public String sendRawTransaction(String hexValue) throws Exception {
+        //发送交易
+        EthSendTransaction ethSendTransaction = web3j.ethSendRawTransaction(hexValue).sendAsync().get();
+        String transactionHash = ethSendTransaction.getTransactionHash();
+        //获得到transactionHash后就可以到以太坊的网站上查询这笔交易的状态了
+        System.out.println("===============================transactionHash:"+transactionHash);
+        return transactionHash;
+
+    }
+
+    /**
+     * 查询交易数
+     *
+     * @param address
+     * @return hash
+     */
+    public BigInteger getTransactionCount(String address) throws Exception {
+        EthGetTransactionCount ethGetTransactionCount = web3j.ethGetTransactionCount(address, DefaultBlockParameterName.LATEST).sendAsync().get();
+        BigInteger nonce = ethGetTransactionCount.getTransactionCount();
+        return nonce;
+    }
+
+
     /**
      * 发送原始交易
      *
@@ -523,6 +553,7 @@ public class ContentContract {
         //签名Transaction，这里要对交易做签名
         byte[] signedMessage = TransactionEncoder.signMessage(rawTransaction, this.credentials);
         String hexValue = Numeric.toHexString(signedMessage);
+        System.out.println("===============================hexValue:"+hexValue);
 
         //发送交易
         EthSendTransaction ethSendTransaction = web3j.ethSendRawTransaction(hexValue).sendAsync().get();

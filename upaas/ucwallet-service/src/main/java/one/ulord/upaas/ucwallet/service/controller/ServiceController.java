@@ -15,10 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import one.ulord.upaas.ucwallet.service.base.common.JsonResult;
 import java.math.BigInteger;
 import java.util.HashMap;
@@ -37,112 +34,38 @@ public class ServiceController  implements TransactionActionHandler {
 
 	private static final Logger logger = LoggerFactory.getLogger(ServiceController.class);
 
-	@Autowired
-	RedisUtil redisUtil;
+//	@Autowired
+//	RedisUtil redisUtil;
 
-	@Autowired
+	@Autowired(required=true)
 	private ContentContractHelper contentContractHelper;
 
-
 	/**
-	 * Get gas balance
-	 * @return
-	 */
-	@ApiOperation(value = "Get gas balance", notes = "Get gas balance")
-	@RequestMapping(value = "getGasBalance", method = RequestMethod.GET)
-	public ResponseEntity<String> getGasBalance() {
-		// 初始化返回结果对象JsonResult
-		JsonResult<String, Object> resultJson = new JsonResult<String, Object>();
-		// 初始化业务数据Map对象
-		Map<String, Object> dataMap = new HashMap<String, Object> ();
-
-		ContentContract cc = contentContractHelper.getContentContract();
-		String gasBalance = "";
-		try {
-			gasBalance = cc.getGasBalance().toString();
-			logger.info("======================  ServiceController.getGasBalance......Gas balance:" + gasBalance);
-		} catch (Exception e) {
-			e.printStackTrace();
-			dataMap.put("reslut",e.getMessage());
-			resultJson.setDataMap(dataMap);
-			return ResultUtil.GoResponseFailure(resultJson);
-		}
-
-		// 初始化业务数据Map对象
-		dataMap.put("reslut",gasBalance);
-
-		// 返回处理结果
-		resultJson.setDataMap(dataMap);
-		return ResultUtil.GoResponseSuccess(resultJson);
-	}
-
-
-	/**
-	 * Get gas balance by address
+	 * Get balance by address
 	 * @param address
 	 * @return
 	 */
-	@ApiOperation(value = "Get gas balance by address", notes = "Get gas balance by address")
-	@RequestMapping(value = "getGasBalanceByAddress", method = RequestMethod.GET)
-	public ResponseEntity<String> getGasBalanceByAddress(@RequestParam String address) {
-		// 初始化返回结果对象JsonResult
+	@ApiOperation(value = "Get balance by address", notes = "Get balance by address")
+	@RequestMapping(value = "getBalance/{address}", method = RequestMethod.GET)
+	public ResponseEntity<String> getGasBalance(@PathVariable(value="address") String address) {
 		JsonResult<String, Object> resultJson = new JsonResult<String, Object>();
-		// 初始化业务数据Map对象
-		Map<String, Object> dataMap = new HashMap<String, Object> ();
-		logger.info("======================  ServiceController.getGasBalanceByAddress......address:"+address);
+		logger.info("======================  ServiceController.getBalance......address:"+address);
 
 		ContentContract cc = contentContractHelper.getContentContract();
 		String gasBalance = "";
 		try {
 			gasBalance = cc.getGasBalance(address).toString();
-			logger.info("======================  ServiceController.getGasBalanceByAddress......Gas balance:" + gasBalance);
+			logger.info("======================  ServiceController.getBalance......Gas balance:" + gasBalance);
 		} catch (Exception e) {
 			e.printStackTrace();
-			dataMap.put("reslut",e.getMessage());
-			resultJson.setDataMap(dataMap);
+			resultJson.setResult(e.getMessage());
 			return ResultUtil.GoResponseFailure(resultJson);
 		}
 
-		dataMap.put("reslut",gasBalance);
-
 		// 返回处理结果
-		resultJson.setDataMap(dataMap);
+		resultJson.setResult(gasBalance);
 		return ResultUtil.GoResponseSuccess(resultJson);
 	}
-
-
-	/**
-	 * Get token balance
-	 * @return
-	 */
-	@ApiOperation(value = "Get token balance", notes = "Get token balance")
-	@RequestMapping(value = "getTokenBalance", method = RequestMethod.GET)
-	public ResponseEntity<String> getTokenBalance() {
-		// 初始化返回结果对象JsonResult
-		JsonResult<String, Object> resultJson = new JsonResult<String, Object>();
-		// 初始化业务数据Map对象
-		Map<String, Object> dataMap = new HashMap<String, Object> ();
-
-		ContentContract cc = contentContractHelper.getContentContract();
-		String tokenBalance = "";
-		try {
-			tokenBalance = cc.getTokenBalance().toString();
-			logger.info("======================  ServiceController.getTokenBalance......Token balance:" + tokenBalance);
-		} catch (Exception e) {
-			e.printStackTrace();
-			dataMap.put("reslut",e.getMessage());
-			resultJson.setDataMap(dataMap);
-			return ResultUtil.GoResponseFailure(resultJson);
-		}
-
-
-		dataMap.put("result",tokenBalance);
-
-		// 返回处理结果
-		resultJson.setDataMap(dataMap);
-		return ResultUtil.GoResponseSuccess(resultJson);
-	}
-
 
 	/**
 	 * Get token balance by address
@@ -150,31 +73,51 @@ public class ServiceController  implements TransactionActionHandler {
 	 * @return
 	 */
 	@ApiOperation(value = "Get token balance by address", notes = "Get token balance by address")
-	@RequestMapping(value = "getTokenBalanceByAddress", method = RequestMethod.GET)
-	public ResponseEntity<String> getTokenBalanceByAddress(@RequestParam String address) {
-		// 初始化返回结果对象JsonResult
+	@RequestMapping(value = "getTokenBalance/{address}", method = RequestMethod.GET)
+	public ResponseEntity<String> getTokenBalance(@PathVariable(value="address") String address) {
 		JsonResult<String, Object> resultJson = new JsonResult<String, Object>();
-		// 初始化业务数据Map对象
-		Map<String, Object> dataMap = new HashMap<String, Object> ();
-		logger.info("======================  ServiceController.getTokenBalanceByAddress......address:"+address);
+		logger.info("======================  ServiceController.getTokenBalance......address:"+address);
 
 		ContentContract cc = contentContractHelper.getContentContract();
 		String tokenBalance = "";
 		try {
 			tokenBalance = cc.getTokenBalance(address).toString();
-			logger.info("======================  ServiceController.getTokenBalanceByAddress......Token balance:" + tokenBalance);
+			logger.info("======================  ServiceController.getTokenBalance......Token balance:" + tokenBalance);
 		} catch (Exception e) {
 			e.printStackTrace();
-			dataMap.put("reslut",e.getMessage());
-			resultJson.setDataMap(dataMap);
+			resultJson.setResult(e.getMessage());
 			return ResultUtil.GoResponseFailure(resultJson);
 		}
 
-		// 初始化业务数据Map对象
-		dataMap.put("result",tokenBalance);
+		resultJson.setResult(tokenBalance);
+		return ResultUtil.GoResponseSuccess(resultJson);
+	}
+
+
+	/**
+	 * Get transaction count by address
+	 * @param address
+	 * @return
+	 */
+	@ApiOperation(value = "Get transaction count by address", notes = "Get transaction count by address")
+	@RequestMapping(value = "getTransactionCount/{address}", method = RequestMethod.GET)
+	public ResponseEntity<String> getTransactionCount(@PathVariable(value="address") String address) {
+		JsonResult<String, Object> resultJson = new JsonResult<String, Object>();
+		logger.info("======================  ServiceController.getTransactionCount......address:"+address);
+
+		ContentContract cc = contentContractHelper.getContentContract();
+		String nonce = "";
+		try {
+			nonce = cc.getTransactionCount(address).toString();
+			logger.info("======================  ServiceController.getTransactionCount......nonce:" + nonce);
+		} catch (Exception e) {
+			e.printStackTrace();
+			resultJson.setResult(e.getMessage());
+			return ResultUtil.GoResponseFailure(resultJson);
+		}
 
 		// 返回处理结果
-		resultJson.setDataMap(dataMap);
+		resultJson.setResult(nonce);
 		return ResultUtil.GoResponseSuccess(resultJson);
 	}
 
@@ -182,38 +125,28 @@ public class ServiceController  implements TransactionActionHandler {
 
 	/**
 	 * Send raw transaction
-	 * @param toAddress
-	 * @param quality
+	 * @param hexValue
 	 * @return
 	 */
 	@ApiOperation(value = "Send raw transaction", notes = "Send raw transaction")
 	@RequestMapping(value = "sendRawTransaction", method = RequestMethod.POST)
-	public ResponseEntity<String> sendRawTransaction(@RequestParam String toAddress,String quality) {
-		// 初始化返回结果对象JsonResult
+	public ResponseEntity<String> sendRawTransaction(@RequestParam String hexValue) {
 		JsonResult<String, Object> resultJson = new JsonResult<String, Object>();
-		// 初始化业务数据Map对象
-		Map<String, Object> dataMap = new HashMap<String, Object> ();
-		logger.info("======================  ServiceController.sendRawTransaction......toAddress:"+toAddress+",quality:"+quality);
+		logger.info("======================  ServiceController.sendRawTransaction......hexValue:" + hexValue);
 
 		ContentContract cc = contentContractHelper.getContentContract();
 		String hash = "";
 		try {
-			hash = cc.sendRawTransaction(toAddress,new BigInteger(quality));
+			hash = cc.sendRawTransaction(hexValue);
 		} catch (Exception e) {
 			e.printStackTrace();
-			dataMap.put("reslut",e.getMessage());
-			resultJson.setDataMap(dataMap);
+			resultJson.setResult(e.getMessage());
 			return ResultUtil.GoResponseFailure(resultJson);
 		}
 
-		// 初始化业务数据Map对象
-		dataMap.put("result",hash);
-
-		// 返回处理结果
-		resultJson.setDataMap(dataMap);
+		resultJson.setResult(hash);
 		return ResultUtil.GoResponseSuccess(resultJson);
 	}
-
 
 
 
