@@ -43,6 +43,15 @@ public class TopicRabbitConfig {
     }
 
     @Bean
+    public Queue queueTransferTokenList() {
+        return new Queue(Constants.QUEUE_TRANSFER_TOKEN_LIST+"."+provider.getNodeName());
+    }
+    @Bean
+    public Queue queueTransferTokenListBack() {
+        return new Queue(Constants.QUEUE_TRANSFER_TOKEN_LIST_BACK+"."+provider.getNodeName());
+    }
+
+    @Bean
     public Queue queuePublishResource() {
         return new Queue(Constants.QUEUE_PUBLISH_RESOURCE+"."+provider.getNodeName());
     }
@@ -74,6 +83,15 @@ public class TopicRabbitConfig {
     @Bean
     Binding bindingExchangeTransferTokenBack(Queue queueTransferTokenBack, TopicExchange exchange) {
         return BindingBuilder.bind(queueTransferTokenBack).to(exchange).with(Constants.ROUTING_KEY_TRANSFER_TOKEN_BACK+"."+provider.getNodeName());
+    }
+
+    @Bean
+    Binding bindingExchangeTransferTokenList(Queue queueTransferTokenList, TopicExchange exchange) {
+        return BindingBuilder.bind(queueTransferTokenList).to(exchange).with(Constants.ROUTING_KEY_TRANSFER_TOKEN_LIST+"."+provider.getNodeName());
+    }
+    @Bean
+    Binding bindingExchangeTransferTokenListBack(Queue queueTransferTokenListBack, TopicExchange exchange) {
+        return BindingBuilder.bind(queueTransferTokenListBack).to(exchange).with(Constants.ROUTING_KEY_TRANSFER_TOKEN_LIST_BACK+"."+provider.getNodeName());
     }
 
     @Bean

@@ -88,7 +88,7 @@ public class MQTask {
 			if(null!=r){
 				status = r.isStatusOK();
 			}
-//			logger.info("======================  job......status:" + status);
+			logger.info("======================  job......status:" + status);
 			String returnStr = type+"|"+reqId+"|"+status+"|"+dappKey;
 			this.rabbitTemplate.convertAndSend(Constants.EXCHANGE_TOPIC,routingKey,returnStr);
 		} catch (InterruptedException e) {

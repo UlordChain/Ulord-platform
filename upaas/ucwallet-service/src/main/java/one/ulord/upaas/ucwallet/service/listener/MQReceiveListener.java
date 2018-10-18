@@ -5,6 +5,9 @@
 package one.ulord.upaas.ucwallet.service.listener;
 
 import com.rabbitmq.client.Channel;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
 import one.ulord.upaas.ucwallet.service.base.common.Constants;
 import one.ulord.upaas.ucwallet.service.base.common.RedisUtil;
 import one.ulord.upaas.ucwallet.service.base.contract.ContentContract;
@@ -21,6 +24,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * RabbitMQ Listener
@@ -145,6 +151,57 @@ public class MQReceiveListener {
             logger.info("======================  listener.transferToken......reqId:"+reqId+", message isNacked. ");
         }
         logger.info("======================  listener.transferToken......reqId:"+reqId+", message isAcked. ");
+    }
+
+
+    /**
+     * Listenning message of transfer token list
+     * @param message
+     * @param channel
+     * @throws IOException
+     */
+    @RabbitListener(queues = "#{${mq.listener.transferTokenList}}")
+    @RabbitHandler
+    public void transferTokenListReceiver(final Message message, Channel channel) throws IOException {
+        String msg = new String(message.getBody());
+        logger.info("======================  listener.transferTokenList......received a message:" + msg);
+        JSONObject obj = new JSONObject().fromObject(msg);
+        String reqId = obj.get("reqId").toString();
+        String quantity = obj.get("quantity").toString();
+        String dappKey = obj.get("nodeName").toString();
+
+        List<String> toAddressList = (List<String>)obj.get("toAddress");
+        logger.info("toAddressList is ："+ toAddressList);
+
+        try{
+            // message confirm
+            channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
+
+            // business handle
+            ContentContract cc = contentContractHelper.getContentContract();
+            String hash = cc.transferTokens(new BigInteger(quantity),toAddressList);
+            logger.info("======================  listener.transferTokenList......reqId:"+reqId+", hash:" + hash);
+
+            if(null != hash){
+                // Reply mq message（the first time return hash value）
+                String returnStr = "1|"+reqId+"|"+hash+"|"+dappKey;
+                this.rabbitTemplate.convertAndSend(Constants.EXCHANGE_TOPIC,Constants.ROUTING_KEY_TRANSFER_TOKEN_LIST_BACK+"."+dappKey,returnStr);
+
+                // Record second messages to redis
+                String msg1 = "2|"+reqId+"|"+Constants.ROUTING_KEY_TRANSFER_TOKEN_LIST_BACK+"."+dappKey+"|"+provider.getQuerySleep1()+"|"+hash+"|"+dappKey;
+                redisUtil.set("mq|"+reqId+"|2",msg1);
+
+                // Record third messages to redis
+                String msg2 = "3|"+reqId+"|"+Constants.ROUTING_KEY_TRANSFER_TOKEN_LIST_BACK+"."+dappKey+"|"+provider.getQuerySleep2()+"|"+hash+"|"+dappKey;
+                redisUtil.set("mq|"+reqId+"|3",msg2);
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+            // message nack
+            channel.basicNack(message.getMessageProperties().getDeliveryTag(), false,true);
+            logger.info("======================  listener.transferTokenList......reqId:"+reqId+", message isNacked. ");
+        }
+        logger.info("======================  listener.transferTokenList......reqId:"+reqId+", message isAcked. ");
     }
 
 

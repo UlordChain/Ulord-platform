@@ -5,6 +5,7 @@
 package one.ulord.upaas.ucwallet.sdk.listener;
 
 import com.rabbitmq.client.Channel;
+import one.ulord.upaas.ucwallet.sdk.utils.MessageType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Message;
@@ -45,11 +46,24 @@ public class MQReceiveListener {
         logger.info("");
         logger.info("======================  Listener.transferGasBack......type:"+type+",reqId:"+reqId+",value:"+value+",dappKey:"+dappKey);
 
+        MessageType messageType = null;
+        if(type.equals("1")){
+            messageType = MessageType.FIRST;
+        }
+        if(type.equals("2")){
+            messageType = MessageType.SECOND;
+        }
+        if(type.equals("3")){
+            messageType = MessageType.THIRD;
+        }
+
         try{
             // message handle
-            iReceiveMessage.handleTransferGas(type,reqId,value);
+            iReceiveMessage.handleTransferGas(messageType,reqId,value);
             // message confirm
-            channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
+            if(channel.isOpen()){
+                channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
+            }
         }catch(Exception e){
             e.printStackTrace();
             channel.basicNack(message.getMessageProperties().getDeliveryTag(), false,true);
@@ -75,11 +89,66 @@ public class MQReceiveListener {
         logger.info("");
         logger.info("======================  Listener.transferTokenBack......type:"+type+",reqId:"+reqId+",value:"+value+",dappKey:"+dappKey);
 
+        MessageType messageType = null;
+        if(type.equals("1")){
+            messageType = MessageType.FIRST;
+        }
+        if(type.equals("2")){
+            messageType = MessageType.SECOND;
+        }
+        if(type.equals("3")){
+            messageType = MessageType.THIRD;
+        }
+
         try{
             // message handle
-            iReceiveMessage.handleTransferToken(type,reqId,value);
+            iReceiveMessage.handleTransferToken(messageType,reqId,value);
             // message confirm
-            channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
+            if(channel.isOpen()){
+                channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+            channel.basicNack(message.getMessageProperties().getDeliveryTag(), false,true);
+        }
+    }
+
+
+    /**
+     * Listenning results of transfer token list
+     * @param message
+     * @param channel
+     */
+    @RabbitListener(queues = "#{"+"'transferTokenList-back."+"${mq.dapp.node.name}'}")
+    @RabbitHandler
+    public void transferTokenListBackReceiver(final Message message, Channel channel) throws IOException {
+        String m = new String(message.getBody());
+        String[] mArr = m.split("\\|",-1);
+        String type = mArr[0];
+        String reqId = mArr[1];
+        String value = mArr[2];
+        String dappKey = mArr[3];
+        logger.info("");
+        logger.info("======================  Listener.transferTokenBack......type:"+type+",reqId:"+reqId+",value:"+value+",dappKey:"+dappKey);
+
+        MessageType messageType = null;
+        if(type.equals("1")){
+            messageType = MessageType.FIRST;
+        }
+        if(type.equals("2")){
+            messageType = MessageType.SECOND;
+        }
+        if(type.equals("3")){
+            messageType = MessageType.THIRD;
+        }
+
+        try{
+            // message handle
+            iReceiveMessage.handleTransferTokenList(messageType,reqId,value);
+            // message confirm
+            if(channel.isOpen()){
+                channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
+            }
         }catch(Exception e){
             e.printStackTrace();
             channel.basicNack(message.getMessageProperties().getDeliveryTag(), false,true);
@@ -104,11 +173,24 @@ public class MQReceiveListener {
         logger.info("");
         logger.info("======================  Listener.publishResourceBack......type:"+type+",reqId:"+reqId+",value:"+value+",dappKey:"+dappKey);
 
+        MessageType messageType = null;
+        if(type.equals("1")){
+            messageType = MessageType.FIRST;
+        }
+        if(type.equals("2")){
+            messageType = MessageType.SECOND;
+        }
+        if(type.equals("3")){
+            messageType = MessageType.THIRD;
+        }
+
         try{
             // message handle
-            iReceiveMessage.handlePublishResource(type,reqId,value);
+            iReceiveMessage.handlePublishResource(messageType,reqId,value);
             // message confirm
-            channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
+            if(channel.isOpen()){
+                channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
+            }
         }catch(Exception e){
             e.printStackTrace();
             channel.basicNack(message.getMessageProperties().getDeliveryTag(), false,true);

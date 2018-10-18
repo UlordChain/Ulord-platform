@@ -6,6 +6,7 @@ package one.ulord.upaas.ucwallet.sdk;
 
 import one.ulord.upaas.ucwallet.sdk.utils.Constants;
 import one.ulord.upaas.ucwallet.sdk.utils.Provider;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.AmqpTemplate;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Calendar;
+import java.util.List;
 
 /**
  * Content contract
@@ -57,12 +59,32 @@ public class ContentContract {
      * @param quantity
      */
     public void transferToken(final String reqId, String toAddress, BigInteger quantity){
-        logger.info("send message of transferGas token queue ："+Constants.QUEUE_TRANSFER_TOKEN);
+        logger.info("send message of transferToken token queue ："+Constants.QUEUE_TRANSFER_TOKEN);
         String message = reqId+"|"+toAddress+"|"+quantity+"|"+provider.getNodeName();
         logger.info("message is ："+message);
 
         // send message of transferToken to queue
         this.rabbitTemplate.convertAndSend(Constants.EXCHANGE_TOPIC,Constants.ROUTING_KEY_TRANSFER_TOKEN+"."+provider.getNodeName(),message);
+    }
+
+
+    /**
+     * Transfer token list
+     * @param reqId
+     * @param toAddressList
+     * @param value
+     */
+    public void transferTokenList(final String reqId, List<String> toAddressList, BigInteger value){
+        logger.info("send message of transferTokenList token queue ："+Constants.QUEUE_TRANSFER_TOKEN_LIST);
+        JSONObject msg = new JSONObject();
+        msg.put("reqId", reqId);
+        msg.put("toAddress", toAddressList);
+        msg.put("quantity", value);
+        msg.put("nodeName", provider.getNodeName());
+        logger.info("message is ："+ msg);
+
+        // send message of transferToken to queue
+        this.rabbitTemplate.convertAndSend(Constants.EXCHANGE_TOPIC,Constants.ROUTING_KEY_TRANSFER_TOKEN_LIST+"."+provider.getNodeName(),msg.toString());
     }
 
 

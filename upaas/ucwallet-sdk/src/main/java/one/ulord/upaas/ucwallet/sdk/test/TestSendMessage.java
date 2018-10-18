@@ -8,11 +8,11 @@ import one.ulord.upaas.ucwallet.sdk.ContentContract;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Test Controller
@@ -34,8 +34,8 @@ public class TestSendMessage {
      * http://127.0.0.1:9091/sdk/test/transferGas
      */
     @GetMapping("/transferGas")
-    public void transferGas(@RequestParam String reqId,String toAddress,String value) {
-        cc.transferGas(reqId, toAddress,new BigInteger(value));
+    public void transferGas(@RequestParam String reqId, String toAddress, String value) {
+        cc.transferGas(reqId, toAddress, new BigInteger(value));
     }
 
 
@@ -44,8 +44,23 @@ public class TestSendMessage {
      * http://127.0.0.1:9091/sdk/test/transferToken
      */
     @GetMapping("/transferToken")
-    public void transferToken(@RequestParam String reqId,String toAddress,String value) {
-        cc.transferToken(reqId, toAddress,new BigInteger(value));
+    public void transferToken(@RequestParam String reqId, String toAddress, String value) {
+        cc.transferToken(reqId, toAddress, new BigInteger(value));
+    }
+
+
+    /**
+     * Test transferTokenList
+     * http://127.0.0.1:9091/sdk/test/transferTokenList
+     */
+    @PostMapping("/transferTokenList")
+    public void transferTokenList() {
+        String reqId = "123456";
+        String value = "1000000000000";
+        List<String> toAddressList = new ArrayList<>();
+        toAddressList.add("0x4826f115806862afcf2fbafb8ac69e61481426f6");
+        toAddressList.add("0x02f5156e457c55a55dc5699d03d3927fc158fdf7");
+        cc.transferTokenList(reqId, toAddressList,new BigInteger(value));
     }
 
 
@@ -54,8 +69,8 @@ public class TestSendMessage {
      * http://127.0.0.1:9091/sdk/test/publishResource
      */
     @GetMapping("/publishResource")
-    public void publishResource(@RequestParam String reqId,String toAddress,String value) {
-        cc.publishResource(reqId, toAddress,new BigInteger(value), BigInteger.ZERO);
+    public void publishResource(@RequestParam String reqId, String toAddress, String value) {
+        cc.publishResource(reqId, toAddress, new BigInteger(value), BigInteger.ZERO);
     }
 
 }
