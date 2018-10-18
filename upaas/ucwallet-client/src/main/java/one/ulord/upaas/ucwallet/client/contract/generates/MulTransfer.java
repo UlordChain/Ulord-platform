@@ -39,7 +39,11 @@ public class MulTransfer extends Contract {
 
     public static final String FUNC_MULINSERTWHITE = "mulInsertWhite";
 
+    public static final String FUNC_KILL = "kill";
+
     public static final String FUNC_TRANSFERADMINSHIP = "transferAdminship";
+
+    public static final String FUNC_SENDETH = "sendEth";
 
     public static final String FUNC_RENOUNCEOWNERSHIP = "renounceOwnership";
 
@@ -107,6 +111,14 @@ public class MulTransfer extends Contract {
         return executeRemoteCallTransaction(function);
     }
 
+    public RemoteCall<TransactionReceipt> kill() {
+        final Function function = new Function(
+                FUNC_KILL,
+                Arrays.<Type>asList(),
+                Collections.<TypeReference<?>>emptyList());
+        return executeRemoteCallTransaction(function);
+    }
+
     public RemoteCall<TransactionReceipt> transferAdminship(String _newAdmin) {
         final Function function = new Function(
                 FUNC_TRANSFERADMINSHIP,
@@ -114,6 +126,17 @@ public class MulTransfer extends Contract {
                 Collections.<TypeReference<?>>emptyList());
         return executeRemoteCallTransaction(function);
     }
+
+    public RemoteCall<TransactionReceipt> sendEth(BigInteger _amount, List<String> _addresses, BigInteger weiValue) {
+        final Function function = new Function(
+                FUNC_SENDETH,
+                Arrays.<Type>asList(new org.web3j.abi.datatypes.generated.Uint256(_amount),
+                        new org.web3j.abi.datatypes.DynamicArray<org.web3j.abi.datatypes.Address>(
+                                org.web3j.abi.Utils.typeMap(_addresses, org.web3j.abi.datatypes.Address.class))),
+                Collections.<TypeReference<?>>emptyList());
+        return executeRemoteCallTransaction(function, weiValue);
+    }
+
 
     public RemoteCall<TransactionReceipt> renounceOwnership() {
         final Function function = new Function(
