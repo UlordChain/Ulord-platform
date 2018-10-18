@@ -4,6 +4,7 @@ CREATE TABLE `sensitivewords` (
   `keyword` varchar(100) DEFAULT NULL,
   `level` int(11) DEFAULT NULL,
   `disabled` int(11) DEFAULT NULL,
+  `scene` VARCHAR(10) NULL,
   PRIMARY KEY (`uid`)
 ) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8;
 

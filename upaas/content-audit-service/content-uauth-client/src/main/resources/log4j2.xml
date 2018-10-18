@@ -4,18 +4,18 @@
         <Console name="Console" target="SYSTEM_OUT">
             <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
         </Console>
-        <RollingFile name="MyFile" fileName="./logs/upaas-cauth-server/upaas-cauth-server.log" filePattern="./logs/upaas-cauth-server/upaas-cauth-server-%d{yyyy-MM-dd}.log.gz">
+        <RollingFile name="MyFile" fileName="./logs/upaas-cauth-client/upaas-cauth-client.log" filePattern="./logs/upaas-cauth-client/upaas-cauth-client-%d{yyyy-MM-dd}.log.gz">
             <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />  
             <Policies>  
 		        <TimeBasedTriggeringPolicy modulate="true" interval="1"/>  
 		    </Policies>
 		    <DefaultRolloverStrategy>
-			    <Delete basePath="./logs/upaas-cauth-server" maxDepth="1">
-	                 <IfFileName glob="mupaas-cauth-server-*.log" />
+			    <Delete basePath="./logs/upaas-cauth-client" maxDepth="1">
+	                 <IfFileName glob="mupaas-cauth-client-*.log" />
 	                 <IfLastModified age="30d" />    
 	            </Delete>
             </DefaultRolloverStrategy>
-        </RollingFile>  
+        </RollingFile>
     </Appenders>
     <Loggers>
         <Root level="debug">

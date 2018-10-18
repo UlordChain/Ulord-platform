@@ -23,8 +23,11 @@ public interface SensitiveWordService {
     List<SensitiveWordItem> loadActive();
     PagingResult retrieve(int pageIdx, int pageSize, Map<String, List<String>> criteria);
 
+
     int disableItem(long uid);
     int enableItem(long uid);
 
+    SensitiveWordItem select(String keyword);
 
+    PagingResult selectByItem(int pageIdx, int pageSize, Map<String, List<String>> criteria, String keyword, int level, int disabled, String scene);
 }

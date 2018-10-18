@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>sensitiveWord</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.css}"></link>
+    <script src="js/jquery.js"></script>
+    <script src="js/bootstrap.js"></script>
+</head>
+<body class="container">
+<br/>
+<h1>操作成功！</h1>
+<br/><br/>
+
+<div class="div-inline" style="width:33%;padding:0;margin:0;float:left;box-sizing:border-box;">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="input-group">
+                <div class="input-group-btn">
+                    <button type="button" style="width:114px" class="btn btn-info " onclick="query()">关键词搜索</button>
+                </div>
+                <form name='form' method="get" action='/toSelect'>
+                    <input type="text" style="width:200px" class="form-control" id='keyword' name='keyword'
+                           aria-label="..."
+                           placeholder="请输入关键字">
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    function query() {
+        var key = document.getElementById('keyword').value;
+        if (!key) {
+            alert('请输入关键字！');
+            return;
+        }
+        form.submit()
+    }
+</script>
+
+<div class="row" style="width:33%;padding:0;margin:0;float:left;box-sizing:border-box;">
+    <div class="col-lg-6">
+        <div class="input-group">
+            <div class="input-group-btn">
+                <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                    场景搜索
+                    <span class="caret"></span></button>
+                <ul class="dropdown-menu ">
+                    <li th:each="m : ${scList}" style="list-style-type:none; border-bottom: 1px solid #ddd"><a
+                            href="#" th:text="${m.scene +' / '+ m.symbol}"
+                            th:href="@{${'/toSelect'}(scene=${m.scene})}"></a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<br/>
+
+<div class="with:80%">
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th>keyword</th>
+            <th>level</th>
+            <th>disabled</th>
+            <th>scene</th>
+            <th>修改</th>
+            <th>删除</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="sensitiveWord : ${sensitiveWords}">
+            <th scope="row" th:text="${sensitiveWord.keyword}">1</th>
+            <td th:text="${sensitiveWord.level}">Otto</td>
+            <td th:text="${sensitiveWord.disabled}">6</td>
+            <td th:text="${sensitiveWord.scene}">7</td>
+            <td><a th:href="@{/toEdit(uid=${sensitiveWord.uid})}">修改</a></td>
+            <td><a th:href="@{/delete(uid=${sensitiveWord.uid},disabled=${sensitiveWord.disabled})}"
+                   onClick="return confirm('确定删除?');">删除</a></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="div-inline pull-right">
+    <div class="col-sm-2 control-label">
+        <a href="/list" th:href="@{/list(pageNum=${pageNum})}" class="btn btn-info">返回主页</a>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>sensitiveWord</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.css}">
+    <script src="js/jquery.js"></script>
+    <script src="js/bootstrap.js"></script>
+</head>
+<br/>
+
+<body class="container">
+<div class="alert alert-danger alert-dismissible" role="alert">
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    <strong>操作失败!</strong> 关键词已存在！
+</div>
+
+<h1>修改敏感词</h1>
+<br/><br/>
+<div class="with:80%">
+    <form class="form-horizontal"   th:action="@{/edit}" th:object="${sensitiveWord}"  method="post">
+        <input type="hidden" name="uid" th:value="*{uid}" />
+        <div class="form-group">
+            <label for="keyword" class="col-sm-2 control-label">keyword</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" name="keyword"  id="keyword" th:value="*{keyword}" placeholder="keyword"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="level" class="col-sm-2 control-label" >level</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" name="level" id="level"  th:value="*{level}" placeholder="level"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="disabled" class="col-sm-2 control-label">disabled</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" name="disabled"  id="disabled" th:value="*{disabled}" placeholder="disabled"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="scene" class="col-sm-2 control-label">scene</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" name="scene"  id="scene" th:value="*{scene}" placeholder="scene"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+                <input type="submit" value="确认"  th:utext="${uid}" class="btn btn-info" />
+                &nbsp; &nbsp; &nbsp;
+                <a  th:href="@{/list}" class="btn btn-info">返回主页</a>
+            </div>
+
+        </div>
+    </form>
+</div>
+</body>
+</html>

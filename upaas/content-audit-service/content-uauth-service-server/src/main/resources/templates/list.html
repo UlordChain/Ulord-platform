@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>sensitiveWordsList</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.css}"></link>
+    <script src="js/jquery.js"></script>
+    <script src="js/bootstrap.js"></script>
+</head>
+<body class="container">
+<br/>
+<h1>敏感词管理</h1>
+<br/>
+
+<div class="div-inline" style="width:33%;padding:0;margin:0;float:left;box-sizing:border-box;">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="input-group">
+                <div class="input-group-btn">
+                    <button type="button" style="width:114px" class="btn btn-info " onclick="query()">关键词搜索</button>
+                </div>
+                <form name='form' method="get" action='/toSelect'>
+                    <input type="text" style="width:200px" class="form-control" id='keyword' name='keyword'
+                           aria-label="..."
+                           placeholder="请输入关键字">
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    function query() {
+        var key = document.getElementById('keyword').value;
+        if (!key) {
+            alert('请输入关键字！');
+            return;
+        }
+        form.submit()
+    }
+</script>
+
+<div class="row" style="width:33%;padding:0;margin:0;float:left;box-sizing:border-box;">
+    <div class="col-lg-6">
+        <div class="input-group">
+            <div class="input-group-btn">
+                <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                    场景搜索
+                    <span class="caret"></span></button>
+                <ul class="dropdown-menu">
+                    <li th:each="m : ${scList}" style="list-style-type:none; border-bottom: 1px solid #ddd"><a
+                            href="#" th:text="${m.scene +'  /  '+ m.symbol}"
+                            th:href="@{${'/toSelect'}(scene=${m.scene})}"></a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="div-inline pull-right" style="width:33%;padding:0;margin:0;float:left;box-sizing:border-box;">
+    <a th:href="@{/sceneList}" class="btn btn-info pull-right">前往场景管理</a>
+</div>
+<br/><br/>
+
+
+<div class="with:80%">
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th>keyword</th>
+            <th>level</th>
+            <th>disabled</th>
+            <th>scene</th>
+            <th>修改</th>
+            <th>删除</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="sensitiveWord : ${sensitiveWords}">
+            <th scope="row" th:text="${sensitiveWord.keyword}">1</th>
+            <td th:text="${sensitiveWord.level}">Otto</td>
+            <td th:text="${sensitiveWord.disabled}">6</td>
+            <td th:text="${sensitiveWord.scene}">7</td>
+            <td><a th:href="@{/toEdit(uid=${sensitiveWord.uid})}">修改</a></td>
+            <td><a th:href="@{/delete(uid=${sensitiveWord.uid},disabled=${sensitiveWord.disabled})}"
+                   onClick="return confirm('确定删除?');">删除</a></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="col-sm-2 control-label">
+    <a href="/toAdd" th:href="@{/toAdd}" class="btn btn-info">添加敏感词</a>
+</div>
+<br/>
+
+<div>
+    <nav>
+        <ul class="pagination pull-right">
+            <li th:if="${pageNum>1}">
+                <a th:href="@{${'/list'}(pageNum=${1})}">首页</a>
+            </li>
+            <li th:if="${pageNum>1}">
+                <a th:href="@{${'/list'}(pageNum=${pageNum - 1},pageSize=${pageSize})}">&laquo;</a>
+            </li>
+
+            <li th:if="${pageNo <= pages && pageNo > 0}"
+                th:each="pageNo : ${#numbers.sequence(pageNum - 2, pageNum+2)} ">
+
+                <a th:if="${pageNum eq pageNo}" href="javascript:void(0);">
+                    <span th:text="${pageNo}"></span>
+                </a>
+
+                <a th:if="${not (pageNum eq pageNo)}" th:href="@{${'/list'}(pageNum=${pageNo},size=${pageSize})}">
+                    <span th:text="${pageNo}"></span>
+                </a>
+            </li>
+            <li th:if="${pageNum != pages}">
+                <a th:href="@{${'/list'}(pageNum=${pageNum+1},size=${pageSize})}">&raquo;</a>
+            </li>
+            <li th:if="${pageNum != pages}">
+                <a th:href="@{${'/list'}(pageNum=${pages})}">尾页</a>
+            </li>
+        </ul>
+    </nav>
+</div>
+</body>
+</html>

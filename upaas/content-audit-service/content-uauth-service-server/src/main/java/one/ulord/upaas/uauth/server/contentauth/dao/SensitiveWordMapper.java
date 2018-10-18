@@ -5,6 +5,7 @@
 package one.ulord.upaas.uauth.server.contentauth.dao;
 
 import one.ulord.upaas.uauth.server.contentauth.vo.SensitiveWordItem;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 import java.util.Map;
@@ -24,4 +25,9 @@ public interface SensitiveWordMapper {
 
     int disableItem(long uid);
     int enableItem(long uid);
+
+    SensitiveWordItem select(String keyword);
+
+    List<SensitiveWordItem> selectByItem( @Param("keyword")String keyword, int level, int disabled, @Param("scene") String scene, Map<String, List<String>> criteria);
+
 }

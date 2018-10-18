@@ -7,7 +7,6 @@ package one.ulord.upaas.uauth.client.contentauth.service.impl;
 import com.hankcs.hanlp.seg.common.Term;
 import com.hankcs.hanlp.tokenizer.IndexTokenizer;
 import lombok.extern.slf4j.Slf4j;
-import one.ulord.upaas.common.UPaaSErrorCode;
 import one.ulord.upaas.common.api.APIResult;
 import one.ulord.upaas.uauth.client.contentauth.bo.ContentAuthBody;
 import one.ulord.upaas.uauth.client.contentauth.bo.UPaaSUAuthErrorCode;
@@ -19,13 +18,11 @@ import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Content auth service implements
+ *
  * @author haibo
  * @since 5/30/18
  */
@@ -38,7 +35,7 @@ public class ContentAuthServiceImpl implements ContentAuthService {
     @Override
     public APIResult contentAuth(ContentAuthBody content) {
         List<Term> terms = null;
-        switch (content.getFormat()){
+        switch (content.getFormat()) {
             case TEXT:
                 terms = IndexTokenizer.segment(content.getContent());
                 break;
@@ -48,11 +45,11 @@ public class ContentAuthServiceImpl implements ContentAuthService {
                 break;
         }
 
-        if (terms != null){
+        if (terms != null) {
             List<SensitiveWord> hitWords = new ArrayList<>();
-            for (Term term : terms){
+            for (Term term : terms) {
                 SensitiveWord hit = sensitiveWordSyncer.hitSensitiveWord(term.word);
-                if (hit != null){
+                if (hit != null && hit.hitScene(content.getScene())) {
                     hitWords.add(hit);
                 }
             }
@@ -61,7 +58,7 @@ public class ContentAuthServiceImpl implements ContentAuthService {
             result.put("keywords", hitWords);
             result.put("violateCount", hitWords.size());
             return APIResult.buildResult(result);
-        }else{
+        } else {
             log.warn("Cannot parse content:format:{}, content:{}", content.getFormat(), content.getContent());
         }
         return APIResult.buildError(UPaaSUAuthErrorCode.UAUTH_CONTENT_PARSE_FAILURE, "Cannot parse content.");

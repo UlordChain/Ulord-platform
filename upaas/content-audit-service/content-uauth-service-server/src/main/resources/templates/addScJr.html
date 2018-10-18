@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>scene</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.css}">
+    <script src="js/jquery.js"></script>
+    <script src="js/bootstrap.js"></script>
+</head>
+<br/>
+
+<body class="container">
+
+<div class="alert alert-danger alert-dismissible" role="alert">
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    <strong>操作失败!</strong> 场景已存在！
+</div>
+
+<h1>添加场景</h1>
+<br/><br/>
+<div class="with:80%">
+    <form name='form1' class="form-horizontal" th:action="@{/addSc}" method="post">
+
+        <div class="form-group">
+            <label for="scene" class="col-sm-2 control-label">scene</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" name="scene" id="scene" placeholder="必填"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="symbol" class="col-sm-2 control-label">symbol</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" name="symbol" id="symbol" placeholder="必填"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+                <input type="button" value="确定" th:utext="${scene}" onclick='query5()' class="btn btn-info"/>
+                &nbsp; &nbsp; &nbsp;
+                <script>
+                    function query5() {
+                        var key = document.getElementById('scene').value;
+                        var key1 = document.getElementById('symbol').value;
+                        if (!key || !key1) {
+                            alert('请输入必填信息！');
+                            return "redirect:/toAddSc";
+                        }
+                        form1.submit()
+                    }
+                </script>
+                <a th:href="@{/sceneList}" class="btn btn-info">返回主页</a>
+            </div>
+        </div>
+    </form>
+</div>
+</body>
+</html>

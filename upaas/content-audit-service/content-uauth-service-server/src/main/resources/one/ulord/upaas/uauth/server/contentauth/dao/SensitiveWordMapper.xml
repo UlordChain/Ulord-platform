@@ -2,16 +2,18 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
 <mapper namespace="one.ulord.upaas.uauth.server.contentauth.dao.SensitiveWordMapper">
     <resultMap type="one.ulord.upaas.uauth.server.contentauth.vo.SensitiveWordItem" id="SensitiveWordMap">
         <id column="uid" property="uid"/>
         <result column="keyword" property="keyword"/>
         <result column="level" property="level"/>
         <result column="disabled" property="disabled"/>
+        <result column="scene" property="scene"/>
     </resultMap>
 
     <sql id="fieldSql">
-        uid, keyword, `level`, disabled
+        uid, keyword, `level`, disabled, scene
     </sql>
 
     <select id="retrieveItem" resultMap="SensitiveWordMap">
@@ -19,6 +21,34 @@
         <include refid="fieldSql"/>
         FROM `upaas-uauth-server`.`sensitivewords` WHERE uid = #{id}
     </select>
+
+    <select id="select" resultMap="SensitiveWordMap">
+        SELECT
+        <include refid="fieldSql"/>
+        FROM `upaas-uauth-server`.`sensitivewords` WHERE keyword = #{keyword}
+    </select>
+
+    <select id="selectByItem" resultMap="SensitiveWordMap">
+        select * from `upaas-uauth-server`.`sensitivewords`
+        where (1=1)
+        <!--<if test="uid!=null">-->
+        <!--and uid=#{uid}-->
+        <!--</if>-->
+        <if test="keyword!=null and keyword !=''">
+            and keyword LIKE CONCAT('%',#{keyword},'%')
+        </if>
+        <if test="level != null and level !=''">
+            and level=#{level}
+        </if>
+        <if test="disabled != null">
+            and disabled=#{disabled}
+        </if>
+        <if test="scene != null ">
+            and  find_in_set(#{scene},scene)
+        </if>
+
+    </select>
+
 
     <select id="loadActive" resultMap="SensitiveWordMap">
         SELECT
@@ -84,12 +114,20 @@
                 </foreach>
             </if>
         </if>
+        <if test="scene != null">
+            AND
+            <if test="scene.size() == 1">
+                <foreach collection="scene" item="item" separator="OR" open="(" close=")">
+                    scene like #{item}
+                </foreach>
+            </if>
+        </if>
     </select>
 
     <insert id="createItem" parameterType="one.ulord.upaas.uauth.server.contentauth.vo.SensitiveWordItem"
             useGeneratedKeys="true" keyProperty="uid">
-        INSERT INTO `upaas-uauth-server`.`sensitivewords` (keyword, `level`, disabled)
-                VALUES (#{keyword}, #{level}, #{disabled})
+        INSERT INTO `upaas-uauth-server`.`sensitivewords` (keyword, `level`, disabled, scene)
+                VALUES (#{keyword}, #{level}, #{disabled}, #{scene})
     </insert>
 
     <update id="updateItem">
@@ -100,6 +138,9 @@
             </if>
             <if test="level != null">
                 `level` = #{level},
+            </if>
+            <if test="scene != null">
+                `scene` = #{scene},
             </if>
         </trim>
         WHERE uid = #{uid}
