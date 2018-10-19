@@ -2,7 +2,7 @@
 
 ## **1、接入说明**
 
-​	ucwallet-sdk，要求DAPP使用springboot框架。
+​	ucwallet-sdk打成jar包提供给DAPP开发者，要求DAPP使用springboot框架。
 
 ## 2、JAR包说明
 
@@ -51,6 +51,7 @@ gradle
 ```
 compile ('org.web3j:core:3.4.0')
 compile ('com.github.ipfs:java-ipfs-api:v1.2.0')
+compile group: 'org.json', name: 'json', version: '20180813'
 compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '1.5.8.RELEASE'
 compile group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: '1.5.8.RELEASE'
 compile group: 'org.springframework.boot', name: 'spring-boot-starter-tomcat', version: '1.5.8.RELEASE'
@@ -130,8 +131,8 @@ public class TestSendMessage {
      * http://127.0.0.1:9091/sdk/test/transferGas
      */
     @GetMapping("/transferGas")
-    public void transferGas(@RequestParam String reqId,String toAddress,String value) {
-        cc.transferGas(reqId, toAddress,new BigInteger(value));
+    public void transferGas(@RequestParam String reqId, String toAddress, String value) {
+        cc.transferGas(reqId, toAddress, new BigInteger(value));
     }
 
 
@@ -140,8 +141,23 @@ public class TestSendMessage {
      * http://127.0.0.1:9091/sdk/test/transferToken
      */
     @GetMapping("/transferToken")
-    public void transferToken(@RequestParam String reqId,String toAddress,String value) {
-        cc.transferToken(reqId, toAddress,new BigInteger(value));
+    public void transferToken(@RequestParam String reqId, String toAddress, String value) {
+        cc.transferToken(reqId, toAddress, new BigInteger(value));
+    }
+
+
+    /**
+     * Test transferTokenList
+     * http://127.0.0.1:9091/sdk/test/transferTokenList
+     */
+    @PostMapping("/transferTokenList")
+    public void transferTokenList() {
+        String reqId = "123456";
+        String value = "1000000000000";
+        List<String> toAddressList = new ArrayList<>();
+        toAddressList.add("0x4826f115806862afcf2fbafb8ac69e61481426f6");
+        toAddressList.add("0x02f5156e457c55a55dc5699d03d3927fc158fdf7");
+        cc.transferTokenList(reqId, toAddressList,new BigInteger(value));
     }
 
 
@@ -149,9 +165,9 @@ public class TestSendMessage {
      * Test publishResource
      * http://127.0.0.1:9091/sdk/test/publishResource
      */
-    @GetMapping("/publishResource")
-    public void publishResource(@RequestParam String reqId,String toAddress,String value) {
-        cc.publishResource(reqId, toAddress,new BigInteger(value), BigInteger.ZERO);
+    @PostMapping("/publishResource")
+    public void publishResource(@RequestParam String reqId, String authorAddress, String value,String udfsHash) {
+        cc.publishResource(reqId, authorAddress, new BigInteger(value), udfsHash);
     }
 
 }
@@ -161,9 +177,9 @@ public class TestSendMessage {
 
 ucwallet-service会处理RabbitMQ中的消息，并立即回复一个hash值给sdk，这时需要DAPP实现sdk的IReceiveMessage接口来接收hash值。
 
-30秒后ucwallet-service会发送第一条确认消息，这时需要DAPP第二次通过接口来进行处理。
+30秒后ucwallet-service会发送第一条确认消息，这时需要DAPP第二次通过接口来进行处理业务。
 
-3分钟后ucwallet-service会发送第二条确认消息，这时需要DAPP第三次通过接口来进行处理。
+3分钟后ucwallet-service会发送第二条确认消息，这时需要DAPP第三次通过接口来进行处理业务。
 
 ```
 /**
@@ -180,46 +196,97 @@ public class TestReceiveMessageImpl implements IReceiveMessage{
     /**
      * Receive results of message by transfer gas , and handle
      * @param type Message type
-     *             1：the first time return
-     *             2：the second time return
-     *             3：the third time return
      * @param reqId Uniquely identified business ID
      * @param value The result value of returned
-     *             if type is 1, return hash value
-     *             if type is 2, return the first confirm
+     *             if type is FIRST, return hash value
+     *             if type is SECOND, return the first confirm (true or false)
+     *             if type is THIRD, return the second confirm (true or false)
      */
-    public void handleTransferGas(String type,String reqId,String value){
-        logger.info("======================  TestReceiveMessageImpl.handleTransferGas......type:"+type+",reqId:"+reqId+",value:"+value);
+    public void handleTransferGas(MessageType type,String reqId,String value){
+        logger.info("======================  TestReceiveMessageImpl.handleTransferGas......type="+type+",reqId="+reqId+"，value="+value);
+        switch (type) {
+            case FIRST:
+                logger.info("the first time return hash, value: "+value);
+                break;
+            case SECOND:
+                logger.info("the second time return the first confirm, value: "+value);
+                break;
+            case THIRD:
+                logger.info("the third time return the second confirm, value: "+value);
+                break;
+        }
     }
 
     /**
      * Receive results of message by transfer token , and handle
      * @param type Message type
-     *             1：the first time return
-     *             2：the second time return
-     *             3：the third time return
      * @param reqId Uniquely identified business ID
      * @param value The result value of returned
-     *             if type is 1, return hash value
-     *             if type is 2, return the first confirm
+     *             if type is FIRST, return hash value
+     *             if type is SECOND, return the first confirm (true or false)
+     *             if type is THIRD, return the second confirm (true or false)
      */
-    public void handleTransferToken(String type,String reqId,String value){
-        logger.info("======================  TestReceiveMessageImpl.handleTransferToken......type:"+type+",reqId:"+reqId+",value:"+value);
+    public void handleTransferToken(MessageType type,String reqId,String value){
+        logger.info("======================  TestReceiveMessageImpl.handleTransferToken......type="+type+",reqId="+reqId+"，value="+value);
+        switch (type) {
+            case FIRST:
+                logger.info("the first time return hash, value: "+value);
+                break;
+            case SECOND:
+                logger.info("the second time return the first confirm, value: "+value);
+                break;
+            case THIRD:
+                logger.info("the third time return the second confirm, value: "+value);
+                break;
+        }
+    }
+
+    /**
+     * Receive results of message by transfer token list , and handle
+     * @param type Message type
+     * @param reqId Uniquely identified business ID
+     * @param value The result value of returned
+     *             if type is FIRST, return hash value
+     *             if type is SECOND, return the first confirm (true or false)
+     *             if type is THIRD, return the second confirm (true or false)
+     */
+    public void handleTransferTokenList(MessageType type, String reqId, String value){
+        logger.info("======================  TestReceiveMessageImpl.handleTransferTokenList......type="+type+",reqId="+reqId+"，value="+value);
+        switch (type) {
+            case FIRST:
+                logger.info("the first time return hash, value: "+value);
+                break;
+            case SECOND:
+                logger.info("the second time return the first confirm, value: "+value);
+                break;
+            case THIRD:
+                logger.info("the third time return the second confirm, value: "+value);
+                break;
+        }
     }
 
     /**
      * Receive results of message by publish resource , and handle
      * @param type Message type
-     *             1：the first time return
-     *             2：the second time return
-     *             3：the third time return
      * @param reqId Uniquely identified business ID
      * @param value The result value of returned
-     *             if type is 1, return hash value
-     *             if type is 2, return the first confirm
+     *             if type is FIRST, return hash value
+     *             if type is SECOND, return the first confirm (true or false)
+     *             if type is THIRD, return the second confirm (true or false)
      */
-    public void handlePublishResource(String type,String reqId,String value){
-        logger.info("======================  TestReceiveMessageImpl.handlePublishResource......type:"+type+",reqId:"+reqId+",value:"+value);
+    public void handlePublishResource(MessageType type,String reqId,String value){
+        logger.info("======================  TestReceiveMessageImpl.handlePublishResource......type="+type+",reqId="+reqId+"，value="+value);
+        switch (type) {
+            case FIRST:
+                logger.info("the first time return hash, value: "+value);
+                break;
+            case SECOND:
+                logger.info("the second time return the first confirm, value: "+value);
+                break;
+            case THIRD:
+                logger.info("the third time return the second confirm, value: "+value);
+                break;
+        }
     }
 
 

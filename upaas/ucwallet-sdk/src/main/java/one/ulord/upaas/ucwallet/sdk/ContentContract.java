@@ -93,31 +93,15 @@ public class ContentContract {
      * @param reqId
      * @param authorAddress
      * @param price
-     * @param deposit
+     * @param udfsHash
      */
-    public void publishResource(final String reqId, String authorAddress, BigInteger price, BigInteger deposit){
+    public void publishResource(final String reqId, String authorAddress, BigInteger price,String udfsHash){
         logger.info("send message of publishResource to queue："+Constants.QUEUE_PUBLISH_RESOURCE);
-        try {
-            logger.info("Connect to UDFS network...");
-            UDFSClient udfsClient = new UDFSClient("/ip4/114.67.37.2/tcp/20418"); // Test UDFS network
-            logger.info("Publish a sentence to UDFS ...");
-            String udfsHash = udfsClient.publishResource("test",("Hello Ulord Platform" + Calendar.getInstance().toString()).getBytes());
-            byte[] udfsContent = udfsClient.getContent(udfsHash);
-            if (udfsContent != null) {
-                logger.info(new String(udfsContent));
-            } else {
-                logger.info("Cannot get content from UDFS.");
-            }
-            logger.info("publish a resource " + udfsHash + " to ulord using address:"+authorAddress);
+        String message = reqId+"|"+udfsHash+"|"+authorAddress+"|"+price+"|"+BigInteger.ZERO+"|"+provider.getNodeName();
+        logger.info("message is ："+message);
 
-            String message = reqId+"|"+udfsHash+"|"+authorAddress+"|"+price+"|"+deposit+"|"+provider.getNodeName();
-            logger.info("message is ："+message);
-
-            // send message of publishResource to queue
-            this.rabbitTemplate.convertAndSend(Constants.EXCHANGE_TOPIC,Constants.ROUTING_KEY_PUBLISH_RESOURCE+"."+provider.getNodeName(),message);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        // send message of publishResource to queue
+        this.rabbitTemplate.convertAndSend(Constants.EXCHANGE_TOPIC,Constants.ROUTING_KEY_PUBLISH_RESOURCE+"."+provider.getNodeName(),message);
     }
 
 

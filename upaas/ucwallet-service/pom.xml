@@ -210,16 +210,7 @@
             <version>1.0.6</version>
         </dependency>
 
-
-        <!--
-        <dependency>
-            <groupId>org.json</groupId>
-            <artifactId>json</artifactId>
-            <version>20180813</version>
-        </dependency>
-        -->
-
-        <!-- test -->
+        <!-- test
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -230,8 +221,9 @@
             <artifactId>junit</artifactId>
             <version>4.12</version>
         </dependency>
+         -->
 
-        <!-- test 离线文档 -->
+        <!-- test 离线文档
         <dependency>
             <groupId>org.springframework.restdocs</groupId>
             <artifactId>spring-restdocs-mockmvc</artifactId>
@@ -252,11 +244,11 @@
             <artifactId>springfox-staticdocs</artifactId>
             <version>2.6.1</version>
         </dependency>
-        <!-- test 离线文档 -->
+        test 离线文档 -->
 
     </dependencies>
 
-    <!-- test 离线文档 -->
+    <!-- test 离线文档
     <repositories>
         <repository>
             <snapshots>
@@ -267,7 +259,7 @@
             <url>http://jcenter.bintray.com</url>
         </repository>
     </repositories>
-    <!-- test 离线文档 -->
+  test 离线文档 -->
 
 
 

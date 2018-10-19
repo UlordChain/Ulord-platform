@@ -68,9 +68,9 @@ public class TestSendMessage {
      * Test publishResource
      * http://127.0.0.1:9091/sdk/test/publishResource
      */
-    @GetMapping("/publishResource")
-    public void publishResource(@RequestParam String reqId, String toAddress, String value) {
-        cc.publishResource(reqId, toAddress, new BigInteger(value), BigInteger.ZERO);
+    @PostMapping("/publishResource")
+    public void publishResource(@RequestParam String reqId, String authorAddress, String value,String udfsHash) {
+        cc.publishResource(reqId, authorAddress, new BigInteger(value), udfsHash);
     }
 
 }
