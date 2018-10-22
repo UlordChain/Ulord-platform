@@ -149,6 +149,30 @@ public class ServiceController  implements TransactionActionHandler {
 	}
 
 
+	/**
+	 * Reset Nonce
+	 * @return
+	 */
+	@ApiOperation(value = "Reset Nonce", notes = "Reset Nonce")
+	@RequestMapping(value = "resetNonce", method = RequestMethod.GET)
+	public ResponseEntity<String> resetNonce() {
+		JsonResult<String, Object> resultJson = new JsonResult<String, Object>();
+		logger.info("======================  ServiceController.resetNonce......");
+
+		ContentContract cc = contentContractHelper.getContentContract();
+		try {
+			cc.resetNonce();
+		} catch (Exception e) {
+			e.printStackTrace();
+			resultJson.setResult(e.getMessage());
+			return ResultUtil.GoResponseFailure(resultJson);
+		}
+
+		resultJson.setResult("success");
+		return ResultUtil.GoResponseSuccess(resultJson);
+	}
+
+
 
 
 	@Override
