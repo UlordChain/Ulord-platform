@@ -153,6 +153,24 @@
 }
 ```
 
+### 3.5 重置nonce值
+
+```
+# 接口方式: http get
+# 接口名称: 根据钱包地址查询交易数
+# 接口方法名: resetNonce
+# 访问URL: http://192.168.12.222:8080/ucwallet-service/api/resetNonce
+# 参数: 无
+# 返回值类型: JSON
+
+# 返回值: 
+{
+  "resultCode": 0,
+  "resultMsg": "successed",
+  "result": "success"
+}
+```
+
 
 
 ```
