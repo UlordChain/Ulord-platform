@@ -108,193 +108,6 @@ var Web3Helper = {
 
 
     /**
-     * register
-     * @param username
-     * @param password
-     * @param address
-     * @return
-     */
-    register: function(username,password) {
-        var currentAccount = this.web3._extend.utils.toChecksumAddress(this.web3.eth.defaultAccount);
-        Logger.log("register username:"+username+",password:"+password+",defaultAccount:"+ currentAccount);
-        var result = null;
-        var formData =  new FormData();
-        formData.append("username",username);
-        formData.append("password",password);
-        formData.append("address",currentAccount);
-        $.ajax({
-            type:"POST",
-            dataType:"json",
-            url: Config.SERVICE_URL + "/post/user/register",
-            data:formData,
-            async:false,
-            processData : false,
-            contentType : false,
-            success:function(data){
-                Logger.log(data);
-                result = data;
-            },
-            error:function(e){
-                Logger.log(e);
-            }
-        });
-        return result;
-    },
-
-
-
-    /**
-     * Login
-     * @param username
-     * @param password
-     * @param address
-     * @return token
-     */
-    login: function(username,password) {
-        var currentAccount = this.web3._extend.utils.toChecksumAddress(this.web3.eth.defaultAccount);
-        Logger.log("login username:"+username+",password:"+password+",defaultAccount:"+currentAccount);
-        var formData =  new FormData();
-        var result = null;
-        formData.append("username",username);
-        formData.append("password",password);
-        formData.append("address",currentAccount);
-        $.ajax({
-            type:"POST",
-            dataType:"json",
-            url: Config.SERVICE_URL + "/post/user/login",
-            data:formData,
-            async:false,
-            processData : false,
-            contentType : false,
-            success:function(data){
-                Logger.log(data);
-                result = data;
-            },
-            error:function(e){
-                Logger.log(e);
-                return null;
-            }
-        });
-        return result;
-    },
-
-
-
-    /**
-     * logout
-     * @param username
-     * @param password
-     * @param address
-     * @param token
-     * @return
-     */
-    logout: function(token,username,password) {
-        var currentAccount = this.web3._extend.utils.toChecksumAddress(this.web3.eth.defaultAccount);
-        Logger.log("logout username:"+username+",password:"+password+",token:"+token+",defaultAccount:"+currentAccount);
-        var formData =  new FormData();
-        var result = null;
-        formData.append("username",username);
-        formData.append("password",password);
-        formData.append("address",currentAccount);
-        formData.append("token",token);
-        $.ajax({
-            type:"POST",
-            dataType:"json",
-            url: Config.SERVICE_URL + "/post/user/logout",
-            data:formData,
-            async:false,
-            processData : false,
-            contentType : false,
-            success:function(data){
-                Logger.log(data);
-                result = data;
-            },
-            error:function(e){
-                Logger.log(e);
-                return null;
-            }
-        });
-        return result;
-    },
-
-
-
-    /**
-     * get user info
-     * @param username
-     * @param address
-     * @param token
-     * @return
-     */
-    getUserInfo: function(token,username) {
-        var currentAccount = this.web3._extend.utils.toChecksumAddress(this.web3.eth.defaultAccount);
-        Logger.log("getUserInfo username:"+username+",token:"+token+",defaultAccount:"+currentAccount);
-        var formData =  new FormData();
-        var result = null;
-        formData.append("username",username);
-        formData.append("address",currentAccount);
-        formData.append("token",token);
-        $.ajax({
-            type:"POST",
-            dataType:"json",
-            url: Config.SERVICE_URL + "/post/user/info",
-            data:formData,
-            async:false,
-            processData : false,
-            contentType : false,
-            //crossDomain: true,
-            success:function(data){
-                Logger.log(data);
-                result = data;
-            },
-            error:function(e){
-                Logger.log(e);
-                return null;
-            }
-        });
-        return result;
-    },
-
-
-
-    /**
-     * upload content to UDFS
-     * @param token : 登录token
-     * @param title : 资源标题
-     * @param description : 资源描述
-     * @param body : 资源内容
-     * @return udfs hash
-     */
-    uploadUdfs: function(token,title,description,body) {
-        Logger.log("getUdfsHash token:"+token+",title:"+title+",description:"+description+",body:"+body);
-        var result = null;
-        var formData =  new FormData();
-        formData.append("token",token);
-        formData.append("title",title);
-        formData.append("description",description);
-        formData.append("body",body);
-        $.ajax({
-            type:"POST",
-            dataType:"json",
-            url: Config.SERVICE_URL + "/post/blog/content",
-            data:formData,
-            async:false,
-            processData : false,
-            contentType : false,
-            success:function(data){
-                Logger.log(data);
-                result = data;
-            },
-            error:function(e){
-                Logger.log(e);
-                return null;
-            }
-        });
-        return result;
-    },
-
-
-    /**
      * 发布一个新的内容上链
      * @param token     : 登录token
      * @param udfsHash  : 内容的UDFS Hash值
@@ -319,54 +132,9 @@ var Web3Helper = {
                     return;
                 }
                 Logger.log("publish hash:"+hash);
-
-                // 查询交易收据
-                // _this.web3.eth.getTransactionReceipt(hash, function(err, result) {
-                //     console.log(result);
-                // });
-
-                // 将信息传给后台
-                var formData =  new FormData();
-                formData.append("token",token);
-                formData.append("title",title);
-                formData.append("address",currentAccount);
-                formData.append("tx_hash",hash);
-                $.ajax({
-                    type:"POST",
-                    dataType:"json",
-                    url: Config.SERVICE_URL + "/post/blog/chain",
-                    data:formData,
-                    async:false,
-                    processData : false,
-                    contentType : false,
-                    success:function(data){
-                        Logger.log(data);
-                        resolve(data);
-                    },
-                    error:function(e){
-                        Logger.log(e);
-                        reject(e);
-                    }
-                });
-
-                // 返回处理
-                // _this.renderReceipt(_this,token,title,_address,hash);
             })
         })
     },
-    // renderReceipt: function(_this,token,title,address,hash) {
-    //     Logger.log("publish renderReceipt hash:"+hash+",token:"+token+",title:"+title+",address:"+address);
-    //     // 通过一个交易哈希，返回一个交易的收据
-    //     _this.web3.eth.getTransactionReceipt("0x62cadd67f4441189f075f089968a14cad8496d5883dbccefeb2efe48f33ad0ef",function(err, result) {
-    //         if(err){
-    //             Logger.log("err:" + String(err));
-    //             return;
-    //         }
-    //         Logger.log("publish receipt.........");
-    //         Logger.log(result);
-    //         Logger.log("publish receipt.........");
-    //     })
-    // },
 
 
     /**
@@ -394,34 +162,6 @@ var Web3Helper = {
                 return;
             }
             Logger.log("purchaseResource hash:" + hash);
-
-            // 查询交易收据
-            // _this.web3.eth.getTransactionReceipt(hash, function(err, result) {
-            //     console.log(result);
-            // });
-
-            // 将信息传给后台
-            var formData =  new FormData();
-            formData.append("token",token);
-            formData.append("claim_id",claimId);
-            formData.append("address",currentAccount);
-            $.ajax({
-                type:"POST",
-                dataType:"json",
-                url: Config.SERVICE_URL + "/post/blog/payment",
-                data:formData,
-                async:false,
-                processData : false,
-                contentType : false,
-                success:function(data){
-                    Logger.log(data);
-                    return data;
-                },
-                error:function(e){
-                    Logger.log(e);
-                    return null;
-                }
-            });
 
         });
     },
@@ -492,17 +232,6 @@ var Web3Helper = {
             }
         });
         return result;
-
-        // 通过ABI和合约地址获取已部署的合约对象
-        // var myContractInstance = _web3.eth.contract(this.ABI_AUTHOR_MODULE).at(Config.CONTRACT_ADDRESS);
-        // myContractInstance.findClaimInfo(claimId,function(err, result) {
-        //     if(err) {
-        //         Logger.log("err:" + String(err));
-        //         return ;
-        //     }
-        //     Logger.log("result:"+result);
-        // })
-
     },
 
 
