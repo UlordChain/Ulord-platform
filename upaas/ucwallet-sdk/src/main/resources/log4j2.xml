@@ -19,7 +19,7 @@
         </RollingFile>  
     </Appenders>
     <Loggers>
-        <Root level="debug">
+        <Root level="trace">
             <AppenderRef ref="Console" />
 	    <AppenderRef ref="MyFile" />
         </Root>

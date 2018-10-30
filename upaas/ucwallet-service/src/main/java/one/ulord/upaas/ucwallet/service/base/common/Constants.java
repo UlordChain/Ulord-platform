@@ -33,6 +33,12 @@ public class Constants {
     // 系统异常
     public static final int FAILURE = 9;
 
+    /** No enough sUT **/
+    public static final int NO_ENOUGH_SUT = 1000;
+    /** Nonce value is invalid **/
+    public static final int INVALID_NONCE_VALUE   = 1001;
+
+
 
     // RabbitMQ EXCHANGE
     public final static String EXCHANGE_TOPIC = "topic_exchanges";

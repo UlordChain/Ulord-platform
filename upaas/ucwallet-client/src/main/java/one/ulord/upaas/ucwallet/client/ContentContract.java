@@ -228,7 +228,7 @@ public class ContentContract {
         this.handler.fail(reqId, e.getMessage());
     }
 
-    private void resetNonce() {
+    public void resetNonce() {
         transactionManager.setNonce(BigInteger.valueOf(-1));
         logger.info("RESET NONCE VALUE:" + transactionManager.getCurrentNonce());
     }

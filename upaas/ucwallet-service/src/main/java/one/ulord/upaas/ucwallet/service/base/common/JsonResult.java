@@ -12,16 +12,25 @@ import java.util.Map;
  * @author chenxin
  * @since 2018-08-10
  */
-public class JsonResult<K, V> {
+public class JsonResult {
 
     private int resultCode;
     private String resultMsg;
     private String result;
     private String jsessionid;
-//    private long totalCount;
-//    private Map<K, V> dataMap;
 
     public JsonResult() {
+    }
+
+    public JsonResult(int code, String message){
+        this.resultCode = code;
+        this.resultMsg = message;
+    }
+
+    public JsonResult(int code, String message, String result){
+        this.resultCode = code;
+        this.resultMsg = message;
+        this.result = result;
     }
 
     public int getResultCode() {
@@ -56,19 +65,4 @@ public class JsonResult<K, V> {
         this.result = result;
     }
 
-    //    public Map<K, V> getDataMap() {
-//        return this.dataMap;
-//    }
-//
-//    public void setDataMap(Map<K, V> dataMap) {
-//        this.dataMap = dataMap;
-//    }
-
-//    public long getTotalCount() {
-//        return this.totalCount;
-//    }
-//
-//    public void setTotalCount(long totalCount) {
-//        this.totalCount = totalCount;
-//    }
 }

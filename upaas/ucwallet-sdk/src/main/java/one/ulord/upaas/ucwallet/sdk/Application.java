@@ -7,6 +7,8 @@ package one.ulord.upaas.ucwallet.sdk;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+import java.math.BigDecimal;
+
 /**
  * @author chenxin
  * @since 13/8/18

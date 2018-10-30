@@ -4,14 +4,20 @@
  */
 package one.ulord.upaas.ucwallet.sdk.listener;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.JSONPObject;
 import com.rabbitmq.client.Channel;
+import one.ulord.upaas.ucwallet.sdk.remote.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.ExchangeTypes;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import java.io.IOException;
+
 
 /**
  * Listenning message of RabbitMQ
@@ -33,88 +39,41 @@ public class MQReceiveListener {
      * @param message
      * @param channel
      */
-    @RabbitListener(queues = "#{"+"'transferGas-back."+"${mq.dapp.node.name}'}")
-    @RabbitHandler
+    @RabbitListener(bindings = @QueueBinding(
+            value = @Queue(value = "${ucwallet-service.mq.sendrawtx-resp}", durable = "true"),
+            exchange = @Exchange(value = "${ucwallet-service.mq.exchange-resp}", type = ExchangeTypes.TOPIC, ignoreDeclarationExceptions = "true"),
+            key = "${ucwallet-service.mq.routing-key}"))
     public void transferGasBackReceiver(final Message message, Channel channel) throws IOException {
-        String m = new String(message.getBody());
-        String[] mArr = m.split("\\|",-1);
-        String type = mArr[0];
-        String reqId = mArr[1];
-        String value = mArr[2];
-        String dappKey = mArr[3];
-        logger.info("");
-        logger.info("======================  Listener.transferGasBack......type:"+type+",reqId:"+reqId+",value:"+value+",dappKey:"+dappKey);
+        String msg = new String(message.getBody());
 
         try{
             // message handle
-            iReceiveMessage.handleTransferGas(type,reqId,value);
+            JSONObject jsonObject = JSONObject.parseObject(msg);
+            String messageType = jsonObject.getString("type");
+
+            switch (MQMessageEnum.valueOf(messageType)){
+                case RESPONSE:
+                    SendRawTransactionResponse transactionResponse = JSON.parseObject(msg, SendRawTransactionResponse.class);
+                    iReceiveMessage.handleResponse(transactionResponse);
+                    break;
+                case CONFIRM:
+                    SendRawTransactionConfirm transactionConfirm = JSON.parseObject(msg, SendRawTransactionConfirm.class);
+                    iReceiveMessage.handleResponse(transactionConfirm);
+                    break;
+                case DBLCONFIRM:
+                    SendRawTransactionDblConfirm transactionDblConfirm = JSON.parseObject(msg, SendRawTransactionDblConfirm.class);
+                    iReceiveMessage.handleResponse(transactionDblConfirm);
+                    break;
+                case ERROR:
+                    MQErrorMessage errorMessage = JSONObject.parseObject(msg, MQErrorMessage.class);
+                    iReceiveMessage.handleResponse(errorMessage);
+                    break;
+            }
             // message confirm
             channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
         }catch(Exception e){
-            e.printStackTrace();
-            channel.basicNack(message.getMessageProperties().getDeliveryTag(), false,true);
+            logger.warn("Cannot process message:", e);
         }
 
     }
-
-
-    /**
-     * Listenning results of transfer token
-     * @param message
-     * @param channel
-     */
-    @RabbitListener(queues = "#{"+"'transferToken-back."+"${mq.dapp.node.name}'}")
-    @RabbitHandler
-    public void transferTokenBackReceiver(final Message message, Channel channel) throws IOException {
-        String m = new String(message.getBody());
-        String[] mArr = m.split("\\|",-1);
-        String type = mArr[0];
-        String reqId = mArr[1];
-        String value = mArr[2];
-        String dappKey = mArr[3];
-        logger.info("");
-        logger.info("======================  Listener.transferTokenBack......type:"+type+",reqId:"+reqId+",value:"+value+",dappKey:"+dappKey);
-
-        try{
-            // message handle
-            iReceiveMessage.handleTransferToken(type,reqId,value);
-            // message confirm
-            channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
-        }catch(Exception e){
-            e.printStackTrace();
-            channel.basicNack(message.getMessageProperties().getDeliveryTag(), false,true);
-        }
-    }
-
-
-    /**
-     * Listenning results of publishing resources
-     * @param message
-     * @param channel
-     */
-    @RabbitListener(queues = "#{"+"'publishResource-back."+"${mq.dapp.node.name}'}")
-    @RabbitHandler
-    public void publishResourceBackReceiver(final Message message, Channel channel) throws IOException {
-        String m = new String(message.getBody());
-        String[] mArr = m.split("\\|",-1);
-        String type = mArr[0];
-        String reqId = mArr[1];
-        String value = mArr[2];
-        String dappKey = mArr[3];
-        logger.info("");
-        logger.info("======================  Listener.publishResourceBack......type:"+type+",reqId:"+reqId+",value:"+value+",dappKey:"+dappKey);
-
-        try{
-            // message handle
-            iReceiveMessage.handlePublishResource(type,reqId,value);
-            // message confirm
-            channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
-        }catch(Exception e){
-            e.printStackTrace();
-            channel.basicNack(message.getMessageProperties().getDeliveryTag(), false,true);
-        }
-
-
-    }
-
 }

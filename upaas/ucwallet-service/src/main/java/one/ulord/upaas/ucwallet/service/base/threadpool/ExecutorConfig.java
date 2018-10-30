@@ -32,7 +32,7 @@ public class ExecutorConfig {
         //ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
 
         // 使用VisiableThreadPoolTaskExecutor
-        ThreadPoolTaskExecutor executor = new VisiableThreadPoolTaskExecutor();
+        ThreadPoolTaskExecutor executor = new VisibleThreadPoolTaskExecutor();
 
         // 配置核心线程数
         executor.setCorePoolSize(Integer.parseInt(provider.getCorePoolSize()));

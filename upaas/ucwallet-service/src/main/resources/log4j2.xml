@@ -19,9 +19,9 @@
         </RollingFile>  
     </Appenders>
     <Loggers>
-        <Root level="debug">
+        <Root level="trace">
             <AppenderRef ref="Console" />
-	    <AppenderRef ref="MyFile" />
+	        <AppenderRef ref="MyFile" />
         </Root>
         <logger level="info" name="com.netflix">
         	<AppenderRef ref="Console" />
@@ -38,6 +38,14 @@
         <logger level="info" name="org.thymeleaf">
             	<AppenderRef ref="Console" />
 	    	<AppenderRef ref="MyFile" />
+        </logger>
+        <logger level="info" name="org.web3j">
+            <AppenderRef ref="Console" />
+            <AppenderRef ref="MyFile" />
+        </logger>
+        <logger level="info" name="io.lettuce">
+            <AppenderRef ref="Console" />
+            <AppenderRef ref="MyFile" />
         </logger>
     </Loggers>
 </Configuration>

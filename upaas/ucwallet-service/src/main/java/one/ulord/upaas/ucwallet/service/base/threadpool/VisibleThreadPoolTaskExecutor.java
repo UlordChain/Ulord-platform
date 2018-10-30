@@ -14,9 +14,9 @@ import java.util.concurrent.ThreadPoolExecutor;
  * @author chenxin
  * @since 2018-08-15
  */
-public class VisiableThreadPoolTaskExecutor extends ThreadPoolTaskExecutor {
+public class VisibleThreadPoolTaskExecutor extends ThreadPoolTaskExecutor {
 
-    private static final Logger logger = LoggerFactory.getLogger(VisiableThreadPoolTaskExecutor.class);
+    private static final Logger logger = LoggerFactory.getLogger(VisibleThreadPoolTaskExecutor.class);
 
     private void showThreadPoolInfo(String prefix){
         ThreadPoolExecutor threadPoolExecutor = getThreadPoolExecutor();

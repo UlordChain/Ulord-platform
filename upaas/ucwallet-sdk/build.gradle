@@ -53,6 +53,8 @@ dependencies {
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-amqp', version: '1.5.8.RELEASE'
 
     compile("org.springframework.boot:spring-boot-starter-log4j2")
+
+    compile group: 'com.alibaba', name: 'fastjson', version: '1.2.51'
 }
 
 dependencyManagement {

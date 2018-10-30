@@ -4,8 +4,7 @@
  */
 package one.ulord.upaas.ucwallet.service.base.common;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.alibaba.fastjson.JSON;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -16,17 +15,16 @@ import org.springframework.http.ResponseEntity;
  * @since 2018-08-10
  */
 public class ResultUtil {
-
+	private static final String SUCCEEDED = "succeeded";
 	/**
 	 * Return JSON: successful operation(Date formatted yyyy-MM-dd HH:mm:ss)
 	 * @param resultJson
 	 * @return
 	 */
-	public static ResponseEntity<String> GoResponseFullSuccess(JsonResult<String, Object> resultJson){
+	public static ResponseEntity<String> GoResponseFullSuccess(JsonResult resultJson){
 		resultJson.setResultCode(Constants.SUCCESSFUL);
-		resultJson.setResultMsg("successed");
-		Gson gson = new GsonBuilder().serializeNulls().setDateFormat("yyyy-MM-dd HH:mm:ss").create();;
-		return new ResponseEntity<String>(gson.toJson(resultJson).replaceAll("null","\"\""), HttpStatus.OK);
+		resultJson.setResultMsg(SUCCEEDED);
+		return new ResponseEntity<>(JSON.toJSONString(resultJson), HttpStatus.OK);
 	}
 	
 	/**
@@ -34,11 +32,10 @@ public class ResultUtil {
 	 * @param resultJson
 	 * @return
 	 */
-	public static ResponseEntity<String> GoFullSuccess(JsonResult<String, Object> resultJson){
+	public static ResponseEntity<String> GoFullSuccess(JsonResult resultJson){
 		resultJson.setResultCode(Constants.SUCCESSFUL);
-		resultJson.setResultMsg("successed");
-		Gson gson = new GsonBuilder().serializeNulls().create();;
-		return new ResponseEntity<String>(gson.toJson(resultJson).replaceAll("null","\"\""), HttpStatus.OK);
+		resultJson.setResultMsg(SUCCEEDED);
+		return new ResponseEntity<String>(JSON.toJSONString(resultJson), HttpStatus.OK);
 	}
 	
 	/**
@@ -46,10 +43,10 @@ public class ResultUtil {
 	 * @param resultJson
 	 * @return
 	 */
-	public static ResponseEntity<String> GoResponseSuccess(JsonResult<String, Object> resultJson){
+	public static ResponseEntity<String> GoResponseSuccess(JsonResult resultJson){
 		resultJson.setResultCode(Constants.SUCCESSFUL);
-		resultJson.setResultMsg("successed");
-		return new ResponseEntity<String>(JsonUtil.toJson(resultJson,""), HttpStatus.OK);
+		resultJson.setResultMsg(SUCCEEDED);
+		return new ResponseEntity<>(JSON.toJSONString(resultJson), HttpStatus.OK);
 	}
 	
 	/**
@@ -57,10 +54,10 @@ public class ResultUtil {
 	 * @param resultJson
 	 * @return
 	 */
-	public static ResponseEntity<String> GoSuccess(JsonResult<String, Object> resultJson){
+	public static ResponseEntity<String> GoSuccess(JsonResult resultJson){
 		resultJson.setResultCode(Constants.SUCCESSFUL);
-		resultJson.setResultMsg("successed");
-		return new ResponseEntity<String>(JsonUtil.toJson(resultJson), HttpStatus.OK);
+		resultJson.setResultMsg(SUCCEEDED);
+		return new ResponseEntity<>(JSON.toJSONString(resultJson), HttpStatus.OK);
 	}
 	
 	/**
@@ -68,10 +65,10 @@ public class ResultUtil {
 	 * @param resultJson
 	 * @return
 	 */
-	public static ResponseEntity<String> GoResponseFailure(JsonResult<String, Object> resultJson){
+	public static ResponseEntity<String> GoResponseFailure(JsonResult resultJson){
 		resultJson.setResultCode(Constants.FAILURE);
-		resultJson.setResultMsg("failured");
-		return new ResponseEntity<String>(JsonUtil.toJson(resultJson), HttpStatus.OK);
+		resultJson.setResultMsg(SUCCEEDED);
+		return new ResponseEntity<>(JSON.toJSONString(resultJson), HttpStatus.OK);
 	}
 	
 	/**
@@ -81,19 +78,14 @@ public class ResultUtil {
 	 * @param message
 	 * @return
 	 */
-	public static ResponseEntity<String> GoResponseValidateError(JsonResult<String, Object> resultJson,String message){
+	public static ResponseEntity<String> GoResponseValidateError(JsonResult resultJson, String message){
 		resultJson.setResultCode(Constants.VALIDATE_ERROR);
 		resultJson.setResultMsg(message);
-		return new ResponseEntity<String>(JsonUtil.toJson(resultJson), HttpStatus.OK);
+		return new ResponseEntity<>(JSON.toJSONString(resultJson), HttpStatus.OK);
 	}
 	
 	
 	public static ResponseEntity<String> GoResponse(String result){
-		return new ResponseEntity<String>(result, HttpStatus.OK);
+		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
-	
-//	public static ResponseEntity<String> GoResponseJson(JSONArray resultJson){
-//		return new ResponseEntity<String>(JsonUtil.toJson(resultJson), HttpStatus.OK);
-//	}
-   
 }

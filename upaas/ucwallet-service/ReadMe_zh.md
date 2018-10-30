@@ -82,14 +82,14 @@
 
 ### 3.1 查询Gas余额接口
 
-```
-# 接口方式: http
-# 接口名称: 查询Gas余额
-# 接口方法名: getGasBalance
-# 访问URL: http://192.168.12.222:8080/ucwallet-service/api/getGasBalance
-# 返回值类型: JSON
+- 接口方式: http
+- 接口名称: 查询Gas余额
+- 接口方法名: getGasBalance
+- 访问URL: GET /ucwallet-service/api/getGasBalance
+- 返回值类型: JSON
+- 返回值: 
 
-# 返回值: 
+```
 {
     "resultCode": 0,
     "resultMsg": "successed",
@@ -97,70 +97,85 @@
 }
 ```
 
-### 3.2 根据钱包地址查询Gas余额接口
+# 示例
 
 ```
-# 接口方式: http
-# 接口名称: 根据钱包地址查询Gas余额
-# 接口方法名: getGasBalanceByAddress
-# 访问URL: http://192.168.12.222:8080/ucwallet-service/api/getGasBalanceByAddress
-# 参数类型: string	
-# 参数: address 钱包地址	
-# 返回值类型: JSON
+>curl http://localhost:9090/ucwallet-service/api/getBalance/0xcd2a3d9f938e13cd947ec05abc7fe734df8dd826
+{                                            
+  "resultCode": 0,                           
+  "resultMsg": "successed",                  
+  "result": "999999794998800000000000000000" 
+}  
+```
 
-# 返回值: 
+### 3.2 查询Token余额接口
+        
+
+- 接口方式: http
+- 接口名称: 查询Token余额
+- 接口方法名: getTokenBalance
+- 访问URL: GET /ucwallet-service/api/getTokenBalance/{address}?token={contract address}
+- 返回值类型: JSON
+
+- 返回值: 
+```
 {
     "resultCode": 0,
     "resultMsg": "successed",
-    "reslut": "99997496336000000000"
+    "reslut": "99997496336000000000" // wei, 1sUT = 10^18 wei
 }
 ```
 
-### 3.3 查询Token余额接口
-
+- 示例
 ```
-# 接口方式: http
-# 接口名称: 查询Token余额
-# 接口方法名: getTokenBalance
-# 访问URL: http://192.168.12.222:8080/ucwallet-service/api/getTokenBalance
-# 返回值类型: JSON
+>curl http://localhost:9090/ucwallet-service/api/getTokenBalance/0xcd2a3d9f938e13cd947ec05abc7fe734df8dd826
+ {
+   "resultCode": 0,
+   "resultMsg": "successed",
+   "result": "0"
+ }
+>curl http://localhost:9090/ucwallet-service/api/getTokenBalance/0xcd2a3d9f938e13cd947ec05abc7fe734df8dd826?token=0xbc353d8cc6c73d95f2ec59573d1f47ed7f12e922
+ {
+   "resultCode": 0,
+   "resultMsg": "successed",
+   "result": "0"
+ }    
+```
 
-# 返回值: 
+### 3.3 查询交易数量（Nonce值）
+
+
+- 接口方式: http
+- 接口名称: 查询Token余额
+- 接口方法名: getTransactionCount
+- 访问URL: GET /ucwallet-service/api/getTransactionCount/{address}
+- 返回值类型: JSON
+- 返回值: 
 {
     "resultCode": 0,
     "resultMsg": "successed",
-    "reslut": "99997496336000000000"
+    "reslut": "2"  // 交易数量
 }
+
+- 示例
 ```
-
-### 3.4 根据钱包地址查询Token余额接口
-
-```
-# 接口方式: http
-# 接口名称: 根据钱包地址查询Token余额
-# 接口方法名: getTokenBalanceByAddress
-# 访问URL: http://192.168.12.222:8080/ucwallet-service/api/getTokenBalanceByAddress
-# 参数类型: string	
-# 参数: address：钱包地址	
-# 返回值类型: JSON
-
-# 返回值: 
+>curl http://localhost:9090/ucwallet-service/api/getTransactionCount/0xb3ec03e42098b84e2e8d4d5a5d8de2f934ba5546
 {
-    "resultCode": 0,
-    "resultMsg": "successed",
-    "reslut": "99997496336000000000"
+  "resultCode": 0,
+  "resultMsg": "successed",
+  "result": "21"
 }
 ```
 
-### 3.5 发送原始交易接口
+### 3.4 发送原始交易接口
 
 ```
 # 接口方式: http
 # 接口名称: 发送原始交易
 # 接口方法名: sendRawTransaction
-# 访问URL: http://192.168.12.222:8080/ucwallet-service/api/sendRawTransaction
+# 访问URL: POST /ucwallet-service/api/sendRawTransaction?hexValue={原始交易字符串}
 # 参数类型: string	
-# 参数: toAddress：接收方钱包地址, quality：交易数量
+# 参数: hexValue：原始交易数量
 # 备注: 
 # 返回值类型: JSON
 
@@ -168,12 +183,64 @@
 {
     "resultCode": 0,
     "resultMsg": "successed",
-    "reslut": "99997496336000000000"
+    "reslut": "0xa3338b107bf4d57be41ef64ad81bd24d1ef40b4cc7ca9f236d50f9963b2180ce" // 交易Hash
 }
 ```
 
+### 3.5 查询交易信息
 
+- 接口方式: http
+- 接口名称: 查询交易信息
+- 接口方法名: queryTransaction
+- 访问URL: GET /ucwallet-service/api/queryTransaction?txhash={查询交易的哈希}
+- 参数类型: string	
+- 参数: toAddress：接收方钱包地址, quality：交易数量
+- 备注: 
+- 返回值类型: JSON
+- 返回值: 
+{
+    "resultCode": 0,
+    "resultMsg": "successed",
+    "reslut": '{}'
+}
 
+```
+>curl http://localhost:9090/ucwallet-service/api/queryTransaction?txhash=0xa45c88d8b0a4c6addf590eea851b28794bdcb4d68f99ef7d05166052a0b88cb5
+{
+  "resultCode": 0,
+  "resultMsg": "successed",
+  "result": "{\n  \"hash\": \"0xa45c88d8b0a4c6addf590eea851b28794bdcb4d68f99ef7d05166052a0b88cb5\",\n  \"nonce\": \"0x3627\",\n  \"blockHash\": \"0x093fecd5b6763ed2d03395e1214261a7cf0e8e09466ca65a8826abbad5049e82\",\n  \"blockNumber\": \"0x10c86\",\n  \"transactionIndex\": \"0x1\",\n  \"from\": \"0xa13d7dbabac37d9b756f573ecd7c0e652ff043c5\",\n  \"to\": \"0xb3ec03e42098b84e2e8d4d5a5d8de2f934ba5546\",\n  \"value\": \"0x5af3107a4000\",\n  \"gasPrice\": \"0x2710\",\n  \"gas\": \"0x015f90\",\n  \"input\": \"0x00\",\n  \"v\": 0\n}"
+}
+```
+
+### 3.6 查询交易回执
+
+- 接口方式: http
+- 接口名称: 查询交易回执
+- 接口方法名: queryTransactionReceipt
+- 访问URL: GET /ucwallet-service/api/queryTransactionReceipt?txhash={查询交易的哈希}
+- 参数类型: string	
+- 参数: toAddress：接收方钱包地址, quality：交易数量
+- 备注: 
+- 返回值类型: JSON
+
+- 返回值: 
+{
+    "resultCode": 0,
+    "resultMsg": "successed",
+    "reslut": {}
+}
+```
+>curl http://localhost:9090/ucwallet-service/api/queryTransactionReceipt?txhash=0xa45c88d8b0a4c6addf590eea851b28794bdcb4d68f99ef7d05166052a0b88cb5
+{
+  "resultCode": 0,
+  "resultMsg": "successed",
+  "result": "{\n  \"transactionHash\": \"0xa45c88d8b0a4c6addf590eea851b28794bdcb4d68f99ef7d05166052a0b88cb5\",\n  \"transactionIndex\": \"0x1\",\n  \"blockHash\": \"0x093fecd5b6763ed2d03395e1214261a7cf0e8e09466ca65a8826abbad5049e82\",\n
+\"blockNumber\": \"0x10c86\",\n  \"cumulativeGasUsed\": \"0x5208\",\n  \"gasUsed\": \"0x5208\",\n  \"root\": \"0x01\",\n  \"status\": \"0x01\",\n  \"from\": \"0xa13d7dbabac37d9b756f573ecd7c0e652ff043c5\",\n  \"to\": \"0xb3ec03e42098b84e2e8d4d5a5d8de2f934ba5546\",\n  \"logs\": []\n}"
+}
+```
+
+## 错误代码
 ```
 # 返回值说明
 resultCode：返回结果码	
