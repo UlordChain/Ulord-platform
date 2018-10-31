@@ -221,6 +221,50 @@ public class ContentContract {
         return txObject.getTransactionHash();
     }
 
+    /**
+     * Transfer the same SUT number to multiple addresses
+     * @param reqId
+     * @param address
+     * @param quality
+     */
+    public void transferSuts(final String reqId, BigInteger quality, List<String> address, BigInteger weiValue){
+
+        uxCandy.sendEth(quality, address, weiValue).sendAsync().whenCompleteAsync((receipt, e)-> {
+            if (e == null){
+                processTransactionReceipt(reqId, receipt);
+            }else{
+                this.handler.fail(reqId, e.getMessage());
+            }
+        });
+    }
+
+    /**
+     * Transfer to multiple address using same quality from current address
+     * @param address a set of target address
+     * @param quality a set of quality need to transfer
+     */
+    public String transferSuts(BigInteger quality, List<String> address, BigInteger weiValue) throws IOException {
+        if (address == null || quality == null || address.size() == 0){
+            throw new RuntimeException("Invalid parameters, master equal.");
+        }
+        if (address.size() > 200){
+            logger.warn("Submit address amount more than 200, the transaction maybe out of gas.");
+        }
+        final Function function = new Function(
+                MulTransfer.FUNC_SENDETH,
+                Arrays.<Type>asList(new org.web3j.abi.datatypes.generated.Uint256(quality),
+                        new org.web3j.abi.datatypes.DynamicArray<org.web3j.abi.datatypes.Address>(
+                                org.web3j.abi.Utils.typeMap(address, org.web3j.abi.datatypes.Address.class))),
+                Collections.<TypeReference<?>>emptyList());
+        EthSendTransaction txObject = transactionManager.sendTransaction(
+                contractGasProvider.getGasPrice(function.getName()),
+                contractGasProvider.getGasLimit(function.getName()),
+                uxCandy.getContractAddress(),
+                FunctionEncoder.encode(function), weiValue);
+
+        return txObject.getTransactionHash();
+    }
+
     private void processTransactionException(String reqId, Throwable e) {
         // we need reset nonce
         resetNonce();

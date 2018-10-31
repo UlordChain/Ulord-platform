@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>sensitiveWord</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.css}"></link>
+</head>
+<body class="container">
+<br/>
+<h1>添加敏感词</h1>
+<br/><br/>
+<div class="with:80%">
+    <form name='form1' class="form-horizontal"  th:action="@{/add}"  method="post">
+        <div class="form-group">
+            <label for="keyword" class="col-sm-2 control-label">keyword</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" name="keyword"  id="keyword" placeholder="必填"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="level" class="col-sm-2 control-label" >level</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" name="level" id="level" placeholder="必填"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="disabled" class="col-sm-2 control-label">disabled</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" name="disabled"  id="disabled" placeholder="必填"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="scene" class="col-sm-2 control-label">scene</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" name="scene"  id="scene" placeholder="必填"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+                <input type="button" value="确定" th:utext="${keyword}" onclick='query()'class="btn btn-info" />
+                &nbsp; &nbsp; &nbsp;
+                <script type="text/javascript">
+                    function query() {
+                        var key = document.getElementById('keyword').value;
+                        var key1 = document.getElementById('level').value;
+                        var key2 = document.getElementById('disabled').value;
+                        var key3 = document.getElementById('scene').value;
+                        if (!key || !key1 || !key2 || !key3) {
+                            alert('请输入必填信息！');
+                            return "redirect:/toAdd";
+                        }
+                        form1.submit()
+                    }
+                 </script>
+                <a  th:href="@{/list}" class="btn btn-info">返回主页</a>
+            </div>
+        </div>
+    </form>
+</div>
+</body>
+</html>

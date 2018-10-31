@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>sceneManager</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.css}">
+    <script src="js/jquery.js"></script>
+    <script src="js/bootstrap.js"></script>
+</head>
+<body class="container">
+<br/>
+<h1>场景管理</h1>
+<br/>
+
+<div class="row" style="width:90%;padding:0;margin:0;float:left;box-sizing:border-box;">
+    <div class="col-lg-6">
+        <div class="input-group">
+            <div class="input-group-btn">
+                <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                    场景搜索
+                    <span class="caret"></span></button>
+                <ul class="dropdown-menu ">
+                    <li th:each="m : ${scList}" style="list-style-type:none;border-bottom: 1px solid #ddd "><a
+                            href="#" th:text="${m.scene +' / '+ m.symbol}"
+                            th:href="@{${'/toSceneSelect'}(symbol=${m.symbol})}"></a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="div-inline " style="width:10%;padding:0;margin:0;float:left;box-sizing:border-box;">
+    <a th:href="@{/list}" class="btn btn-info ">前往敏感词管理</a>
+</div>
+<br/><br/>
+
+<div class="with:80%">
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th>scene</th>
+            <th>symbol</th>
+            <th>修改</th>
+            <th>删除</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="sceneVO : ${scenes}">
+            <th scope="row" th:text="${sceneVO.scene}">1</th>
+            <td th:text="${sceneVO.symbol}">3</td>
+            <td><a th:href="@{/toEditSc(scene=${sceneVO.scene})}">修改</a></td>
+            <td><a th:href="@{/deleteSc(scene=${sceneVO.scene})}"
+                   onClick="return confirm('确定删除?');">删除</a></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="col-sm-2 control-label">
+    <a th:href="@{/toAddSc}" class="btn btn-info">添加场景</a>
+</div>
+<br/>
+
+<div>
+    <nav>
+        <ul class="pagination pull-right">
+            <li th:if="${pageNum>1}">
+                <a th:href="@{${'/sceneList'}(pageNum=${1})}">首页</a>
+            </li>
+            <li th:if="${pageNum>1}">
+                <a th:href="@{${'/sceneList'}(pageNum=${pageNum - 1},pageSize=${pageSize})}">&laquo;</a>
+            </li>
+
+            <li th:if="${pageNo <= pages && pageNo > 0}"
+                th:each="pageNo : ${#numbers.sequence(pageNum - 2, pageNum+2)} ">
+
+                <a th:if="${pageNum eq pageNo}" href="javascript:void(0);">
+                    <span th:text="${pageNo}"></span>
+                </a>
+
+                <a th:if="${not (pageNum eq pageNo)}" th:href="@{${'/sceneList'}(pageNum=${pageNo},size=${pageSize})}">
+                    <span th:text="${pageNo}"></span>
+                </a>
+            </li>
+            <li th:if="${pageNum != pages}">
+                <a th:href="@{${'/sceneList'}(pageNum=${pageNum+1},size=${pageSize})}">&raquo;</a>
+            </li>
+            <li th:if="${pageNum != pages}">
+                <a th:href="@{${'/sceneList'}(pageNum=${pages})}">尾页</a>
+            </li>
+        </ul>
+    </nav>
+
+</div>
+</body>
+</html>

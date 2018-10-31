@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="one.ulord.upaas.uauth.server.contentauth.dao.SceneMapper">
+    <resultMap type="one.ulord.upaas.uauth.server.contentauth.vo.SceneVO" id="SceneMap">
+        <id column="id" property="id"/>
+        <result column="scene" property="scene"/>
+        <result column="symbol" property="symbol"/>
+    </resultMap>
+
+    <sql id="fieldSql">
+        id, scene, symbol
+    </sql>
+
+    <select id="selectScene" resultMap="SceneMap">
+        SELECT
+        <include refid="fieldSql"/>
+        FROM `upaas-uauth-server`.`scenes` WHERE scene = #{scene}
+    </select>
+
+    <select id="selectSceneBySc" resultMap="SceneMap">
+        SELECT
+        <include refid="fieldSql"/>
+        FROM `upaas-uauth-server`.`scenes` WHERE scene = #{scene}
+    </select>
+
+    <select id="selectSceneBySy" resultMap="SceneMap">
+        SELECT
+        <include refid="fieldSql"/>
+        FROM `upaas-uauth-server`.`scenes` WHERE symbol = #{symbol}
+    </select>
+
+    <select id="selectSceneBySymbol" resultMap="SceneMap">
+        SELECT
+        <include refid="fieldSql"/>
+        FROM `upaas-uauth-server`.`scenes` WHERE symbol = #{symbol}
+    </select>
+
+    <select id="selectSceneById" resultMap="SceneMap">
+        SELECT
+        <include refid="fieldSql"/>
+        FROM `upaas-uauth-server`.`scenes` WHERE id = #{id}
+    </select>
+
+    <select id="findAll" resultMap="SceneMap">
+        SELECT
+        <include refid="fieldSql"/>
+        FROM `upaas-uauth-server`.`scenes`
+    </select>
+
+    <select id="getAll" resultMap="SceneMap">
+        SELECT
+        <include refid="fieldSql"/>
+        FROM `upaas-uauth-server`.`scenes`
+    </select>
+
+    <select id="retrieve" resultMap="SceneMap">
+        SELECT
+        <include refid="fieldSql"/>
+        FROM `upaas-uauth-server`.`scenes`
+    </select>
+
+    <insert id="createScene" parameterType="one.ulord.upaas.uauth.server.contentauth.vo.SceneVO"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO `upaas-uauth-server`.`scenes` (scene, symbol)
+                VALUES (#{scene}, #{symbol})
+    </insert>
+
+    <update id="updateScene">
+        UPDATE `upaas-uauth-server`.`scenes`
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="scene != null">
+                `scene` = #{scene},
+            </if>
+            <if test="symbol != null">
+                `symbol` = #{symbol},
+            </if>
+        </trim>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteScene">
+        DELETE FROM `upaas-uauth-server`.`scenes` WHERE scene = #{scene}
+    </delete>
+</mapper>

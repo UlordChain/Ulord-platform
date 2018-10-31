@@ -15,4 +15,5 @@ import one.ulord.upaas.common.ContentFormatEnum;
 public class ContentAuthBody {
     ContentFormatEnum format;
     String content;
+    String scene;
 }

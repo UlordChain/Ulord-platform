@@ -72,7 +72,7 @@ public class SensitiveWordsRepo {
         int rv;
         int count = 0;
         for (SensitiveWordItem word : value) {
-            lstSensitiveWord.add(new SensitiveWord(word.getKeyword(), word.getLevel()));
+            lstSensitiveWord.add(new SensitiveWord(word.getKeyword(), word.getLevel(), word.getScene()));
             rv = sensitiveWordService.createItem(word);
             if (rv == 1){
                 count++;
@@ -105,7 +105,7 @@ public class SensitiveWordsRepo {
         int rv = sensitiveWordService.createItem(value);
         if (rv > 0) {
             sensitiveWordsRepo.addRecordOp(sensitiveWordsRepo.wrapSyncOpItem(SyncOpEnum.ADD,
-                    new SensitiveWord(value.getKeyword(), value.getLevel())));
+                    new SensitiveWord(value.getKeyword(), value.getLevel(), value.getScene())));
             updateClients();
         }
 
@@ -128,7 +128,7 @@ public class SensitiveWordsRepo {
             if (rv > 0){
                 count++;
             }
-            lstSensitiveWord.add(new SensitiveWord(word.getKeyword(), word.getLevel()));
+            lstSensitiveWord.add(new SensitiveWord(word.getKeyword(), word.getLevel(), word.getScene()));
         }
 
         if (count == value.size()) {
@@ -142,7 +142,7 @@ public class SensitiveWordsRepo {
         int rv = sensitiveWordService.deleteItem(value.getUid());
         if (rv > 0) {
             sensitiveWordsRepo.addRecordOp(sensitiveWordsRepo.wrapSyncOpItem(SyncOpEnum.DELETE,
-                    new SensitiveWord(value.getKeyword(), value.getLevel())));
+                    new SensitiveWord(value.getKeyword(), value.getLevel(), value.getScene())));
             updateClients();
         }
 

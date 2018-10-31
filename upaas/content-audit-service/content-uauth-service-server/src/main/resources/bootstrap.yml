@@ -7,6 +7,14 @@ spring:
   application:
     name: upaas-uauth-server
 
+  thymeleaf:
+    cache: false
+    check-template-location: true
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML5
+    encoding: UTF-8
+
   cloud:
     config:
       profile: dev

@@ -7,6 +7,7 @@ package one.ulord.upaas.uauth.server.contentauth.services.impl;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import one.ulord.upaas.common.api.PagingResult;
+import one.ulord.upaas.uauth.common.vo.SensitiveWord;
 import one.ulord.upaas.uauth.server.contentauth.dao.SensitiveWordMapper;
 import one.ulord.upaas.uauth.server.contentauth.services.SensitiveWordService;
 import one.ulord.upaas.uauth.server.contentauth.vo.SensitiveWordItem;
@@ -63,6 +64,16 @@ public class SensitiveWordServiceImpl implements SensitiveWordService {
     }
 
     @Override
+    public PagingResult selectByItem(int pageIdx, int pageSize, Map<String, List<String>> criteria , String keyword, int level, int disabled, String scene) {
+        PageHelper.startPage(pageIdx, pageSize);
+        List<SensitiveWordItem> whiteLists = sensitiveWordMapper.selectByItem(keyword, level ,disabled , scene ,criteria);
+        Page page = (Page)whiteLists;
+        return PagingResult.buildResult(whiteLists,
+                page.getPageNum(), page.getPageSize(),
+                page.getPages(), page.getTotal());
+    }
+
+    @Override
     public int disableItem(long uid) {
         return sensitiveWordMapper.disableItem(uid);
     }
@@ -70,5 +81,10 @@ public class SensitiveWordServiceImpl implements SensitiveWordService {
     @Override
     public int enableItem(long uid) {
         return sensitiveWordMapper.enableItem(uid);
+    }
+
+    @Override
+    public SensitiveWordItem select(String keyword) {
+        return sensitiveWordMapper.select(keyword);
     }
 }

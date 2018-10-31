@@ -22,10 +22,11 @@ public class SensitiveWordItem extends SensitiveWord {
     public SensitiveWordItem(SensitiveWord word) {
         this.setKeyword(word.getKeyword());
         this.setLevel(word.getLevel());
+        this.setScene(word.getScene());
         this.disabled = 0;
     }
 
     public SensitiveWord of(){
-        return new SensitiveWord(this.getKeyword(), this.getLevel());
+        return new SensitiveWord(this.getKeyword(), this.getLevel(), this.getScene());
     }
 }
