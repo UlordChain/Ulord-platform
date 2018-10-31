@@ -23,7 +23,7 @@ GET /ucwallet-service/api/getBalance/{address}
 eg:
 ```
 
->curl http://localhost:9090/ucwallet-service/api/getBalance/0xba36792ef3f1b5e06ed7ea1c94c3b52450026198
+>curl http://localhost:9090/ucwallet-service/api/balance/0xba36792ef3f1b5e06ed7ea1c94c3b52450026198
 {                                            
   "resultCode": 0,                           
   "resultMsg": "successed",                  
@@ -41,7 +41,7 @@ Using ulord.side.provider.tokenAddress configuration item to define default toke
 
 ```
 eg:
->curl http://localhost:9090/ucwallet-service/api/getTokenBalance/0xcd2a3d9f938e13cd947ec05abc7fe734df8dd826?token=0xbc353d8cc6c73d95f2ec59573d1f47ed7f12e922
+>curl http://localhost:9090/ucwallet-service/api/tokenBalance/0xcd2a3d9f938e13cd947ec05abc7fe734df8dd826?token=0xbc353d8cc6c73d95f2ec59573d1f47ed7f12e922
  {
    "resultCode": 0,
    "resultMsg": "successed",
@@ -50,11 +50,11 @@ eg:
 ```
 
 ### Get transaction count
-**GET /ucwallet-service/api/getTransactionCount/{address}**
+**GET /ucwallet-service/api/transactionCount/{address}**
 
 eg:
 ```
->curl http://localhost:9090/ucwallet-service/api/getTransactionCount/0xb3ec03e42098b84e2e8d4d5a5d8de2f934ba5546
+>curl http://localhost:9090/ucwallet-service/api/transactionCount/0xb3ec03e42098b84e2e8d4d5a5d8de2f934ba5546
 {
   "resultCode": 0,
   "resultMsg": "successed",
@@ -63,10 +63,11 @@ eg:
 ```
 
 ### Send raw transaction
-**POST /ucwallet-service/api/sendRawTransaction?hexValue={raw transaction}**
+**POST /ucwallet-service/api/rawTransaction?hexValue={raw transaction}**
 
 eg:
 ```
+> curl http://localhost:9090/ucwallet-service/api/rawTransaction?txhash=0xa45c88d8b0a4c6addf590eea851b28794bdcb4d68f99ef7d05166052a0b88cb5
 {
     "resultCode": 0,
     "resultMsg": "successed",
@@ -75,10 +76,11 @@ eg:
 ```
 
 ### Query transaction info
-**GET /ucwallet-service/api/queryTransaction?txhash={txhash}**
+**GET /ucwallet-service/api/transaction?txhash={txhash}**
 
 eg:
 ```
+> curl http://localhost:9090/ucwallet-service/api/transaction?txhash=0xa45c88d8b0a4c6addf590eea851b28794bdcb4d68f99ef7d05166052a0b88cb5
 {
     "result": {
         "blockHash": "0x093fecd5b6763ed2d03395e1214261a7cf0e8e09466ca65a8826abbad5049e82",
@@ -111,7 +113,7 @@ eg:
 
 eg:
 ```
->curl http://localhost:9090/ucwallet-service/api/queryTransactionReceipt?txhash=0xa45c88d8b0a4c6addf590eea851b28794bdcb4d68f99ef7d05166052a0b88cb5
+>curl http://localhost:9090/ucwallet-service/api/transactionReceipt?txhash=0xa45c88d8b0a4c6addf590eea851b28794bdcb4d68f99ef7d05166052a0b88cb5
 
 {
     "result": {
