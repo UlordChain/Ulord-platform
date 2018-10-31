@@ -16,72 +16,31 @@ import org.springframework.http.ResponseEntity;
  */
 public class ResultUtil {
 	private static final String SUCCEEDED = "succeeded";
-	/**
-	 * Return JSON: successful operation(Date formatted yyyy-MM-dd HH:mm:ss)
-	 * @param resultJson
-	 * @return
-	 */
-	public static ResponseEntity<String> GoResponseFullSuccess(JsonResult resultJson){
-		resultJson.setResultCode(Constants.SUCCESSFUL);
-		resultJson.setResultMsg(SUCCEEDED);
-		return new ResponseEntity<>(JSON.toJSONString(resultJson), HttpStatus.OK);
+	private static final String FAILURED = "failed";
+	
+	public static ResponseEntity<String> GoResponseSuccess(Object result){
+		return new ResponseEntity<>(JSON.toJSONString(
+				new JsonResult(Constants.SUCCESSFUL, SUCCEEDED, result)), HttpStatus.OK);
+	}
+
+	public static ResponseEntity<String> GoSuccess(Object result){
+		return new ResponseEntity<>(JSON.toJSONString(
+				new JsonResult(Constants.SUCCESSFUL, SUCCEEDED, result)), HttpStatus.OK);
 	}
 	
-	/**
-	 * Return JSON：successful(Date not formatted)
-	 * @param resultJson
-	 * @return
-	 */
-	public static ResponseEntity<String> GoFullSuccess(JsonResult resultJson){
-		resultJson.setResultCode(Constants.SUCCESSFUL);
-		resultJson.setResultMsg(SUCCEEDED);
-		return new ResponseEntity<String>(JSON.toJSONString(resultJson), HttpStatus.OK);
+	public static ResponseEntity<String> GoResponseFailure(Object result){
+		return new ResponseEntity<>(JSON.toJSONString(
+				new JsonResult(Constants.FAILURE, FAILURED, result)), HttpStatus.OK);
+	}
+
+	public static ResponseEntity<String> GoResponseFailure(int errCode, Object result){
+		return new ResponseEntity<>(JSON.toJSONString(
+				new JsonResult(errCode, FAILURED, result)), HttpStatus.OK);
 	}
 	
-	/**
-	 * Return JSON：successful(Date formatted yyyy-MM-dd HH:mm:ss)
-	 * @param resultJson
-	 * @return
-	 */
-	public static ResponseEntity<String> GoResponseSuccess(JsonResult resultJson){
-		resultJson.setResultCode(Constants.SUCCESSFUL);
-		resultJson.setResultMsg(SUCCEEDED);
-		return new ResponseEntity<>(JSON.toJSONString(resultJson), HttpStatus.OK);
-	}
-	
-	/**
-	 * Return JSON：successful(Date not formatted)
-	 * @param resultJson
-	 * @return
-	 */
-	public static ResponseEntity<String> GoSuccess(JsonResult resultJson){
-		resultJson.setResultCode(Constants.SUCCESSFUL);
-		resultJson.setResultMsg(SUCCEEDED);
-		return new ResponseEntity<>(JSON.toJSONString(resultJson), HttpStatus.OK);
-	}
-	
-	/**
-	 * Return json：failured
-	 * @param resultJson
-	 * @return
-	 */
-	public static ResponseEntity<String> GoResponseFailure(JsonResult resultJson){
-		resultJson.setResultCode(Constants.FAILURE);
-		resultJson.setResultMsg(SUCCEEDED);
-		return new ResponseEntity<>(JSON.toJSONString(resultJson), HttpStatus.OK);
-	}
-	
-	/**
-	 * Return json：param validate error
-	 * 
-	 * @param resultJson
-	 * @param message
-	 * @return
-	 */
-	public static ResponseEntity<String> GoResponseValidateError(JsonResult resultJson, String message){
-		resultJson.setResultCode(Constants.VALIDATE_ERROR);
-		resultJson.setResultMsg(message);
-		return new ResponseEntity<>(JSON.toJSONString(resultJson), HttpStatus.OK);
+	public static ResponseEntity<String> GoResponseValidateError(String message){
+		return new ResponseEntity<>(JSON.toJSONString(
+				new JsonResult(Constants.VALIDATE_ERROR, FAILURED, message)), HttpStatus.OK);
 	}
 	
 	

@@ -305,7 +305,7 @@ public class TransactionTracker {
         // update transaction item
         txItem.setBlockHeight(newestHeight);
         txItem.incRetryCnt();
-        transactionItemRedisTemplate.boundHashOps(CONFIRM_TX).put(txHash, txItem);
+        transactionItemRedisTemplate.boundHashOps(PENDING_TX).put(txHash, txItem);
 
         String newHash = sutService.sendRawTransaction(txItem.getRawTransaction());
         logger.trace("Re-Send raw transaction:{}, from:{}, nonce:{}", txHash, txItem.getFrom(), txItem.getNonce());

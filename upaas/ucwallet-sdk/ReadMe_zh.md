@@ -24,207 +24,73 @@
 
 **步骤一：**
 
-DAPP加入ucwallet-sdk-1.0-SNAPSHOT.jar依赖
+DAPP加入ucwallet-sdk-<VERSION>.jar依赖
 
 **步骤二：**
-
-在application.properties 配置文件中加入以下配置项
+application.properties指定了当前采用的profile版本。
+在application-<profile>.properties 配置文件中加入以下配置项
 
 | **配置项**                         | **值**         | **配置说明** |
 | ---------------------------------- | -------------- | ------------ |
-| #Dapp服务器节点名称                |                |              |
-| mq.dapp.node.name                  | node1          | 节点名称     |
+|server.port|9091|服务端口（测试用）|
+|ucwallet-sdk.test.token-address|0xbc353d8cc6c73d95f2ec59573d1f47ed7f12e922|代币地址（测试网）|
+|ucwallet-sdk.test.center-publish-address|0x39f2eaf366b713ead8396202fb96779d8da46330|内容发布合约地址（测试网）|
+|ucwallet-sdk.test.multransfer-address|0xee9b6a4060c3e68259a58725fe93982f994cb5e9|批量发代币合约地址(测试网络)|
+|ucwallet-sdk.test.keystore-file|keystore/no6.keystore|Ulord USC的密钥文件|
+|ucwallet-sdk.test.keystore-password|12345678|密钥密码|
+|ucwallet-service.http|http://127.0.0.1:9090/ucwallet-service|ucwallet-service API接口，用于查询交易序号|
 |                                    |                |              |
-| #rabbitmq配置                      |                |              |
-| spring.rabbitmq.host               | 192.168.12.245 | 地址         |
-| spring.rabbitmq.port               | 5672           | 端口         |
-| spring.rabbitmq.username           | admin          | 用户名       |
-| spring.rabbitmq.password           | 12345678       | 密码         |
-| spring.rabbitmq.publisher-confirms | true           | 配置确认机制 |
+|rabbitmq配置                      |                |              |
+|spring.rabbitmq.host               | 192.168.12.245 | RabbitMQ服务器地址         |
+|spring.rabbitmq.port               | 5672           | RabbitMQ服务器端口         |
+|spring.rabbitmq.username           | admin          | RabbitMQ服务器用户名       |
+|spring.rabbitmq.password           | 12345678       | RabbitMQ服务器密码         |
+|spring.rabbitmq.publisher-confirms | true           | RabbitMQ服务器确认机制 |
+|spring.rabbitmq.listener.simple.acknowledge-mode|manual|RabbitMQ监听消息的确认模式，要求配置未手动|
+||||
+|ucwallet-service.mq.exchange-req|ucwallet-service-exchange-req|RabbitMQ交换机名称，用于请求转发|
+|ucwallet-service.mq.exchange-resp|ucwallet-service-exchange-resp|RabbitMQ交换机名称，用于响应转发|
+|ucwallet-service.mq.sendrawtx-req|ucwallet-service-rawtx-req|RabbitMQ消息队列名称，用于原始交易请求|
+|ucwallet-service.mq.sendrawtx-resp|ucwallet-service-rawtx-resp|RabbitMQ消息队列名称，用于原始交易执行响应|
+|ucwallet-service.mq.routing-key|rawtx.1|RabbitMQ消息的路由键，如果存在多个模块，可以采用不同的序号，服务端通过rawtx.*接收消息|
+||||
+|logging.config|classpath:log4j2.xml|日志文件配置|
+||||
+|udfs.gateway|/dns4/udfs1.ulord.one/tcp/5001|UDFS API网关，用于上传，下载内容|
+
+Ulord USC的Ulord私钥到USC侧链私钥和Keystore文件转换工具地址（可离线使用）：
+http://usc.ulord.one:8088/
 
 **步骤三：**
 
-加入依赖
+启动ucwallet-service, 文档参见[ucwallet-service](../ucwallet-service)
 
-gradle
 
-```
-compile ('org.web3j:core:3.4.0')
-compile ('com.github.ipfs:java-ipfs-api:v1.2.0')
-compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '1.5.8.RELEASE'
-compile group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: '1.5.8.RELEASE'
-compile group: 'org.springframework.boot', name: 'spring-boot-starter-tomcat', version: '1.5.8.RELEASE'
-compile group: 'org.springframework.boot', name: 'spring-boot-starter-amqp', version: '1.5.8.RELEASE'
-```
 
-maven
+** 步骤四：**
+启动ucwallet-sdk, 通过访问测试接口执行交易，并查看日志，检查交易执行的二次确认过程。
+例如，在测试网络上执行一笔转账交易，会出现如下日志：
+执行如下请求:
+http://127.0.0.1:9091/test/transferGas?reqId=2&toAddress=0xd38e4650a069209d9629938fa95f540c31678818&value=0.01
+产生日志：
 
 ```
-<repositories>
-    <repository>
-        <id>jitpack.io</id>
-        <url>https://jitpack.io</url>
-    </repository>
-</repositories>
-
-<dependencies>
-    <dependency>
-       <groupId>org.web3j</groupId>
-       <artifactId>core</artifactId>
-       <version>3.4.0</version>
-    </dependency>
-    <dependency>
-       <groupId>com.github.ipfs</groupId>
-       <artifactId>java-ipfs-api</artifactId>
-       <version>v1.2.0</version>
-    </dependency>
-    <dependency>
-       <groupId>org.springframework.boot</groupId>
-       <artifactId>spring-boot-starter-web</artifactId>
-       <version>1.5.8.RELEASE</version>
-    </dependency>
-    <dependency>
-       <groupId>org.springframework.boot</groupId>
-       <artifactId>spring-boot-starter-actuator</artifactId>
-       <version>1.5.8.RELEASE</version>
-    </dependency>
-    <dependency>
-       <groupId>org.springframework.boot</groupId>
-       <artifactId>spring-boot-starter-tomcat</artifactId>
-       <version>1.5.8.RELEASE</version>
-    </dependency>
-    <dependency>
-       <groupId>org.springframework.boot</groupId>
-       <artifactId>spring-boot-starter-amqp</artifactId>
-       <version>1.5.8.RELEASE</version>
-    </dependency>
-</dependencies> 
+20:21:40.494 [SimpleAsyncTaskExecutor-1] INFO  one.ulord.upaas.ucwallet.sdk.test.TestReceiveMessageImpl:67 - DEMO: reqId:2 has submit, txHash is 0x8d50a007424efe040726b07604a813fcba9d384e96e240b3c86da1034fa97104.
+20:21:40.495 [SimpleAsyncTaskExecutor-1] INFO  one.ulord.upaas.ucwallet.sdk.test.TestReceiveMessageImpl:53 - DEMO: reqId:2 has confirmed, txHash is 0x8d50a007424efe040726b07604a813fcba9d384e96e240b3c86da1034fa97104, status is true.
+20:21:40.496 [SimpleAsyncTaskExecutor-1] INFO  one.ulord.upaas.ucwallet.sdk.test.TestReceiveMessageImpl:60 - DEMO: reqId:2 has confirmed, txHash is 0x8d50a007424efe040726b07604a813fcba9d384e96e240b3c86da1034fa97104, 3 blocks has confirmed.
 ```
+上面日志说明：
+第一条日志：通过RabbitMQ提交原始交易到ucwallet-service后，交易成功提交到链，返回交易hash。
+第二条日志：ucwallet-service检查到区块中已经存在上面的交易，把交易的状态发送回，并告知交易的执行状态。
+第三条日志：ucwallet-service不断检查区块，如果区块达到二次确认的条件，交易仍然可以从链上查询到，交易得到确认。
+
+**注意**
+如果ucwallet-service在提交交易前会检查发送地址的余额是否足够，或者nonce是否在允许范围内（已经确认的交易数量到最大交易之间），
+否则会送错误的消息响应。
+如果ucwallet-service检查到交易在确认的区块仍没有打包，会继续把交易提交到链，重复执行。（该问题主要时区块链节点没有义务
+保存用户排队的交易，会在超期后丢弃，ucwallet-service可以检查这个问题，并尝试重发多次）。
 
 
-
-## 4、业务流程
-
-**步骤一：**
-
-DAPP调用SDK的业务方法（如transferGas），并带上业务reqId，SDK会自动往RabbitMQ中添加一条待处理的业务消息。
-
-```
-/**
- * Test Controller
- *
- * @author  chenxin
- * @since  2018/8/12
- */
-@RestController
-@RequestMapping("/test")
-public class TestSendMessage {
-
-    final Logger logger = LoggerFactory.getLogger(TestSendMessage.class);
-
-    @Autowired
-    private ContentContract cc;
-
-    /**
-     * Test transferGas
-     * http://127.0.0.1:9091/sdk/test/transferGas
-     */
-    @GetMapping("/transferGas")
-    public void transferGas(@RequestParam String reqId,String toAddress,String value) {
-        cc.transferGas(reqId, toAddress,new BigInteger(value));
-    }
-
-
-    /**
-     * Test transferToken
-     * http://127.0.0.1:9091/sdk/test/transferToken
-     */
-    @GetMapping("/transferToken")
-    public void transferToken(@RequestParam String reqId,String toAddress,String value) {
-        cc.transferToken(reqId, toAddress,new BigInteger(value));
-    }
-
-
-    /**
-     * Test publishResource
-     * http://127.0.0.1:9091/sdk/test/publishResource
-     */
-    @GetMapping("/publishResource")
-    public void publishResource(@RequestParam String reqId,String toAddress,String value) {
-        cc.publishResource(reqId, toAddress,new BigInteger(value), BigInteger.ZERO);
-    }
-
-}
-```
-
-**步骤二：**
-
-ucwallet-service会处理RabbitMQ中的消息，并立即回复一个hash值给sdk，这时需要DAPP实现sdk的IReceiveMessage接口来接收hash值。
-
-30秒后ucwallet-service会发送第一条确认消息，这时需要DAPP第二次通过接口来进行处理。
-
-3分钟后ucwallet-service会发送第二条确认消息，这时需要DAPP第三次通过接口来进行处理。
-
-```
-/**
- * Test Business implementation
- *
- * @author chenxin
- * @since 14/8/18
- */
-@Component
-public class TestReceiveMessageImpl implements IReceiveMessage{
-
-    final Logger logger = LoggerFactory.getLogger(TestReceiveMessageImpl.class);
-
-    /**
-     * Receive results of message by transfer gas , and handle
-     * @param type Message type
-     *             1：the first time return
-     *             2：the second time return
-     *             3：the third time return
-     * @param reqId Uniquely identified business ID
-     * @param value The result value of returned
-     *             if type is 1, return hash value
-     *             if type is 2, return the first confirm
-     */
-    public void handleTransferGas(String type,String reqId,String value){
-        logger.info("======================  TestReceiveMessageImpl.handleTransferGas......type:"+type+",reqId:"+reqId+",value:"+value);
-    }
-
-    /**
-     * Receive results of message by transfer token , and handle
-     * @param type Message type
-     *             1：the first time return
-     *             2：the second time return
-     *             3：the third time return
-     * @param reqId Uniquely identified business ID
-     * @param value The result value of returned
-     *             if type is 1, return hash value
-     *             if type is 2, return the first confirm
-     */
-    public void handleTransferToken(String type,String reqId,String value){
-        logger.info("======================  TestReceiveMessageImpl.handleTransferToken......type:"+type+",reqId:"+reqId+",value:"+value);
-    }
-
-    /**
-     * Receive results of message by publish resource , and handle
-     * @param type Message type
-     *             1：the first time return
-     *             2：the second time return
-     *             3：the third time return
-     * @param reqId Uniquely identified business ID
-     * @param value The result value of returned
-     *             if type is 1, return hash value
-     *             if type is 2, return the first confirm
-     */
-    public void handlePublishResource(String type,String reqId,String value){
-        logger.info("======================  TestReceiveMessageImpl.handlePublishResource......type:"+type+",reqId:"+reqId+",value:"+value);
-    }
-
-
-}
-```
 
 
 

@@ -85,7 +85,7 @@
 - 接口方式: http
 - 接口名称: 查询Gas余额
 - 接口方法名: getGasBalance
-- 访问URL: GET /ucwallet-service/api/getGasBalance
+- 访问URL: GET /ucwallet-service/api/getGasBalance/{address}
 - 返回值类型: JSON
 - 返回值: 
 
@@ -93,18 +93,18 @@
 {
     "resultCode": 0,
     "resultMsg": "successed",
-    "reslut": "99997496336000000000"
+    result":"0.582928388"
 }
 ```
 
 # 示例
 
 ```
->curl http://localhost:9090/ucwallet-service/api/getBalance/0xcd2a3d9f938e13cd947ec05abc7fe734df8dd826
+>curl http://localhost:9090/ucwallet-service/api/getBalance/0xba36792ef3f1b5e06ed7ea1c94c3b52450026198
 {                                            
   "resultCode": 0,                           
   "resultMsg": "successed",                  
-  "result": "999999794998800000000000000000" 
+  result":"0.582928388"
 }  
 ```
 
@@ -207,9 +207,29 @@
 ```
 >curl http://localhost:9090/ucwallet-service/api/queryTransaction?txhash=0xa45c88d8b0a4c6addf590eea851b28794bdcb4d68f99ef7d05166052a0b88cb5
 {
-  "resultCode": 0,
-  "resultMsg": "successed",
-  "result": "{\n  \"hash\": \"0xa45c88d8b0a4c6addf590eea851b28794bdcb4d68f99ef7d05166052a0b88cb5\",\n  \"nonce\": \"0x3627\",\n  \"blockHash\": \"0x093fecd5b6763ed2d03395e1214261a7cf0e8e09466ca65a8826abbad5049e82\",\n  \"blockNumber\": \"0x10c86\",\n  \"transactionIndex\": \"0x1\",\n  \"from\": \"0xa13d7dbabac37d9b756f573ecd7c0e652ff043c5\",\n  \"to\": \"0xb3ec03e42098b84e2e8d4d5a5d8de2f934ba5546\",\n  \"value\": \"0x5af3107a4000\",\n  \"gasPrice\": \"0x2710\",\n  \"gas\": \"0x015f90\",\n  \"input\": \"0x00\",\n  \"v\": 0\n}"
+    "result": {
+        "blockHash": "0x093fecd5b6763ed2d03395e1214261a7cf0e8e09466ca65a8826abbad5049e82",
+        "blockNumber": 68742,
+        "blockNumberRaw": "0x10c86",
+        "chainId": -17,
+        "from": "0xa13d7dbabac37d9b756f573ecd7c0e652ff043c5",
+        "gas": 90000,
+        "gasPrice": 10000,
+        "gasPriceRaw": "0x2710",
+        "gasRaw": "0x015f90",
+        "hash": "0xa45c88d8b0a4c6addf590eea851b28794bdcb4d68f99ef7d05166052a0b88cb5",
+        "input": "0x00",
+        "nonce": 13863,
+        "nonceRaw": "0x3627",
+        "to": "0xb3ec03e42098b84e2e8d4d5a5d8de2f934ba5546",
+        "transactionIndex": 1,
+        "transactionIndexRaw": "0x1",
+        "v": 0,
+        "value": 100000000000000,
+        "valueRaw": "0x5af3107a4000"
+    },
+    "resultCode": 0,
+    "resultMsg": "succeeded"
 }
 ```
 
@@ -233,10 +253,26 @@
 ```
 >curl http://localhost:9090/ucwallet-service/api/queryTransactionReceipt?txhash=0xa45c88d8b0a4c6addf590eea851b28794bdcb4d68f99ef7d05166052a0b88cb5
 {
-  "resultCode": 0,
-  "resultMsg": "successed",
-  "result": "{\n  \"transactionHash\": \"0xa45c88d8b0a4c6addf590eea851b28794bdcb4d68f99ef7d05166052a0b88cb5\",\n  \"transactionIndex\": \"0x1\",\n  \"blockHash\": \"0x093fecd5b6763ed2d03395e1214261a7cf0e8e09466ca65a8826abbad5049e82\",\n
-\"blockNumber\": \"0x10c86\",\n  \"cumulativeGasUsed\": \"0x5208\",\n  \"gasUsed\": \"0x5208\",\n  \"root\": \"0x01\",\n  \"status\": \"0x01\",\n  \"from\": \"0xa13d7dbabac37d9b756f573ecd7c0e652ff043c5\",\n  \"to\": \"0xb3ec03e42098b84e2e8d4d5a5d8de2f934ba5546\",\n  \"logs\": []\n}"
+    "result": {
+        "blockHash": "0x093fecd5b6763ed2d03395e1214261a7cf0e8e09466ca65a8826abbad5049e82",
+        "blockNumber": 68742,
+        "blockNumberRaw": "0x10c86",
+        "cumulativeGasUsed": 21000,
+        "cumulativeGasUsedRaw": "0x5208",
+        "from": "0xa13d7dbabac37d9b756f573ecd7c0e652ff043c5",
+        "gasUsed": 21000,
+        "gasUsedRaw": "0x5208",
+        "logs": [],
+        "root": "0x01",
+        "status": "0x01",
+        "statusOK": true,
+        "to": "0xb3ec03e42098b84e2e8d4d5a5d8de2f934ba5546",
+        "transactionHash": "0xa45c88d8b0a4c6addf590eea851b28794bdcb4d68f99ef7d05166052a0b88cb5",
+        "transactionIndex": 1,
+        "transactionIndexRaw": "0x1"
+    },
+    "resultCode": 0,
+    "resultMsg": "succeeded"
 }
 ```
 

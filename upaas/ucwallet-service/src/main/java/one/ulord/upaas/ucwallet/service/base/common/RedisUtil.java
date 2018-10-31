@@ -36,13 +36,6 @@ public class RedisUtil {
 	}
 
 
-//	public void removePattern(final String pattern) {
-//		Set<Serializable> keys = redisTemplate.keys(pattern);
-//		if (keys.size() > 0)
-//			redisTemplate.delete(keys);
-//	}
-
-
 	public void remove(final String key) {
 		if (exists(key)) {
 			redisTemplate.delete(key);

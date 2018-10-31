@@ -16,7 +16,7 @@ public class JsonResult {
 
     private int resultCode;
     private String resultMsg;
-    private String result;
+    private Object result;
     private String jsessionid;
 
     public JsonResult() {
@@ -27,7 +27,7 @@ public class JsonResult {
         this.resultMsg = message;
     }
 
-    public JsonResult(int code, String message, String result){
+    public JsonResult(int code, String message, Object result){
         this.resultCode = code;
         this.resultMsg = message;
         this.result = result;
@@ -57,11 +57,11 @@ public class JsonResult {
         this.jsessionid = jsessionid;
     }
 
-    public String getResult() {
+    public Object getResult() {
         return result;
     }
 
-    public void setResult(String result) {
+    public void setResult(Object result) {
         this.result = result;
     }
 

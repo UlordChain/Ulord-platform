@@ -61,7 +61,7 @@ public class TestSendMessage {
 
     /**
      * Test transferGas
-     * http://127.0.0.1:9091/sdk/test/transferGas
+     * http://127.0.0.1:9091/test/transferGas
      */
     @GetMapping("/transferGas")
     public String transferSut(@RequestParam String reqId, @RequestParam String toAddress, @RequestParam String value) throws IOException {
@@ -78,7 +78,7 @@ public class TestSendMessage {
 
     /**
      * Test transferToken
-     * http://127.0.0.1:9091/sdk/test/transferToken
+     * http://127.0.0.1:9091/test/transferToken
      */
     @GetMapping("/transferToken")
     public String transferToken(@RequestParam String reqId, String toAddress,String value) throws IOException {
@@ -95,7 +95,7 @@ public class TestSendMessage {
 
     /**
      * Test publishResource
-     * http://127.0.0.1:9091/sdk/test/publishResource
+     * http://127.0.0.1:9091/test/publishResource
      */
     @GetMapping("/publishResource")
     public String publishResource(@RequestParam String reqId, String udfsHash, String authorAddress, String price)

@@ -4,7 +4,7 @@
         <Console name="Console" target="SYSTEM_OUT">
             <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36}:%L - %msg%n" />
         </Console>
-        <RollingFile name="MyFile" fileName="./logs/upaas-ucwallet-service/upaas-eureka-server.log"
+        <RollingFile name="MyFile" fileName="./logs/upaas-ucwallet-service/upaas-ucwallet-service.log"
                      filePattern="./logs/upaas-ucwallet-server/upaas-ucwallet-service-%d{yyyy-MM-dd}.log.gz">
             <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36}:%L - %msg%n" />
             <Policies>  
