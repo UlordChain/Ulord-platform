@@ -289,3 +289,10 @@ resultMsg：返回结果消息
 result：返回值
 ```
 
+## Install
+- 安装Redis Server
+- 安装RabbitMQ Server
+- 安装RabbitMQ management 插件
+- 添加一个/ host的用户
+- 安装Java环境
+- 运行ucwallet-service

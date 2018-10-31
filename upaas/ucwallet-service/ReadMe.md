@@ -166,3 +166,12 @@ is no problem.
 ucwallet-service periodlly check block height, and to check transaction confirm result, and send response to queue.
 
 ucwallet-sdk recieve response from queue to check current transaction execute result.
+
+
+## Install
+- Install Redis Server
+- Install RabbitMQ Server
+- Install RabbitMQ management 插件
+- Add a user for root(/) host
+- Install Java environment
+- Start ucwallet-service

@@ -70,4 +70,16 @@ Three line: ucwallet-service have checked the transaction above have confirm by 
 You may receive a error response if your address have no enough sUT or the nonce is invalid.
 The ucwallet-service can re-execute transaction after some blocks while transaction was not package by USC.
 
+## Install
+- Install Redis server
+- Install RabbitMQ Server
+- Add manage plugin for rabbitmq
+- Add rabbitmq user for / host
+- Install Java 1.8 environment
+- Start ucwallet-service
+- Update properties for current configuration
+- Start ucwallet-sdk
+
+
+
 
