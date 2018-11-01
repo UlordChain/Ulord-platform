@@ -23,7 +23,7 @@ public class UCWalletRPCCaller implements UCWalletRPCInterface {
     @Override
     public BigInteger getTransactionCount(String address) {
         JSONObject rv = this.restTemplate.getForEntity(
-                ucwalletServiceHttp + "/api/getTransactionCount/" + address,
+                ucwalletServiceHttp + "/api/transactionCount/" + address,
                 JSONObject.class).getBody();
         if (0 == rv.getInteger("resultCode")){
             return new BigInteger(rv.getString("result"));
