@@ -18,7 +18,6 @@ import java.util.concurrent.TimeUnit;
  * @author chenxin
  * @since 2018-08-10
  */
-@SuppressWarnings("unchecked")
 @Component
 public class RedisUtil {
 
@@ -35,13 +34,6 @@ public class RedisUtil {
 	public Set<String> getKeys(final String pattern) {
 		return redisTemplate.keys(pattern);
 	}
-
-
-//	public void removePattern(final String pattern) {
-//		Set<Serializable> keys = redisTemplate.keys(pattern);
-//		if (keys.size() > 0)
-//			redisTemplate.delete(keys);
-//	}
 
 
 	public void remove(final String key) {

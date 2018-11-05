@@ -18,17 +18,9 @@ public class Provider {
 
     @Value("${ulord.side.provider.ulordProvider}")
     private String ulordProvider;
-    @Value("${ulord.side.provider.tokenAddress}")
-    private String  tokenAddress;
-    @Value("${ulord.side.provider.candyAddress}")
-    private String  candyAddress;
-    @Value("${ulord.side.provider.publishAddress}")
-    private String  publishAddress;
-    @Value("${ulord.side.provider.keystoreFile}")
-    private String  keystoreFile;
-    @Value("${ulord.side.provider.keystorePassword}")
-    private String  keystorePassword;
 
+    @Value("${ulord.side.provider.tokenAddress}")
+    private String defaultTokenAddress;
 
     @Value("${query.transaction.sleep1}")
     private String  querySleep1;
@@ -49,24 +41,7 @@ public class Provider {
     private String  awaitTerminationSeconds;
 
 
-    public String getUlordProvider() {
-        return ulordProvider;
-    }
-    public String getTokenAddress() {
-        return tokenAddress;
-    }
-    public String getCandyAddress() {
-        return candyAddress;
-    }
-    public String getPublishAddress() {
-        return publishAddress;
-    }
-    public String getKeystoreFile() {
-        return keystoreFile;
-    }
-    public String getKeystorePassword() {
-        return keystorePassword;
-    }
+
     public String getQuerySleep1() {  return querySleep1; }
     public String getQuerySleep2() {
         return querySleep2;
@@ -87,4 +62,9 @@ public class Provider {
     public String getAwaitTerminationSeconds() {
         return awaitTerminationSeconds;
     }
+
+    public String getUlordProvider() {
+        return ulordProvider;
+    }
+    public String getContractAddress(){return defaultTokenAddress;}
 }

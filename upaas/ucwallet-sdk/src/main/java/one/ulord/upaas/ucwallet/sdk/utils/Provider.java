@@ -16,11 +16,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class Provider {
 
-    @Value("${mq.dapp.node.name}")
-    private String nodeName;
+    @Value("${udfs.gateway}")
+    private String udfsGateway;
 
-    public String getNodeName() {
-        return nodeName;
+    public String getUdfsGateway() {
+        return udfsGateway;
     }
-
 }
