@@ -29,7 +29,7 @@ import java.util.List;
  * <p>Auto generated code.
  * <p><strong>Do not modify!</strong>
  * <p>Please use the <a href="https://docs.web3j.io/command_line.html">web3j command line tools</a>,
- * or the org.web3j.codegen.SolidityFunctionWrapperGenerator in the 
+ * or the org.web3j.codegen.SolidityFunctionWrapperGenerator in the
  * <a href="https://github.com/web3j/web3j/tree/master/codegen">codegen module</a> to update.
  *
  * <p>Generated with web3j version 3.4.0.
@@ -71,27 +71,27 @@ public class MulTransfer extends Contract {
 
     public static final String FUNC_ADMIN = "admin";
 
-    public static final Event LOGWHILECHANGED_EVENT = new Event("LogWhileChanged", 
+    public static final Event LOGWHILECHANGED_EVENT = new Event("LogWhileChanged",
             Arrays.<TypeReference<?>>asList(new TypeReference<Address>() {}),
             Arrays.<TypeReference<?>>asList(new TypeReference<Bool>() {}));
     ;
 
-    public static final Event LOGERROR_EVENT = new Event("LogError", 
+    public static final Event LOGERROR_EVENT = new Event("LogError",
             Arrays.<TypeReference<?>>asList(),
             Arrays.<TypeReference<?>>asList(new TypeReference<Uint8>() {}));
     ;
 
-    public static final Event LOGADMINSHIPTRANSFERRED_EVENT = new Event("LogAdminshipTransferred", 
+    public static final Event LOGADMINSHIPTRANSFERRED_EVENT = new Event("LogAdminshipTransferred",
             Arrays.<TypeReference<?>>asList(new TypeReference<Address>() {}, new TypeReference<Address>() {}),
             Arrays.<TypeReference<?>>asList());
     ;
 
-    public static final Event LOGOWNERSHIPRENOUNCED_EVENT = new Event("LogOwnershipRenounced", 
+    public static final Event LOGOWNERSHIPRENOUNCED_EVENT = new Event("LogOwnershipRenounced",
             Arrays.<TypeReference<?>>asList(new TypeReference<Address>() {}),
             Arrays.<TypeReference<?>>asList());
     ;
 
-    public static final Event LOGOWNERSHIPTRANSFERRED_EVENT = new Event("LogOwnershipTransferred", 
+    public static final Event LOGOWNERSHIPTRANSFERRED_EVENT = new Event("LogOwnershipTransferred",
             Arrays.<TypeReference<?>>asList(new TypeReference<Address>() {}, new TypeReference<Address>() {}),
             Arrays.<TypeReference<?>>asList());
     ;
@@ -104,7 +104,7 @@ public class MulTransfer extends Contract {
 
     public RemoteCall<TransactionReceipt> mulInsertWhite(List<String> _addresses) {
         final Function function = new Function(
-                FUNC_MULINSERTWHITE, 
+                FUNC_MULINSERTWHITE,
                 Arrays.<Type>asList(new org.web3j.abi.datatypes.DynamicArray<Address>(
                         org.web3j.abi.Utils.typeMap(_addresses, Address.class))),
                 Collections.<TypeReference<?>>emptyList());

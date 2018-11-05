@@ -242,6 +242,7 @@ public class ContentContract {
      * Transfer to multiple address using same quality from current address
      * @param address a set of target address
      * @param quality a set of quality need to transfer
+     * @param weiValue
      */
     public String transferSuts(BigInteger quality, List<String> address, BigInteger weiValue) throws IOException {
         if (address == null || quality == null || address.size() == 0){
@@ -272,7 +273,7 @@ public class ContentContract {
         this.handler.fail(reqId, e.getMessage());
     }
 
-    private void resetNonce() {
+    public void resetNonce() {
         transactionManager.setNonce(BigInteger.valueOf(-1));
         logger.info("RESET NONCE VALUE:" + transactionManager.getCurrentNonce());
     }

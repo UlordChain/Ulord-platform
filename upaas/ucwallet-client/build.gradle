@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'one.ulord.upaas'
-version '1.0.3'
+version '1.0.5'
 
 sourceCompatibility = 1.8
 
