@@ -5,6 +5,7 @@
 package one.ulord.upaas.ucwallet.service.base.contract;
 
 
+import one.ulord.upaas.ucwallet.service.base.contract.generates.BridgeContract;
 import one.ulord.upaas.ucwallet.service.base.contract.generates.ERC20Token;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +41,9 @@ public class CommonContract {
 
     private HashMap<String, ERC20Token> mapContract = new HashMap<>();
     private HashMap<String, Integer> mapTokenDecimals = new HashMap<>();
+
+    private BridgeContract bridgeContract = null;
+
     /**
      * Build a new content smart contract instance. It will take more that 10 seconds to build connection
      * and contract instance.
@@ -181,5 +185,21 @@ public class CommonContract {
     public List<EthBlock.TransactionResult> getBlockTransaction(BigInteger blockHeight) throws IOException {
         return web3j.ethGetBlockByNumber(DefaultBlockParameter.valueOf(blockHeight), false)
                 .send().getBlock().getTransactions();
+    }
+
+    /**
+     * Get UT Fed Address from Bridge contract
+     * @param birderContractAddress
+     * @return Fed Address
+     * @throws Exception
+     */
+    public String getUTFedAddress(String birderContractAddress) throws Exception {
+        if (bridgeContract == null){
+            bridgeContract = BridgeContract.load(birderContractAddress, web3j, transactionManager, contractGasProvider);
+        }
+        if (bridgeContract == null){
+            throw new Exception("Cannot load token address:" + birderContractAddress);
+        }
+        return bridgeContract.getFederationAddress().sendAsync().get();
     }
 }

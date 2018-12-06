@@ -35,7 +35,7 @@ public class UCWalletDemoApplication implements TransactionActionHandler {
         try {
             System.out.println("Create a content contract object....");
             ContentContract contentContract = new ContentContract(
-                    "http://192.168.12.231",
+                    "http://192.168.12.89:58858/usc",
                     "0x8345306e5104262a6719636ef6cd2af80406a7ca", // UShare UX
                     "0xdd74e976399d6bfd8427bb6c090730165a8802fe",
                     "0xba6baf26e4d7aa8062a8921843ad4b5714afbb57",
@@ -138,6 +138,19 @@ public class UCWalletDemoApplication implements TransactionActionHandler {
                 valueList.add(new BigInteger("400000000000000000"));
                 valueList.add(new BigInteger("500000000000000000"));
                 contentContract.transferTokens("transferMultipleAddress", list, valueList);
+            }
+
+            if (false) {
+                // set gas balance
+                System.out.println("Transfer some SUT to...");
+                String hash = contentContract.transferGas("0x2e836371bf20107837da6ad9bb4d08d8f53f65ba",
+                        new BigInteger("1000000000000"));
+                System.out.println(hash);
+            }
+
+            if(true){
+                TransactionReceipt receipt = contentContract.queryTransactionReceipt("0x20cb83db0c61d24e447ce50b854e005142311b02ace760c70f5077de595c6cff");
+                System.out.println(receipt.getGasUsed());
             }
         } catch (IOException e) {
             e.printStackTrace();

@@ -276,6 +276,51 @@
 }
 ```
 
+### 3.7 查询UT联盟地址
+
+- 接口方式: http
+- 接口名称: 查询UT联盟地址
+- 接口方法名: queryTransactionReceipt
+- 访问URL: GET /ucwallet-service/api/UTFedAddress
+- 参数类型: string	
+- 参数: toAddress：接收方钱包地址, quality：交易数量
+- 备注: 
+- 返回值类型: JSON
+
+- 返回值: 
+{
+    "resultCode": 0,
+    "resultMsg": "successed",
+    "reslut": {
+        ""
+    }
+}
+```
+>curl http://localhost:9090/ucwallet-service/api/queryTransactionReceipt?txhash=0xa45c88d8b0a4c6addf590eea851b28794bdcb4d68f99ef7d05166052a0b88cb5
+{
+    "result": {
+        "blockHash": "0x093fecd5b6763ed2d03395e1214261a7cf0e8e09466ca65a8826abbad5049e82",
+        "blockNumber": 68742,
+        "blockNumberRaw": "0x10c86",
+        "cumulativeGasUsed": 21000,
+        "cumulativeGasUsedRaw": "0x5208",
+        "from": "0xa13d7dbabac37d9b756f573ecd7c0e652ff043c5",
+        "gasUsed": 21000,
+        "gasUsedRaw": "0x5208",
+        "logs": [],
+        "root": "0x01",
+        "status": "0x01",
+        "statusOK": true,
+        "to": "0xb3ec03e42098b84e2e8d4d5a5d8de2f934ba5546",
+        "transactionHash": "0xa45c88d8b0a4c6addf590eea851b28794bdcb4d68f99ef7d05166052a0b88cb5",
+        "transactionIndex": 1,
+        "transactionIndexRaw": "0x1"
+    },
+    "resultCode": 0,
+    "resultMsg": "succeeded"
+}
+```
+
 ## 错误代码
 ```
 # 返回值说明

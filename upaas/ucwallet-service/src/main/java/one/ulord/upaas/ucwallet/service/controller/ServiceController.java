@@ -89,12 +89,11 @@ public class ServiceController{
 	@ApiOperation(value = "Get token balance by address", notes = "Get token balance by address")
 	@RequestMapping(value = "getTokenBalance/{address}", method = RequestMethod.GET)
 	public ResponseEntity<String> getTokenBalance(@PathVariable(value="address") String address, String token) {
-		logger.info("address:{}, token:{}", address, token);
-
 		if (token == null){
 		    // using default contract address
             token = provider.getContractAddress();
         }
+		logger.info("address:{}, token:{}", address, token);
 		try {
 		    // For compatible
             String tokenBalance = sutService.getTokenBalance(token, address).multiply(POW18).toBigInteger().toString();
@@ -251,6 +250,22 @@ public class ServiceController{
             return ResultUtil.GoResponseSuccess(receipt);
 		} catch (Exception e) {
 			logger.error("query transaction for transaction:{}", txhash, e);
+			return ResultUtil.GoResponseFailure(e.getMessage());
+		}
+	}
+
+	/**
+	 * query transaction
+	 * @return
+	 */
+	@ApiOperation(value = "query UT Fed Address", notes = "query UT Fed Address")
+	@RequestMapping(value = "UTFedAddress", method = RequestMethod.GET)
+	public ResponseEntity<String> queryUTFedAddress() {
+		try {
+			String fedAddress = sutService.queryUTFedAddress();
+			return ResultUtil.GoResponseSuccess(fedAddress);
+		} catch (Exception e) {
+			logger.error("query UTFedAddress:{}",  e);
 			return ResultUtil.GoResponseFailure(e.getMessage());
 		}
 	}

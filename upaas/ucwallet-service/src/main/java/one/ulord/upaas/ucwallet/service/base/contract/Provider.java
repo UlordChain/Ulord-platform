@@ -22,6 +22,9 @@ public class Provider {
     @Value("${ulord.side.provider.tokenAddress}")
     private String defaultTokenAddress;
 
+    @Value("${ulord.side.provider.birderContractAddress}")
+    private String birderContractAddress;
+
     @Value("${query.transaction.sleep1}")
     private String  querySleep1;
     @Value("${query.transaction.sleep2}")
@@ -67,4 +70,5 @@ public class Provider {
         return ulordProvider;
     }
     public String getContractAddress(){return defaultTokenAddress;}
+    public String getFedContractAddress(){return birderContractAddress;}
 }

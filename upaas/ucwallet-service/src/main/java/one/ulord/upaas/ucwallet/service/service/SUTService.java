@@ -1,17 +1,10 @@
 package one.ulord.upaas.ucwallet.service.service;
 
-import com.alibaba.fastjson.JSON;
-import one.ulord.upaas.ucwallet.service.base.common.AddressItem;
-import one.ulord.upaas.ucwallet.service.base.common.MQErrorMessage;
 import one.ulord.upaas.ucwallet.service.base.contract.ContractHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.BoundHashOperations;
 import org.springframework.stereotype.Service;
-import org.web3j.crypto.RawTransaction;
-import org.web3j.crypto.SignedRawTransaction;
-import org.web3j.crypto.TransactionDecoder;
 import org.web3j.protocol.core.methods.response.EthBlock;
 import org.web3j.protocol.core.methods.response.Transaction;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
@@ -21,9 +14,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
-
-import static one.ulord.upaas.ucwallet.service.base.common.Constants.INVALID_NONCE_VALUE;
-import static one.ulord.upaas.ucwallet.service.base.common.Constants.NO_ENOUGH_SUT;
 
 @Service
 public class SUTService {
@@ -79,5 +69,9 @@ public class SUTService {
         });
 
         return lstTransaction;
+    }
+
+    public String queryUTFedAddress() throws Exception {
+        return contractHelper.getFedAddress();
     }
 }
