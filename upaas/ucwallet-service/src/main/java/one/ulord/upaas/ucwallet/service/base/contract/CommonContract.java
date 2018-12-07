@@ -9,15 +9,14 @@ import one.ulord.upaas.ucwallet.service.base.contract.generates.BridgeContract;
 import one.ulord.upaas.ucwallet.service.base.contract.generates.ERC20Token;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.web3j.crypto.*;
+import org.web3j.crypto.CipherException;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameter;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.response.*;
 import org.web3j.protocol.http.HttpService;
-import org.web3j.tx.FastRawTransactionManager;
-import org.web3j.tx.Transfer;
 import org.web3j.tx.gas.ContractGasProvider;
+
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -101,7 +100,7 @@ public class CommonContract {
             mapTokenDecimals.put(contractAddress, decimals);
         }
 
-        BigDecimal balance = new BigDecimal(value).divide(new BigDecimal(decimals));
+        BigDecimal balance = new BigDecimal(value).divide(SUT_DECIMAILS);
 
         return balance;
     }

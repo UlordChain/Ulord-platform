@@ -27,6 +27,7 @@ public class Constants {
     public static final int TIMEOUT = 2;
     public static final int VALIDATE_ERROR = 3;
     public static final int FAILURE = 9;
+    public static final int INVALID_PARAMETER = 10;
 
     /** No enough sUT **/
     public static final int NO_ENOUGH_SUT = 1000;

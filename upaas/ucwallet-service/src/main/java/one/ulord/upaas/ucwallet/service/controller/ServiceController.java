@@ -6,6 +6,7 @@ package one.ulord.upaas.ucwallet.service.controller;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import one.ulord.upaas.ucwallet.service.base.common.Constants;
 import one.ulord.upaas.ucwallet.service.base.common.JsonResult;
 import one.ulord.upaas.ucwallet.service.base.common.ResultUtil;
 import one.ulord.upaas.ucwallet.service.base.contract.Provider;
@@ -23,6 +24,7 @@ import org.web3j.protocol.core.methods.response.TransactionReceipt;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.regex.Pattern;
 
 import static one.ulord.upaas.ucwallet.service.base.common.Constants.INVALID_NONCE_VALUE;
 import static one.ulord.upaas.ucwallet.service.base.common.Constants.NO_ENOUGH_SUT;
@@ -39,6 +41,7 @@ import static one.ulord.upaas.ucwallet.service.base.common.Constants.NO_ENOUGH_S
 public class ServiceController{
 	private static final Logger logger = LoggerFactory.getLogger(ServiceController.class);
     private static final BigDecimal POW18 = BigDecimal.TEN.pow(18);
+    private static final Pattern addressPattern = Pattern.compile("^(0[xX]){0,1}[0-9a-zA-Z]{40}$");
 	@Autowired
     private SUTService sutService;
 
@@ -71,6 +74,11 @@ public class ServiceController{
     public ResponseEntity<String> getBalance(@PathVariable(value="address") String address) {
         logger.debug("getSutBalance address:"+address);
 
+		if (address == null ||
+				!addressPattern.matcher(address).matches()){
+			return ResultUtil.GoResponseFailure(Constants.INVALID_PARAMETER,
+					"Invalid parameter: address:" + address);
+		}
         try {
             String gasBalance = sutService.getBalance(address).toString();
             logger.debug("address{}, balance:{}", address, gasBalance);
@@ -94,6 +102,12 @@ public class ServiceController{
             token = provider.getContractAddress();
         }
 		logger.info("address:{}, token:{}", address, token);
+		if (address == null || token == null ||
+				!addressPattern.matcher(address).matches() ||
+				!addressPattern.matcher(token).matches()){
+			return ResultUtil.GoResponseFailure(Constants.INVALID_PARAMETER,
+					"Invalid parameter: address:" + address + ", token:" + token);
+		}
 		try {
 		    // For compatible
             String tokenBalance = sutService.getTokenBalance(token, address).multiply(POW18).toBigInteger().toString();
@@ -114,6 +128,13 @@ public class ServiceController{
             // using default contract address
             token = provider.getContractAddress();
         }
+		logger.info("address:{}, token:{}", address, token);
+		if (address == null || token == null ||
+				!addressPattern.matcher(address).matches() ||
+				!addressPattern.matcher(token).matches()){
+			return ResultUtil.GoResponseFailure(Constants.INVALID_PARAMETER,
+					"Invalid parameter: address:" + address + ", token:" + token);
+		}
         try {
             String tokenBalance = sutService.getTokenBalance(token, address).toString();
             logger.info("Token balance:" + tokenBalance);
