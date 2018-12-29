@@ -21,6 +21,7 @@ import org.web3j.crypto.WalletUtils;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.response.EthSendTransaction;
+import org.web3j.protocol.core.methods.response.Transaction;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.protocol.core.methods.response.Web3ClientVersion;
 import org.web3j.protocol.http.HttpService;
@@ -227,9 +228,26 @@ public class ContentContract {
      * @param address
      * @param quality
      */
-    public void transferSuts(final String reqId, BigInteger quality, List<String> address, BigInteger weiValue){
+    public void transferSameSuts(final String reqId, BigInteger quality, List<String> address, BigInteger weiValue){
 
-        uxCandy.sendEth(quality, address, weiValue).sendAsync().whenCompleteAsync((receipt, e)-> {
+        uxCandy.sendEthSame(quality, address, weiValue).sendAsync().whenCompleteAsync((receipt, e)-> {
+            if (e == null){
+                processTransactionReceipt(reqId, receipt);
+            }else{
+                this.handler.fail(reqId, e.getMessage());
+            }
+        });
+    }
+
+    /**
+     * Transfer to multiple addresses to a different number of Suts.
+     * @param reqId
+     * @param address
+     * @param quality
+     */
+    public void transferDiffSuts(final String reqId, List<BigInteger> quality, List<String> address, BigInteger weiValue){
+
+        uxCandy.sendEthDiff(quality, address, weiValue).sendAsync().whenCompleteAsync((receipt, e)-> {
             if (e == null){
                 processTransactionReceipt(reqId, receipt);
             }else{
@@ -244,7 +262,7 @@ public class ContentContract {
      * @param quality a set of quality need to transfer
      * @param weiValue
      */
-    public String transferSuts(BigInteger quality, List<String> address, BigInteger weiValue) throws IOException {
+    public String transferSameSuts(BigInteger quality, List<String> address, BigInteger weiValue) throws IOException {
         if (address == null || quality == null || address.size() == 0){
             throw new RuntimeException("Invalid parameters, master equal.");
         }
@@ -252,8 +270,37 @@ public class ContentContract {
             logger.warn("Submit address amount more than 200, the transaction maybe out of gas.");
         }
         final Function function = new Function(
-                MulTransfer.FUNC_SENDETH,
+                MulTransfer.FUNC_SENDETHSAME,
                 Arrays.<Type>asList(new org.web3j.abi.datatypes.generated.Uint256(quality),
+                        new org.web3j.abi.datatypes.DynamicArray<org.web3j.abi.datatypes.Address>(
+                                org.web3j.abi.Utils.typeMap(address, org.web3j.abi.datatypes.Address.class))),
+                Collections.<TypeReference<?>>emptyList());
+        EthSendTransaction txObject = transactionManager.sendTransaction(
+                contractGasProvider.getGasPrice(function.getName()),
+                contractGasProvider.getGasLimit(function.getName()),
+                uxCandy.getContractAddress(),
+                FunctionEncoder.encode(function), weiValue);
+
+        return txObject.getTransactionHash();
+    }
+
+    /**
+     * Transfer to multiple addresses to a different number of Suts.
+     * @param address a set of target address
+     * @param quality a set of quality need to transfer
+     * @param weiValue
+     */
+    public String transferDiffSuts(List<BigInteger> quality, List<String> address, BigInteger weiValue) throws IOException {
+        if (address == null || quality == null || quality.size() != address.size()){
+            throw new RuntimeException("Invalid parameters, master equal.");
+        }
+        if (address.size() > 200){
+            logger.warn("Submit address amount more than 200, the transaction maybe out of gas.");
+        }
+        final Function function = new Function(
+                MulTransfer.FUNC_SENDETHDIFF,
+                Arrays.<Type>asList(new org.web3j.abi.datatypes.DynamicArray<org.web3j.abi.datatypes.generated.Uint256>(
+                                org.web3j.abi.Utils.typeMap(quality, org.web3j.abi.datatypes.generated.Uint256.class)),
                         new org.web3j.abi.datatypes.DynamicArray<org.web3j.abi.datatypes.Address>(
                                 org.web3j.abi.Utils.typeMap(address, org.web3j.abi.datatypes.Address.class))),
                 Collections.<TypeReference<?>>emptyList());
@@ -501,12 +548,22 @@ public class ContentContract {
     }
 
     /**
-     * Return a raw transaction hash. [Sync]
+     * Return a raw transactionReceipt hash. [Sync]
      * @param txhash transaction hash
      * @return hash
      */
     public TransactionReceipt queryTransactionReceipt(String txhash) throws IOException {
         return web3j.ethGetTransactionReceipt(txhash).send().getResult();
+    }
+
+
+    /**
+     * Return a raw transaction hash. [Sync]
+     * @param txhash transaction hash
+     * @return hash
+     */
+    public Transaction queryTransaction(String txhash) throws IOException {
+        return web3j.ethGetTransactionByHash(txhash).send().getResult();
     }
 
     private void processTransactionReceipt(String reqId, TransactionReceipt transactionReceipt) {
