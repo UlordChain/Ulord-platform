@@ -5,7 +5,7 @@ Welcome to the Ulord Platform(UPaaS) source code repository! Ulord platform soft
 
 This code is currently alpha-quality and under rapid development. 
 
-Ulord platform is decenterlize content distribution platform which can supply content repo, distribution and search ability. Ulord platform make enterprise development content distribution more effective.
+Ulord platform is a decenterlize content distribution platform which can supply content repo, distribution and searching ability. Ulord platform makes the enterprise development content distribution more effective.
 Ulord platform have:
 - decenterlize content storage service (UDFS)
 - content transaction service
