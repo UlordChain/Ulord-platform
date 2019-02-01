@@ -15,7 +15,7 @@ import org.springframework.http.ResponseEntity;
  * @since 2018-08-10
  */
 public class ResultUtil {
-	private static final String SUCCEEDED = "succeeded";
+	private static final String SUCCEEDED = "successed";
 	private static final String FAILURED = "failed";
 	
 	public static ResponseEntity<String> GoResponseSuccess(Object result){

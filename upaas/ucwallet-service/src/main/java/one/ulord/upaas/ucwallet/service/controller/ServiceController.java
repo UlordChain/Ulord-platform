@@ -97,10 +97,10 @@ public class ServiceController{
 	@ApiOperation(value = "Get token balance by address", notes = "Get token balance by address")
 	@RequestMapping(value = "getTokenBalance/{address}", method = RequestMethod.GET)
 	public ResponseEntity<String> getTokenBalance(@PathVariable(value="address") String address, String token) {
-		if (token == null){
+		if (token == null || !addressPattern.matcher(token).matches()){
 		    // using default contract address
             token = provider.getContractAddress();
-        }
+		}
 		logger.info("address:{}, token:{}", address, token);
 		if (address == null || token == null ||
 				!addressPattern.matcher(address).matches() ||
@@ -124,7 +124,7 @@ public class ServiceController{
     public ResponseEntity<String> getTokenBalance2(@PathVariable(value="address") String address, String token) {
         logger.info("address:{}, token:{}", address, token);
 
-        if (token == null){
+        if (token == null || !addressPattern.matcher(token).matches()){
             // using default contract address
             token = provider.getContractAddress();
         }
